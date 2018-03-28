@@ -1,0 +1,254 @@
+22:44:15 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:124:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+22:44:23 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+make: No se hace nada para «all».
+22:47:52 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:127:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+22:49:09 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:127:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+22:59:25 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:128:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+23:03:51 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:131:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+23:08:19 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:130:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+23:12:32 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:130:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+23:13:21 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:130:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+23:14:35 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘atenderCliente’:
+../src/servidor.c:39:3: warning: passing argument 2 of ‘memset’ makes integer from pointer without a cast [enabled by default]
+   memset(mensaje,"", sizeof(char) * tamanioMensaje);
+   ^
+In file included from ../src/servidor.h:17:0,
+                 from ../src/servidor.c:7:
+/usr/include/string.h:66:14: note: expected ‘int’ but argument is of type ‘char *’
+ extern void *memset (void *__s, int __c, size_t __n) __THROW __nonnull ((1));
+              ^
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:130:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+23:17:46 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:130:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 
+23:31:02 **** Incremental Build of configuration Debug for project moduloServidor ****
+make all 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantarServidor’:
+../src/servidor.c:133:63: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+   if ((datosCliente->idSocketCliente = accept(sockfd, (struct sockaddr *) &their_addr, &sin_size))
+                                                               ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:7:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: moduloServidor
+Invoking: GCC C Linker
+gcc  -o "moduloServidor"  ./src/moduloServidor.o ./src/servidor.o   -lpthread
+Finished building target: moduloServidor
+ 

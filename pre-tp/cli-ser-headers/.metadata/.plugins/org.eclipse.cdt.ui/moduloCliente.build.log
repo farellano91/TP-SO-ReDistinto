@@ -1,0 +1,19 @@
+13:54:34 **** Incremental Build of configuration Debug for project moduloCliente ****
+make all 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.d" -o "src/cliente.o" "../src/cliente.c"
+../src/cliente.c: In function ‘levantarCliente’:
+../src/cliente.c:25:5: warning: implicit declaration of function ‘inet_addr’ [-Wimplicit-function-declaration]
+     their_addr.sin_addr.s_addr = inet_addr(IP);//toma la ip directo
+     ^
+Finished building: ../src/cliente.c
+ 
+Building target: moduloCliente
+Invoking: GCC C Linker
+gcc  -o "moduloCliente"  ./src/cliente.o ./src/moduloCliente.o   
+Finished building target: moduloCliente
+ 
+
+13:54:34 Build Finished (took 115ms)
+
