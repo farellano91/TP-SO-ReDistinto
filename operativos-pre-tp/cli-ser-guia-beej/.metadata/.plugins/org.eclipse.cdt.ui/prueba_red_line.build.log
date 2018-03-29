@@ -1,0 +1,10 @@
+20:21:28 **** Incremental Build of configuration Debug for project prueba_red_line ****
+make all 
+Building target: prueba_red_line
+Invoking: GCC C Linker
+gcc  -o "prueba_red_line"  ./prueba_red_line.o   -lreadline
+Finished building target: prueba_red_line
+ 
+
+20:21:28 Build Finished (took 167ms)
+

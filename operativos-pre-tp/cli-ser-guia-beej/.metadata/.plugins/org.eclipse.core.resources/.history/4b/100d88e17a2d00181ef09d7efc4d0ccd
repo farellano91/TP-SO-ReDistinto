@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+typedef struct Alumno{
+  int32_t id_mensaje; //5bytes
+  int32_t legajo; //5bytes
+  char* nombre; //1bytes por char
+  char* apellido; //1byte por char
+}  Alumno;
+
+
+int main(int argc, char *argv[])
+{
+	Alumno * alu = malloc(sizeof(struct Alumno));
+	alu->id_mensaje= 1;
+	alu->legajo = 123;
+	alu->nombre = malloc(sizeof(char)*5);
+	strcpy(alu->nombre, "Juan");
+	alu->apellido = malloc(sizeof(char)*5);
+	strcpy(alu->apellido, "Pere");
+
+	printf("Enviado:%d %d %s %s\n",alu->id_mensaje,alu->legajo,alu->nombre,alu->apellido );
+
+
+
+	void *bufferEnvio = malloc((sizeof(int32_t)*2) + (sizeof(char)*20));
+	printf("1");
+	memcpy(bufferEnvio, &(alu->id_mensaje), sizeof(int32_t));
+	printf("2");
+	memcpy(bufferEnvio + sizeof(int32_t), &(alu->legajo), sizeof(int32_t));
+	printf("3");
+	memcpy(bufferEnvio + (sizeof(int32_t)*2), &(alu->nombre),sizeof(char)*5);
+	printf("4");
+	memcpy(bufferEnvio + (sizeof(int32_t)*2) + (sizeof(char)*5), &(alu->apellido), (sizeof(char)*5));
+
+	printf("antes de usar el aluRecibido");
+	//send() -> reciv() -> llena el bufferRecibo
+	void *bufferRecibo = bufferEnvio;
+
+	Alumno * aluRecibido = malloc(sizeof(struct Alumno));
+
+	memcpy(&(aluRecibido->id_mensaje), bufferRecibo, sizeof(int32_t));
+	memcpy(&(aluRecibido->legajo), bufferRecibo + sizeof(int32_t),sizeof(int32_t));
+	memcpy(&(aluRecibido->nombre), bufferRecibo + (sizeof(int32_t)*2), (sizeof(char)*5));
+	memcpy(&(aluRecibido->apellido), bufferRecibo + (sizeof(int32_t)*2) + (sizeof(char)*5), (sizeof(char)*5));
+
+	printf("Recibo:%d %d %s %s\n",aluRecibido->id_mensaje,aluRecibido->legajo,aluRecibido->nombre,aluRecibido->apellido);
+
+	free(alu->nombre);
+	free(alu->apellido);
+	free(alu);
+	free(aluRecibido);
+
+	free(bufferEnvio);
+
+	//para que no termine la ejecucion
+//	while(1){};
+	//
+
+
+	return 0;
+}
