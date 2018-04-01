@@ -1,0 +1,22 @@
+/*
+ * archivo.h
+ *
+ *  Created on: 31/3/2018
+ *      Author: utnso
+ */
+
+#ifndef ARCHIVO_H_
+#define ARCHIVO_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+
+//se debe poder abrir (definir la forma: read/write/append), cerrar un archivo,
+//leer una linea determinada, exponer una operación que reciba una función y la
+//ejecute por cada línea del archivo; exponer otra operación que dada una lista
+//y una función, itere la lista y escriba sobre el archivo abierto lo que devuelve
+//dicha función (string).
+
+File* abrirArchivo
+
+#endif /* ARCHIVO_H_ */

@@ -1,0 +1,52 @@
+/*
+ * guia_ejercicio_3.c
+ *
+ *  Created on: 31/3/2018
+ *      Author: utnso
+ */
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/*
+*   Separa el mail en un usuario y un dominio.
+*   Ejemplo:
+*   char* mail = "ritchie@ansic.com.ar";
+*   char* user, dominio;
+*   mail_split(mail, &user, &dominio);
+*   =>
+*   user = "ritchie"
+*   dominio = "ansic.com.ar"
+*/
+void mail_split(const char* mail, char** user, char** dominio){
+
+}
+
+
+
+
+int main(void) {
+	char* mail = malloc(sizeof(char)*40 + 1);
+	strcpy(mail,"ritchie@ansic.com.ar");
+	mail[strlen(mail)] = '\0';
+	char* nombre2 = malloc(sizeof(char)*7 + 1);
+	strcpy(nombre2,"Ritchie");
+	nombre2[strlen(nombre2)] = '\0';
+
+	char* resultado = malloc(strlen(nombre1) + strlen(nombre2) + 1);
+
+	string_concat_dinamyc(nombre1,nombre2,&resultado);
+	resultado[strlen(resultado)] = '\0';
+
+	printf("Saludo del ejercicio 1: %s", resultado);
+
+
+	free(nombre1);
+	free(nombre2);
+	free(resultado);
+	return 0;
+
+
+}

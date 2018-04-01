@@ -1,0 +1,36 @@
+/*
+ ============================================================================
+ Name        : guia_ejercicios.c
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+/*
+*   Retorna un String nuevo que es la concatenación
+*   de los dos Strings pasados por parámetro
+*   Ejemplo:
+*   char* nombre = "Ritchie";
+*   char* saludo = string_concat("Hola ", nombre);
+*   =>
+*   saludo = "Hola Ritchie"
+*/
+char* string_concat(const char* nombre1, const char* nombre2){
+	return strcat(nombre1,nombre2);
+}
+
+
+int main(void) {
+	char* nombre1 = malloc(sizeof(char)*30);
+	char* nombre2 = malloc(sizeof(char)*30);
+	printf("El resultado del ejercicio 1: %d",string_concat(nombre1,nombre2));
+
+	free(nombre1);
+	free(nombre2);
+	return EXIT_SUCCESS;
+}

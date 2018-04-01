@@ -1,0 +1,44 @@
+/*
+ ============================================================================
+ Name        : guia_ejercicio_2.c
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "archivo.h"
+
+//se debe poder abrir (definir la forma: read/write/append), cerrar un archivo,
+//leer una linea determinada, exponer una operación que reciba una función y la
+//ejecute por cada línea del archivo; exponer otra operación que dada una lista
+//y una función, itere la lista y escriba sobre el archivo abierto lo que devuelve
+//dicha función (string).
+
+int main(void) {
+//	FILE * archivo = txt_open_file("archivo-prueba","r+b");
+//	archivo = txt_open_file("/guia_ejercicio_2/src/archivo-prueba","r");
+//	if (!archivo){
+//		puts("Error al abrir el archivo");
+//		free(archivo);
+//		return EXIT_SUCCESS;
+//	}
+//
+//	txt_read_especific_line(archivo,3);
+//	txt_close_file(archivo);
+	FILE *fp;
+	int c;
+	fp = fopen("archivo-prueba.txt","r");
+	while(1) {
+	  c = fgetc(fp);
+	  if( feof(fp) ) {
+		 break ;
+	  }
+	  printf("%c", c);
+	}
+	fclose(fp);
+	return EXIT_SUCCESS;
+}
