@@ -32,7 +32,7 @@ void atenderCliente(TipoDatosCliente *datoC) {
 	ContentHeader * ch = malloc(sizeof(int) * 2);
 	ch->id = 18;
 
-	void* bufferContenido = malloc(40);
+	void* bufferContenido = malloc(30);
 	memcpy(bufferContenido,"12345678901234567890123456789",30);
 
 	ch->len = 30;
@@ -48,7 +48,7 @@ void atenderCliente(TipoDatosCliente *datoC) {
 
 	free(ch);
 
-	//Recibo el buffer con heder + digest
+	//Recibo el buffer con header + digest
 	void * buffer = malloc(sizeof(ContentHeader) + MD5_DIGEST_LENGTH);
 	if (recv(datoC->idSocketCliente,buffer,sizeof(ContentHeader) + MD5_DIGEST_LENGTH,0) == -1) {
 		printf("No se pudo recivir el header + md5 del cliente");
@@ -79,8 +79,10 @@ void atenderCliente(TipoDatosCliente *datoC) {
     	printf("No se pudo enviar la respuesta al cliente");
   }
 
-
+	free(buffer);
 	free(bufferContenido);
+	free(digestRecivido);
+	free(digest);
 }
 
 void levantarServidor() {
