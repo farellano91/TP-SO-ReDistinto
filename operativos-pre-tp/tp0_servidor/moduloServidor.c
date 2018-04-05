@@ -1,0 +1,21 @@
+/*
+ ============================================================================
+ Name        : moduloServidor.c
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+//Es el modulo que consumira las funciones para levantar un servidor
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "servidor.h"
+
+int main(void) {
+	puts("Hola, soy un modulo que levantare un servidor");
+	levantarServidor();
+	return EXIT_SUCCESS;
+}
