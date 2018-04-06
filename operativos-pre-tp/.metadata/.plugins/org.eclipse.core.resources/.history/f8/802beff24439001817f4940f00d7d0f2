@@ -42,9 +42,9 @@ void atenderCliente(TipoDatosCliente *datoC) {
 	strcpy(nombre,"123456789");
 	nombre[strlen(nombre)]='\0';
 	memcpy(bufferContenido + sizeof(int), nombre , strlen(nombre) + 1 );
-
-	ch->len = sizeof(int) + strlen(nombre) + 1;
 	free(nombre);
+	ch->len = sizeof(int) + strlen(nombre);
+
 	void* bufferEnvio = malloc((sizeof(int) * 2) + ch->len);
 	memcpy(bufferEnvio, ch , (sizeof(int) * 2) );
 	memcpy(bufferEnvio  + (sizeof(int) * 2) , bufferContenido , ch->len );

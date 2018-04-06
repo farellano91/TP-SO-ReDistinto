@@ -35,16 +35,16 @@ void atenderCliente(TipoDatosCliente *datoC) {
 	ContentHeader * ch = malloc(sizeof(int) * 2);
 	ch->id = 18;
 
-	void* bufferContenido = malloc(sizeof(int) + sizeof(char)*100);
+	void* bufferContenido = malloc(sizeof(int) + sizeof(char)*10);
 	int numero = 5;
 	memcpy(bufferContenido,&numero,sizeof(int));
 	char * nombre = malloc(sizeof(char)*10);
 	strcpy(nombre,"123456789");
 	nombre[strlen(nombre)]='\0';
-	memcpy(bufferContenido + sizeof(int), nombre , strlen(nombre) + 1 );
-
-	ch->len = sizeof(int) + strlen(nombre) + 1;
+	memcpy(bufferContenido + sizeof(int), nombre , sizeof(char)*10);
 	free(nombre);
+	ch->len = sizeof(int) + sizeof(char)*10;
+
 	void* bufferEnvio = malloc((sizeof(int) * 2) + ch->len);
 	memcpy(bufferEnvio, ch , (sizeof(int) * 2) );
 	memcpy(bufferEnvio  + (sizeof(int) * 2) , bufferContenido , ch->len );
