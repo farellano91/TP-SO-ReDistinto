@@ -1,0 +1,35 @@
+[INFO] 20:15:37:440 tp0/(6574:6574): Creado xD
+[INFO] 20:15:37:440 tp0/(6574:6574): Conectado!
+[INFO] 20:15:37:441 tp0/(6574:6574): Recibimos el dato OK
+[INFO] 20:15:37:441 tp0/(6574:6574): Son iguales :)
+[INFO] 20:16:07:363 tp0/(6574:6574): Enviando info de Estudiante
+[INFO] 20:16:07:363 tp0/(6574:6574): Estructura enviado correctamente!!
+[INFO] 20:16:07:363 tp0/(6574:6574): Esperando el encabezado del contenido(8 bytes)
+[INFO] 20:16:07:363 tp0/(6574:6574): Llego correctamente el header
+[INFO] 20:16:07:363 tp0/(6574:6574): Esperando el contenido (30 bytes)
+[INFO] 20:16:07:363 tp0/(6574:6574): Llego correctamente el contenido
+[INFO] 20:19:06:652 tp0/(6574:6574): Los MD5 concidieron!
+[INFO] 20:19:31:407 tp0/(6697:6697): Creado xD
+[INFO] 20:19:31:407 tp0/(6697:6697): Conectado!
+[INFO] 20:19:31:407 tp0/(6697:6697): Recibimos el dato OK
+[INFO] 20:19:31:408 tp0/(6697:6697): Son iguales :)
+[INFO] 20:19:43:215 tp0/(6697:6697): Enviando info de Estudiante
+[INFO] 20:19:43:216 tp0/(6697:6697): Estructura enviado correctamente!!
+[INFO] 20:19:43:216 tp0/(6697:6697): Esperando el encabezado del contenido(8 bytes)
+[INFO] 20:19:43:216 tp0/(6697:6697): Llego correctamente el header
+[INFO] 20:19:43:216 tp0/(6697:6697): Esperando el contenido (30 bytes)
+[INFO] 20:20:57:758 tp0/(6697:6697): Llego correctamente el contenido
+[INFO] 20:20:57:758 tp0/(6697:6697): Los MD5 concidieron!
+[INFO] 20:22:36:25 tp0/(6836:6836): Creado xD
+[INFO] 20:22:36:25 tp0/(6836:6836): Conectado!
+[INFO] 20:22:36:25 tp0/(6836:6836): Recibimos el dato OK
+[INFO] 20:22:36:25 tp0/(6836:6836): Son iguales :)
+[INFO] 20:24:25:403 tp0/(6978:6978): Creado xD
+[INFO] 20:24:25:404 tp0/(6978:6978): Conectado!
+[INFO] 20:24:25:404 tp0/(6978:6978): Recibimos el dato OK
+[INFO] 20:24:25:404 tp0/(6978:6978): Son iguales :)
+[INFO] 20:27:22:69 tp0/(7081:7081): Creado xD
+
+[INFO] 20:27:22:70 tp0/(7081:7081): Conectado!
+[INFO] 20:27:22:70 tp0/(7081:7081): Recibimos el dato OK
+[INFO] 20:27:22:70 tp0/(7081:7081): Son iguales :)

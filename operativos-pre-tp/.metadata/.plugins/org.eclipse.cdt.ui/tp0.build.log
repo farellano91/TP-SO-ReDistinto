@@ -1,0 +1,15 @@
+23:06:23 **** Incremental Build of configuration Debug for project tp0 ****
+make all 
+Building file: ../src/tp0.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/tp0.d" -MT"src/tp0.d" -o "src/tp0.o" "../src/tp0.c"
+Finished building: ../src/tp0.c
+ 
+Building target: tp0
+Invoking: GCC C Linker
+gcc  -o "tp0"  ./src/tp0.o   -lcommons -lreadline -lcrypto
+Finished building target: tp0
+ 
+
+23:06:23 Build Finished (took 160ms)
+
