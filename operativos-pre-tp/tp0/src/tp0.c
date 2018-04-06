@@ -15,7 +15,7 @@ int main() {
 
 void configure_logger() {
   logger = log_create("log_tp0.log","tp0",1,LOG_LEVEL_INFO);
-  log_info(logger, "Creado xD\n");
+  log_info(logger, "Creado xD");
 
 }
 
