@@ -2,7 +2,7 @@
 #include <stdio.h> // Por dependencia de readline en algunas distros de linux :)
 #include <string.h>
 #include <stdlib.h> // Para malloc
-
+#include <signal.h>
 
 #include <unistd.h>
 
@@ -12,8 +12,19 @@ typedef struct {
 } __attribute__((packed)) Proceso;
 
 
+void intHandler(int dummy) {
+    if(dummy != 0){
+    	printf("\nFinalizo con una interrupcion :(, codigo: %d!!\n",dummy);
+    	exit(dummy);
+    }
+}
+
 //Modelo RR para 10 procesos
 int main(int n, char **args) {
+
+	//En caso de una interrupcion va por aca
+	signal(SIGINT, intHandler);
+
 	printf("Round Robin");
 	int np=11, quantum = 0, nq = 0;
 	Proceso  proceso[10];
