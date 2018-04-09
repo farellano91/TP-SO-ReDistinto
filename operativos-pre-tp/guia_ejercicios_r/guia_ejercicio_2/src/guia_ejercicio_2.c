@@ -9,6 +9,10 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>  //para el excev
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "archivo.h"
 
 //se debe poder abrir (definir la forma: read/write/append), cerrar un archivo,
@@ -18,28 +22,30 @@
 //dicha función (string).
 
 int main(void) {
-	//1.- Creo el archivo
-	FILE * archivo = txt_open_file("prueba_archivo.txt","w");
-	//controlo que este bien
-	if (!archivo){
-		puts("Error al crear el archivo");
-		return EXIT_SUCCESS;
-	}
-	//primera carga
-	txt_carga_inicial(archivo);
-	txt_close_file(archivo);
+	int childStatus = 1;
+	int ret = fork();
+    if(ret == 0){
+    	//pequeño cambiazo
+    	char* args[] = { "/bin/mv", "prueba_archivo.md", "prueba_archivo.txt", 0 };
+		execv(args[0], args);	
+    }
+    else{
+    	//espero que el hijo termine para seguir
+        waitpid(ret,&childStatus,0);
+        FILE * archivo = txt_open_file("prueba_archivo.txt","r+b");
+		//controlo que este bien
+		if (!archivo){
+			puts("Error al ver el archivo");
+			return EXIT_SUCCESS;
+		}
+		txt_read_all(archivo);
+		txt_close_file(archivo);
 
-
-	//2.- Leo el archivo
-	archivo = txt_open_file("prueba_archivo.txt","r");
-	//controlo que este bien
-	if (!archivo){
-		puts("Error al ver el archivo");
-		return EXIT_SUCCESS;
-	}
-	txt_read_all(archivo);
-	txt_close_file(archivo);
-
+		//no paso nada	
+		char* args[] = { "/bin/mv", "prueba_archivo.txt", "prueba_archivo.md", 0 };
+		execv(args[0], args);
+    }
+	
 
 //	//3.- Leo la linea 5
 //	archivo = txt_open_file("prueba_archivo.txt","r");

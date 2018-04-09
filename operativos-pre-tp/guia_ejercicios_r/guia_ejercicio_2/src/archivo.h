@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 /*Condicion
 "r":Abre un archivo para leer. El archivo debe existir
 "w":Crea nuevo archivo, si existe lo sobreescribe como vacio
