@@ -167,7 +167,7 @@ void levantarServidor() {
 		pthread_t punteroHilo;
 		pthread_create(&punteroHilo, NULL, (void*) atenderCliente, datosCliente);
 		//espero a q termine el hilo
-		pthread_join(punteroHilo,NULL);
+		//pthread_join(punteroHilo,NULL);
 
 	}
 }

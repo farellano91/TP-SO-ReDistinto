@@ -1,0 +1,19 @@
+/*
+ * servidor.h
+ *
+ *  Created on: 25/3/2018
+ *      Author: utnso
+ */
+#ifndef FUNCIONESH
+#define FUNCIONESH
+
+#include <stdio.h>
+
+float pi;
+
+void levantarServidor();
+
+
+#endif
+
+
