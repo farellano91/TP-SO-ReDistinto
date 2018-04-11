@@ -1,0 +1,1 @@
+funcion stat me da el tamaño en bytes del archivo
