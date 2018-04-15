@@ -1,0 +1,22 @@
+/*
+ ============================================================================
+ Name        : c.c
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "archivo.h"
+
+int main(int argc, char** argv) {
+	//1.- conecta como cliente al planificador y al servidor
+	//2.- lee el archivo
+	FILE* file = txt_open_file(argv[0],r);
+	//3.- se queda esperando respuesta para leer linea
+	//4.- envia la linea "parseada" al coordinador
+	return EXIT_SUCCESS;
+}

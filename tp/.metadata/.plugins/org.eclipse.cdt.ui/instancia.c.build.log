@@ -1,0 +1,15 @@
+18:16:36 **** Build of configuration Debug for project instancia.c ****
+make all 
+Building file: ../src/instancia.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/instancia.d" -MT"src/instancia.d" -o "src/instancia.o" "../src/instancia.c"
+Finished building: ../src/instancia.c
+ 
+Building target: instancia.c
+Invoking: GCC C Linker
+gcc  -o "instancia.c"  ./src/instancia.o   
+Finished building target: instancia.c
+ 
+
+18:16:36 Build Finished (took 137ms)
+

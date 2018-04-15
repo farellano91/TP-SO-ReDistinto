@@ -1,0 +1,20 @@
+#Declaramos variables
+CC := gcc
+
+OBJS := coordinador.o servidor.o
+
+#Generamos el principal
+all: coordinador
+
+coordinador: $(OBJS)
+	gcc -o coordinador $(OBJS) -pthread
+
+servidor.o: servidor.c servidor.h
+	gcc -c servidor.c
+
+coordinador.o: coordinador.c servidor.h
+	gcc -c coordinador.c
+
+#Borramos todo
+clear: 
+	rm coordinador $(OBJS)

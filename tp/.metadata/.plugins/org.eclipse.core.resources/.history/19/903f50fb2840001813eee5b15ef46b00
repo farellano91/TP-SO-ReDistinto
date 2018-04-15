@@ -1,0 +1,22 @@
+/*
+ ============================================================================
+ Name        : c.c
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
+
+	//1.- levantar servidor
+	//2.- enviar saludo a esi
+	//3.- enviar saludo a coordinador
+	//4.- planificar esis
+	return EXIT_SUCCESS;
+}
