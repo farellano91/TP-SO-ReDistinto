@@ -3,16 +3,16 @@
 
 void saludo_inicial_coordinador(int sockfd){
 	//Recibo saludo del coordinador
-	void* bufferRecibido = malloc(sizeof(char)*29);
-	char * mensajeSaludoRecibido = malloc(sizeof(char)*29);
+	void* bufferRecibido = malloc(sizeof(char)*25);
+	char * mensajeSaludoRecibido = malloc(sizeof(char)*25);
 	int numbytes = 0;
-	if ((numbytes = recv(sockfd, bufferRecibido, 29, 0)) == -1) {
+	if ((numbytes = recv(sockfd, bufferRecibido, 25, 0)) == -1) {
 		perror("recv");
 		printf("No se pudo recibir saludo del coordinador\n");
 		exit(1);
 	}
-	memcpy(mensajeSaludoRecibido,bufferRecibido,29);
-	printf("Saludo del coordinador recibido: %s\n", mensajeSaludoRecibido);
+	memcpy(mensajeSaludoRecibido,bufferRecibido,25);
+	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
 
 	//Envio saludo al planificador
 	void* bufferEnvio = malloc(sizeof(char)*29);

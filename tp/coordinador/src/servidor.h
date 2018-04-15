@@ -23,6 +23,11 @@
 #include <pthread.h>
 #include <commons/config.h>
 
+int fdmax;
+fd_set master;   // conjunto maestro de descriptores de fichero
+fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
+
+
 void levantar_servidor_coordinador();
 
 #define BACKLOG 10     // Cuántas conexiones pendientes se mantienen en cola
@@ -30,5 +35,4 @@ void levantar_servidor_coordinador();
 #define MYIP "127.0.0.1"
 
 #endif
-
 

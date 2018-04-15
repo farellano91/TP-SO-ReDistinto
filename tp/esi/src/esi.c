@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
 		printf("%s", line);
 	}
 	free(line);
+	sleep(50);
 	txt_close_file(file);
 	close(sockfd);
 	return EXIT_SUCCESS;
