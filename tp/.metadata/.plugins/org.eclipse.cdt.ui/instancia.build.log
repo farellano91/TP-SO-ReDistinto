@@ -1,7 +1,7 @@
-20:22:09 **** Clean-only build of configuration Debug for project instancia ****
+20:42:00 **** Clean-only build of configuration Debug for project instancia ****
 make clean 
 rm -rf  ./src/cliente.o ./src/instancia.o  ./src/cliente.d ./src/instancia.d  instancia
  
 
-20:22:09 Build Finished (took 98ms)
+20:42:00 Build Finished (took 61ms)
 

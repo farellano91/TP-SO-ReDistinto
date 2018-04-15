@@ -3,24 +3,24 @@
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
 		<item value="293" key="DIALOG_WIDTH"/>
 		<item value="211" key="DIALOG_Y_ORIGIN"/>
-		<item value="438" key="DIALOG_HEIGHT"/>
 		<item value="591" key="DIALOG_X_ORIGIN"/>
+		<item value="438" key="DIALOG_HEIGHT"/>
 		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="true" key="wrap"/>
-		<item value="false" key="isRegEx"/>
 		<item value="false" key="casesensitive"/>
+		<item value="false" key="isRegEx"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="29" key="selection"/>
+		<item value="MYIP" key="selection"/>
 		<list key="findhistory">
+			<item value="MYIP"/>
 			<item value="25"/>
 			<item value="saludo_inicial_coordinador"/>
 			<item value="sin_size"/>
 			<item value="sigchld_handler"/>
 			<item value="MYPORT"/>
-			<item value="MYIP"/>
 		</list>
 		<list key="replacehistory">
 			<item value="29"/>
