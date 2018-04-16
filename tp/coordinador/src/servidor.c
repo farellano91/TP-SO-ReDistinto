@@ -53,7 +53,7 @@ void recibo_lineas(int fdCliente) {
 	int longitud = 0;
 	int numbytes = 0;
 
-	//busco la ip y puerto
+	//busco retardo del archivo config
 	t_config* config = config_create("config.cfg");
 	if (!config) {
 		perror("No encuentro el archivo config");
