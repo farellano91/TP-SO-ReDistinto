@@ -5,8 +5,33 @@ void sigchld_handler(int s) {
 		;
 }
 
-void enviarSaludo(void* idSocketCliente) {
-	int fdCliente = ((int *) idSocketCliente)[0];
+int recibir_saludo(int fdCliente) {
+	int resultado = 0;
+	void* bufferRecibido = malloc(sizeof(char) * 29);
+	char * mensajeSaludoRecibido = malloc(sizeof(char) * 29);
+	int numbytes = 0;
+	if ((numbytes = recv(fdCliente, bufferRecibido, 29, 0)) <= 0) {
+		if (numbytes == 0) {
+			//si el cliente se fue
+			printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
+			close(fdCliente); // si ya no conversare mas con el cliente, lo cierro
+
+		}
+
+	} else {
+		memcpy(mensajeSaludoRecibido, bufferRecibido, 29);
+		printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
+	}
+
+	if (strstr(mensajeSaludoRecibido, "ESI") != NULL) {
+		resultado = 1;
+	}
+	free(bufferRecibido);
+	free(mensajeSaludoRecibido);
+	return resultado;
+}
+
+void enviar_saludo(int fdCliente) {
 
 	void* bufferEnvio = malloc(sizeof(char) * 25);
 	char * mensajeSaludoEnviado = malloc(sizeof(char) * 25);
@@ -22,47 +47,99 @@ void enviarSaludo(void* idSocketCliente) {
 
 	free(bufferEnvio);
 	free(mensajeSaludoEnviado);
+}
 
-	free((int *) idSocketCliente);
+void recibo_lineas(int fdCliente) {
+	int longitud = 0;
+	int numbytes = 0;
+
+	//busco la ip y puerto
+	t_config* config = config_create("config.cfg");
+	if (!config) {
+		perror("No encuentro el archivo config");
+		exit(1);
+	}
+	int retardo = config_get_int_value(config, "RETARDO");
+
+	while (1) {
+		sleep(retardo);
+		void* bufferMensaje = malloc(sizeof(int32_t));
+		if ((numbytes = recv(fdCliente, bufferMensaje, sizeof(int32_t), 0))
+				<= 0) {
+			if (numbytes == 0) {
+				//si el cliente se fue
+				printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
+				free(bufferMensaje);
+				break;
+			}
+
+		} else {
+			memcpy(&longitud, bufferMensaje, sizeof(int32_t));
+			char * linea = malloc(sizeof(char) * longitud);
+			void* buffer = malloc(sizeof(char) * longitud);
+
+			if ((numbytes = recv(fdCliente, buffer, sizeof(char) * longitud, 0))
+					<= 0) {
+				if (numbytes == 0) {
+					//si el cliente se fue
+					printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
+					free(linea);
+					free(bufferMensaje);
+					free(buffer);
+					break;
+				}
+			} else {
+				memcpy(linea, buffer, sizeof(char) * longitud);
+				printf("Recibi linea: %s\n", linea);
+			}
+			free(linea);
+			free(bufferMensaje);
+			free(buffer);
+		}
+	}
+	config_destroy(config);
 
 }
 
-void recibirSaludo(void* idSocketCliente) {
+/*PROTOCOLO:
+ * tipo_cliente: 1 -> ESI
+ * tipo_cliente:2 -> PLANIFICADOR
+ * */
+void atender_cliente(void* idSocketCliente) {
+
 	int fdCliente = ((int *) idSocketCliente)[0];
 
-	void* bufferRecibido = malloc(sizeof(char) * 29);
-	char * mensajeSaludoRecibido = malloc(sizeof(char) * 29);
-	int numbytes = 0;
-	if ((numbytes = recv(fdCliente, bufferRecibido, 29, 0)) <= 0) {
-		if (numbytes == 0) {
-			//si el cliente se fue
-			printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
-			close(fdCliente); // si ya no conversare mas con el cliente, lo cierro
-			FD_CLR(fdCliente, &master); // eliminar del conjunto maestro
+	enviar_saludo(fdCliente);
+	int tipo_cliente = recibir_saludo(fdCliente);
 
-		}
-
-	} else {
-		memcpy(mensajeSaludoRecibido, bufferRecibido, 29);
-		printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
+	//TODO: case para saber q tipo de cliente es y seguir el flujo
+	if (tipo_cliente == 1) {
+		recibo_lineas(fdCliente);
 	}
 
-	free(bufferRecibido);
-	free(mensajeSaludoRecibido);
+	//FIN
+	close(fdCliente);
 	free((int *) idSocketCliente);
 
 }
 
+void intHandler(int dummy) {
+	if (dummy != 0) {
+		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		exit(dummy);
+
+	}
+}
 void levantar_servidor_coordinador() {
+	//En caso de una interrupcion va por aca
+	signal(SIGINT, intHandler);
+
 	int sockfd; // Escuchar sobre: sock_fd, nuevas conexiones sobre: idSocketCliente
 	struct sockaddr_in my_addr;    // información sobre mi dirección
 	struct sockaddr_in their_addr; // información sobre la dirección del idSocketCliente
 	int sin_size;
 	struct sigaction sa;
 	int yes = 1;
-	FD_ZERO(&master); // borra los conjuntos maestro y temporal
-	FD_ZERO(&read_fds);
-	int i;
 
 	//busco la ip y puerto
 	t_config* config = config_create("config.cfg");
@@ -120,59 +197,23 @@ void levantar_servidor_coordinador() {
 	//--------
 	sin_size = sizeof(struct sockaddr_in);
 
-	// añadir el socket creado al conjunto maestro
-	FD_SET(sockfd, &master);
-	// seguir la pista del descriptor de fichero mayor
-	fdmax = sockfd; // por ahora es éste
-	// bucle principal
+	//4° acepta y atiende a los ESI's, INSTANCIAS's que se conecte
 	while (1) {
-		read_fds = master; // copi el conjunto maestro como temporal
-		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) { //se encarga de llenar en read_fds todos los fd cliente que cambiaron
-			perror("select");
-			exit(1);
+		int *idSocketCliente = (int *) malloc(sizeof(int32_t));
+		idSocketCliente[0] = -1; //TODO: que pasa con esta variable con varios hilos ?
+		if ((idSocketCliente[0] = accept(sockfd,
+				(struct sockaddr *) &their_addr, &sin_size)) == -1) {
+			perror("Error al usar accept");
 		}
-		// explorar conexiones existentes en busca de datos que leer
-		for (i = 0; i <= fdmax; i++) {
-			if (FD_ISSET(i, &read_fds)) { // recorro toda la bolsa read_fds
-				if (i == sockfd) { // el que cambio es el fd del socket q cree y deje en listen, por ende, escucho algo ->
-					// NUEVA CONEXION!!
-					int socketCliente;
-					if ((socketCliente = accept(sockfd,
-							(struct sockaddr *) &their_addr, &sin_size))
-							== -1) {
-						perror("ERROR: Al ejecutar -> accept");
-					} else {
-						FD_SET(socketCliente, &master); // añadir al conjunto maestro ya q desde ahora en adelante lo vamos a usar para recibir
-						if (socketCliente > fdmax) { // actualizar el máximo deacuerdo al fd del cliente
-							fdmax = socketCliente;
-						}
-						printf("Se conecto el cliente de ip: %s en "
-								"socket numero: %d\n",
-								inet_ntoa(their_addr.sin_addr), socketCliente);
 
-						//Me copio el FD del cliente
-						int *idSocketCliente = (int *) malloc(sizeof(int32_t));
-						idSocketCliente[0] = socketCliente;
-						enviarSaludo(idSocketCliente);
-					}
-				} else {
-					//si el fd que cambio es diferente del que esta en listen, entonces
-					//significa que un cliente esta mandando algo
-					//Me copio el FD del cliente
-					int *idSocketCliente = (int *) malloc(sizeof(int32_t));
-					idSocketCliente[0] = i;
+		//CREAMOS UN HILO PARA ATENDER A CUALQUIER CLIENTE
+		pthread_t punteroHilo;
+		pthread_create(&punteroHilo, NULL, (void*) atender_cliente,
+				idSocketCliente);
 
-					//CREAMOS UN HILO PARA ATENDERLO
-					pthread_t punteroHilo;
-					pthread_create(&punteroHilo, NULL, (void*) recibirSaludo,
-							idSocketCliente);
+		//espero a q termine el hilo (para evitar quilombo por ahora)
+		//pthread_join(punteroHilo, NULL);
 
-					//espero a q termine el hilo (para evitar quilombo por ahora)
-					pthread_join(punteroHilo, NULL);
-
-				}
-			}
-		}
 	}
 	close(sockfd);
 }

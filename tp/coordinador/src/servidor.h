@@ -23,16 +23,19 @@
 #include <pthread.h>
 #include <commons/config.h>
 
-int fdmax;
-fd_set master;   // conjunto maestro de descriptores de fichero
-fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
-
-
-void levantar_servidor_coordinador();
-
 #define BACKLOG 10     // Cuántas conexiones pendientes se mantienen en cola
 
 #define MYIP "127.0.0.1"
+
+void levantar_servidor_coordinador();
+void enviar_saludo(int fdCliente);
+int recibir_saludo(int fdCliente);
+
+void atender_cliente(void* idSocketCliente);
+
+//Para ESI
+void recibo_lineas(int fdCliente);
+
 
 #endif
 
