@@ -18,6 +18,19 @@
 int conectar_coodinador();
 void saludo_inicial_coordinador(int sockfd);
 
+typedef struct InfoCoordinador{
+	int id; //1 o 2
+	char clave[40];
+} __attribute__((packed)) t_InfoCoordinador;
+
+/*Protocolo:
+ * Caso: donde el coordinador me envia una operacion (get o store) + clave
+ * 1 : GET
+ * 2 : STORE
+ * CLAVE NO MAXIMO DE 40 CARACTERES (segun enunciado pag.19)
+ * */
+void recibirInfoCoordinador();
+
 #endif
 
 

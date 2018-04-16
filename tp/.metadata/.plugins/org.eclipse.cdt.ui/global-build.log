@@ -1,11 +1,73 @@
-10:16:35 **** Clean-only build of configuration Debug for project coordinador ****
+20:07:09 **** Incremental Build of configuration Debug for project coordinador ****
+make all 
+make: No se hace nada para «all».
+20:07:09 **** Incremental Build of configuration Debug for project esi ****
+make all 
+make: No se hace nada para «all».
+20:07:09 **** Incremental Build of configuration Debug for project instancia ****
+make all 
+make: No se hace nada para «all».
+20:07:09 **** Incremental Build of configuration Debug for project planificador ****
+make all 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.d" -o "src/cliente.o" "../src/cliente.c"
+../src/cliente.c: In function ‘recibirInfoCoordinador’:
+../src/cliente.c:80:6: warning: unused variable ‘numbytes’ [-Wunused-variable]
+  int numbytes = 0;
+      ^
+../src/cliente.c:79:20: warning: unused variable ‘infoCoordinador’ [-Wunused-variable]
+  t_InfoCoordinador infoCoordinador = { .id = 0, .clave = "" };
+                    ^
+Finished building: ../src/cliente.c
+ 
+Building file: ../src/consola.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/consola.d" -MT"src/consola.d" -o "src/consola.o" "../src/consola.c"
+Finished building: ../src/consola.c
+ 
+Building file: ../src/planificador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/planificador.d" -MT"src/planificador.d" -o "src/planificador.o" "../src/planificador.c"
+../src/planificador.c: In function ‘main’:
+../src/planificador.c:18:2: error: too few arguments to function ‘pthread_create’
+  pthread_create(&punteroHiloInfoCoordinador, NULL, (void*) recibirInfoCoordinador);
+  ^
+In file included from ../src/consola.h:14:0,
+                 from ../src/planificador.c:12:
+/usr/include/pthread.h:244:12: note: declared here
+ extern int pthread_create (pthread_t *__restrict __newthread,
+            ^
+make: *** [src/planificador.o] Error 1
+20:07:14 **** Clean-only build of configuration Debug for project coordinador ****
 make clean 
 rm -rf  ./src/coordinador.o ./src/servidor.o  ./src/coordinador.d ./src/servidor.d  coordinador
  
-10:16:35 **** Clean-only build of configuration Debug for project esi ****
+20:07:14 **** Clean-only build of configuration Debug for project esi ****
 make clean 
 rm -rf  ./src/archivo.o ./src/cliente.o ./src/esi.o  ./src/archivo.d ./src/cliente.d ./src/esi.d  esi
  
-10:16:36 **** Clean-only build of configuration Debug for project planificador ****
+20:07:15 **** Clean-only build of configuration Debug for project instancia ****
 make clean 
-make: *** No rule to make target 'clean'.  Stop.
+rm -rf  ./src/cliente.o ./src/instancia.o  ./src/cliente.d ./src/instancia.d  instancia
+ 
+20:07:15 **** Clean-only build of configuration Debug for project planificador ****
+make clean 
+rm -rf  ./src/cliente.o ./src/consola.o ./src/planificador.o  ./src/cliente.d ./src/consola.d ./src/planificador.d  planificador
+ 
+20:10:39 **** Clean-only build of configuration Debug for project coordinador ****
+make clean 
+rm -rf  ./src/coordinador.o ./src/servidor.o  ./src/coordinador.d ./src/servidor.d  coordinador
+ 
+20:10:39 **** Clean-only build of configuration Debug for project esi ****
+make clean 
+rm -rf  ./src/archivo.o ./src/cliente.o ./src/esi.o  ./src/archivo.d ./src/cliente.d ./src/esi.d  esi
+ 
+20:10:39 **** Clean-only build of configuration Debug for project instancia ****
+make clean 
+rm -rf  ./src/cliente.o ./src/instancia.o  ./src/cliente.d ./src/instancia.d  instancia
+ 
+20:10:39 **** Clean-only build of configuration Debug for project planificador ****
+make clean 
+rm -rf  ./src/cliente.o ./src/consola.o ./src/planificador.o  ./src/cliente.d ./src/consola.d ./src/planificador.d  planificador
+ 
