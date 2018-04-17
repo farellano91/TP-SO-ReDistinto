@@ -25,24 +25,16 @@
 
 #define BACKLOG 10     // Cuántas conexiones pendientes se mantienen en cola
 
-#define MYIP "127.0.0.1"
+#define MYIP "127.0.0.2"
 
-void levantar_servidor_coordinador();
+int fdmax;
+fd_set master;   // conjunto maestro de descriptores de fichero
+fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
+
+
+void levantar_servidor_planificador();
 void enviar_saludo(int fdCliente);
-int recibir_saludo(int fdCliente);
-
 void atender_cliente(void* idSocketCliente);
-
-//Para ESI
-void recibo_lineas(int fdCliente);
-
-//Para planificador
-int fd_planificador;
-
-typedef struct InfoCoordinador{
-	int id; //1 o 2
-	char clave[40];
-} __attribute__((packed)) t_InfoCoordinador;
 
 #endif
 

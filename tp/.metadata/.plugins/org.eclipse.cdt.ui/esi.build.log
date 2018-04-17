@@ -1,7 +1,7 @@
-20:10:39 **** Clean-only build of configuration Debug for project esi ****
+13:06:04 **** Clean-only build of configuration Debug for project esi ****
 make clean 
 rm -rf  ./src/archivo.o ./src/cliente.o ./src/esi.o  ./src/archivo.d ./src/cliente.d ./src/esi.d  esi
  
 
-20:10:39 Build Finished (took 61ms)
+13:06:04 Build Finished (took 250ms)
 

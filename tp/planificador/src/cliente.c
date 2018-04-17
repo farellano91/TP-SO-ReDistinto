@@ -1,7 +1,7 @@
 #include "cliente.h"
 
 void saludo_inicial_coordinador(int sockfd) {
-	//Recibo saludo del coordinador
+	//Recibo saludo
 	void* bufferRecibido = malloc(sizeof(char) * 25);
 	char * mensajeSaludoRecibido = malloc(sizeof(char) * 25);
 	int numbytes = 0;
@@ -13,14 +13,14 @@ void saludo_inicial_coordinador(int sockfd) {
 	memcpy(mensajeSaludoRecibido, bufferRecibido, 25);
 	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
 
-	//Envio saludo al planificador
-	void* bufferEnvio = malloc(sizeof(char) * 29);
-	char * mensajeSaludoEnviado = malloc(sizeof(char) * 29);
-	strcpy(mensajeSaludoEnviado, "Hola coordinador, soy un PLA");
+	//Envio saludo
+	void* bufferEnvio = malloc(sizeof(char) * 16);
+	char * mensajeSaludoEnviado = malloc(sizeof(char) * 16);
+	strcpy(mensajeSaludoEnviado, "Hola soy un PLA");
 	mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
-	memcpy(bufferEnvio, mensajeSaludoEnviado, 29);
+	memcpy(bufferEnvio, mensajeSaludoEnviado, 16);
 
-	if (send(sockfd, bufferEnvio, 29, 0) == -1) {
+	if (send(sockfd, bufferEnvio, 16, 0) == -1) {
 		perror("recv");
 		exit(1);
 	}
@@ -79,25 +79,24 @@ void recibirInfoCoordinador() {
 	t_InfoCoordinador infoCoordinador = { .id = 0, .clave = "" };
 	int numbytes = 0;
 
-//POR AHORA LO COMENTO PARA NO PERDER MEMORIA (YA QUE SE QUEDA BLOQUEADO A Q COORDINADOR MANDE ALGO)
-//	while (1) {
-//		if ((numbytes = recv(fdCoordinador, &infoCoordinador,
-//				sizeof(t_InfoCoordinador), 0)) < 0) {
-//			puts("Error al recibir notificacion del coordinador");
-//			break;
-//		} else {
-//			switch (infoCoordinador.id) {
-//			case 1:
-//				puts("Recibi un GET!!!!!!!!!!!!!");
-//				//TODO:CODIGO PARA HACER SI RECIBO GET y mando respuesta
-//				break;
-//			case 2:
-//				puts("Recibi un STORE!!!!!!!!!!!");
-//				//TODO:CODIGO PARA HACER SI RECIBO STORE y mando respuesta
-//				break;
-//
-//			}
-//		}
-//
-//	}
+	while (1) {
+		if ((numbytes = recv(fdCoordinador, &infoCoordinador,
+				sizeof(t_InfoCoordinador), 0)) < 0) {
+			puts("Error al recibir notificacion del coordinador");
+			break;
+		} else {
+			switch (infoCoordinador.id) {
+			case 1:
+				puts("Recibi un GET!!!!!!!!!!!!!");
+				//TODO:CODIGO PARA HACER SI RECIBO GET y mando respuesta
+				break;
+			case 2:
+				puts("Recibi un STORE!!!!!!!!!!!");
+				//TODO:CODIGO PARA HACER SI RECIBO STORE y mando respuesta
+				break;
+
+			}
+		}
+
+	}
 }

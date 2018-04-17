@@ -1,7 +1,7 @@
-20:10:39 **** Clean-only build of configuration Debug for project coordinador ****
+13:06:04 **** Clean-only build of configuration Debug for project coordinador ****
 make clean 
 rm -rf  ./src/coordinador.o ./src/servidor.o  ./src/coordinador.d ./src/servidor.d  coordinador
  
 
-20:10:39 Build Finished (took 73ms)
+13:06:04 Build Finished (took 203ms)
 

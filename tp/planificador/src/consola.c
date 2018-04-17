@@ -1,10 +1,3 @@
-/*
- * funciones_planificador.c
- *
- *  Created on: 15/4/2018
- *      Author: utnso
- */
-
 #include "consola.h"
 
 typedef int Function ();
@@ -19,7 +12,8 @@ int com_kill (), com_status (), com_deadlock (), com_quit();
 
 typedef struct {
   char *name;			/* User printable name of the function. */
-  Function *func;		/* Function to call to do the job. */
+//  Function *func;     /* Function to call to do the job. */
+  int (*func)();
   char *doc;			/* Documentation for this function.  */
 } COMMAND;
 
@@ -33,7 +27,7 @@ COMMAND commands[] = {
   { "status", com_status, "Lista info sobre las instancias" },
   { "deadlock", com_deadlock, "Activa deadlock" },
   { "quit", com_quit, "Quit using Fileman" },
-  { (char *)NULL, (Function *)NULL, (char *)NULL }
+  { (char *)NULL, NULL, (char *)NULL }
 };
 
 /* Forward declarations. */
@@ -181,22 +175,4 @@ void levantar_consola() {
 
 }
 
-//void levantar_consola() {
-//	char *line;
-//	done = 0;
-//	for (; done == 0;) {
-//		line = readline("Sentencia: ");
-//		printf("COMANDO: %s",line);
-//		if(strcmp(line,"exit")==0)
-//		{
-//			done = 1;
-//		}
-//		//free(line);
-//
-//
-//
-//	}
-//
-//
-//}
 

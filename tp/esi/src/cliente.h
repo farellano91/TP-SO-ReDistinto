@@ -15,8 +15,9 @@
 
 #define MAXDATASIZE 100 // máximo número de bytes que se pueden leer de una vez
 
-int conectar_coodinador();
-void saludo_inicial_coordinador(int sockfd);
+
+int conectar_servidor(char* puerto , char* ip,char* nombre);
+void saludo_inicial_servidor(int fd,char* nombre);
 
 #endif
 

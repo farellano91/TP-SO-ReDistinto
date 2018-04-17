@@ -1,7 +1,7 @@
-20:10:39 **** Clean-only build of configuration Debug for project planificador ****
+13:06:05 **** Clean-only build of configuration Debug for project planificador ****
 make clean 
-rm -rf  ./src/cliente.o ./src/consola.o ./src/planificador.o  ./src/cliente.d ./src/consola.d ./src/planificador.d  planificador
+rm -rf  ./src/cliente.o ./src/consola.o ./src/planificador.o ./src/servidor.o  ./src/cliente.d ./src/consola.d ./src/planificador.d ./src/servidor.d  planificador
  
 
-20:10:39 Build Finished (took 62ms)
+13:06:05 Build Finished (took 178ms)
 

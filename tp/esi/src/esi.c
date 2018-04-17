@@ -20,12 +20,12 @@ void exit_gracefully(int return_nr) {
 int main(int argc, char** argv) {
 
 	//Conecta como cliente al coordinador
-	int sockfd = conectar_coodinador();
-	saludo_inicial_coordinador(sockfd);
+	int fd_coordinador = conectar_servidor("PUERTO_CONFIG_COORDINADOR","IP_CONFIG_COORDINADOR","COORDINADOR");
+	saludo_inicial_servidor(fd_coordinador,"COORDINADOR");
 
-	//TODO:conecta como cliente al planificador
-//	int sockfd = conectar_planificador();
-//	saludo_inicial_planificador(sockfd);
+	//Conecta como cliente al planificador
+	int fd_planificador = conectar_servidor("PUERTO_CONFIG_PLANIFICADOR","IP_CONFIG_PLANIFICADOR","PLANIFICADOR");
+	saludo_inicial_servidor(fd_planificador,"PLANIFICADOR");
 
 //2.- lee el archivo linea por linea
 	if (argc > 2) {
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 	char* line = malloc(sizeof(char) * 500);
 	while (fgets(line, 500, file)) {
 		//3.- se queda esperando permiso para envia la linea "parseada" al coordinador
-
+		// es decir recv(fd_planificador, ....)
 		//envio linea
 		int longitud = strlen(line) + 1;
 		line[strlen(line)] = '\0';
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 		memcpy(bufferEnvio, &longitud, sizeof(int32_t));
 		memcpy(bufferEnvio + sizeof(int32_t), line, longitud);
 
-		if (send(sockfd, bufferEnvio, sizeof(int32_t) + longitud, 0) == -1) {
+		if (send(fd_coordinador, bufferEnvio, sizeof(int32_t) + longitud, 0) == -1) {
 			perror("recv");
 			exit(1);
 		}
@@ -59,6 +59,6 @@ int main(int argc, char** argv) {
 	}
 	free(line);
 	txt_close_file(file);
-	close(sockfd);
+	close(fd_coordinador);
 	return EXIT_SUCCESS;
 }

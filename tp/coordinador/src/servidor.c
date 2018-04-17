@@ -7,10 +7,10 @@ void sigchld_handler(int s) {
 
 int recibir_saludo(int fdCliente) {
 	int resultado = 0;
-	void* bufferRecibido = malloc(sizeof(char) * 29);
-	char * mensajeSaludoRecibido = malloc(sizeof(char) * 29);
+	void* bufferRecibido = malloc(sizeof(char) * 16);
+	char * mensajeSaludoRecibido = malloc(sizeof(char) * 16);
 	int numbytes = 0;
-	if ((numbytes = recv(fdCliente, bufferRecibido, 29, 0)) <= 0) {
+	if ((numbytes = recv(fdCliente, bufferRecibido, 16, 0)) <= 0) {
 		if (numbytes == 0) {
 			//si el cliente se fue
 			printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
@@ -19,12 +19,15 @@ int recibir_saludo(int fdCliente) {
 		}
 
 	} else {
-		memcpy(mensajeSaludoRecibido, bufferRecibido, 29);
+		memcpy(mensajeSaludoRecibido, bufferRecibido, 16);
 		printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
 	}
 
 	if (strstr(mensajeSaludoRecibido, "ESI") != NULL) {
 		resultado = 1;
+	}
+	if (strstr(mensajeSaludoRecibido, "PLA") != NULL) {
+		resultado = 2;
 	}
 	free(bufferRecibido);
 	free(mensajeSaludoRecibido);
@@ -89,8 +92,44 @@ void recibo_lineas(int fdCliente) {
 					break;
 				}
 			} else {
+
 				memcpy(linea, buffer, sizeof(char) * longitud);
 				printf("Recibi linea: %s\n", linea);
+
+				//Consulto si tengo un planificador conectado y si es GET/STORE lo que recibi
+				//-> envio al planificador la linea
+				if (fd_planificador != -1) {
+					if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
+
+						t_InfoCoordinador infoCoordinador;
+						if (strstr(linea, "GET") != NULL) {
+							infoCoordinador.id = 1;
+						} else {
+							infoCoordinador.id = 2;
+						}
+						strcpy(infoCoordinador.clave, linea);
+
+						if (send(fd_planificador, &infoCoordinador,
+								sizeof(t_InfoCoordinador), 0) == -1) {
+							printf("No se pudo enviar la info\n");
+							exit(1);
+						}
+						printf("Se envio la INFO al PLANIFICADOR correctamente\n");
+
+						//TODO:Aca recibo la respuesta del planificador
+						//envio resultado al ESI
+
+					} else {
+						//TODO: si no es un get ni store, entonces es un set:
+						//1.- aplicar algoritmo de distribucion para decidir q instancia va
+						//(usando una cola de instancias o cola de struct Instancia ;))
+						//2.- enviar la peticion a la instancia elegida
+						//3.- recibir una respuesta de la instancia
+						//envio resultado al esi
+					}
+				}
+
+
 			}
 			free(linea);
 			free(bufferMensaje);
@@ -107,16 +146,27 @@ void recibo_lineas(int fdCliente) {
  * */
 void atender_cliente(void* idSocketCliente) {
 
+	//Saludo a todos los q se conectaron
 	int fdCliente = ((int *) idSocketCliente)[0];
 
 	enviar_saludo(fdCliente);
 	int tipo_cliente = recibir_saludo(fdCliente);
 
-	//TODO: case para saber q tipo de cliente es y seguir el flujo
-	if (tipo_cliente == 1) {
-		recibo_lineas(fdCliente);
-	}
+	switch (tipo_cliente) {
 
+	case 1:
+		//ESI
+		recibo_lineas(fdCliente);
+		break;
+	case 2:
+		//PLANIFICADOR (me guardo el fd)
+		fd_planificador = fdCliente;
+		while (1) {
+			//- No corto la comunicacion con el planificador -
+		}
+		break;
+
+	}
 	//FIN
 	close(fdCliente);
 	free((int *) idSocketCliente);
@@ -131,6 +181,7 @@ void intHandler(int dummy) {
 	}
 }
 void levantar_servidor_coordinador() {
+	fd_planificador = -1;
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
 
