@@ -8,21 +8,21 @@ tp
 ------------------------------------------
 Creado para desarrollar el tp y cada uno de sus modulos.
 
-Para levantar el proyecto:
-  1°COORDINADOR
-    cd tp-2018-1c-Real-Mandril/tp/coordinador/src/
-    make
-    ./coordinador
-  2°PLANIFICADOR
-    cd tp-2018-1c-Real-Mandril/tp/planificador/src/
-    make
-    ./coordinador
-  3°ESI
-    cd tp-2018-1c-Real-Mandril/tp/esi/src/
-    make
-    ./esi archivo_inicial.txt
-  4°INSTANCIA
-    cd tp-2018-1c-Real-Mandril/tp/instancia/src/
-    make
-    ./instancia
+Para levantar el proyecto:</br>
+  1°COORDINADOR</br>
+    cd tp-2018-1c-Real-Mandril/tp/coordinador/src/</br>
+    make</br>
+    ./coordinador</br></br>
+  2°PLANIFICADOR</br>
+    cd tp-2018-1c-Real-Mandril/tp/planificador/src/</br>
+    make</br>
+    ./coordinador</br></br>
+  3°ESI</br>
+    cd tp-2018-1c-Real-Mandril/tp/esi/src/</br>
+    make</br>
+    ./esi archivo_inicial.txt</br></br>
+  4°INSTANCIA</br>
+    cd tp-2018-1c-Real-Mandril/tp/instancia/src/</br>
+    make</br>
+    ./instancia</br>
 
