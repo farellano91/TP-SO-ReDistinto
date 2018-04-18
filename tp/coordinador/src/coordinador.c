@@ -10,9 +10,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "funcionalidad_coordinador.h"
 #include "servidor.h"
 
 int main(void) {
+	get_parametros_config();
 	levantar_servidor_coordinador();
 	return EXIT_SUCCESS;
 }

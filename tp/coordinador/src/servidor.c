@@ -176,6 +176,7 @@ void atender_cliente(void* idSocketCliente) {
 void intHandler(int dummy) {
 	if (dummy != 0) {
 		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		free_parametros_config();
 		exit(dummy);
 
 	}
@@ -192,31 +193,23 @@ void levantar_servidor_coordinador() {
 	struct sigaction sa;
 	int yes = 1;
 
-	//busco la ip y puerto
-	t_config* config = config_create("config.cfg");
-	if (!config) {
-		perror("No encuentro el archivo config");
-		exit(1);
-	}
-	int MYPORT = config_get_int_value(config, "PUERTO_ESCUCHA_CONEXION");
-	config_destroy(config);
-
 	//1° CREAMOS EL SOCKET
 	//sockfd: numero o descriptor que identifica al socket que creo
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
 		printf("Error al abrir el socket de escucha\n");
+		free_parametros_config();
 		exit(1);
 	}
 	printf("Se creo el socket %d\n", sockfd);
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-		perror("address already in use");
+		printf("Address already in use\n");
+		free_parametros_config();
 		exit(1);
 	}
 
 	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
-	my_addr.sin_port = htons(MYPORT);    // short, Ordenación de bytes de la red
+	my_addr.sin_port = htons(puerto_escucha_conexion);    // short, Ordenación de bytes de la red
 	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
 	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
@@ -224,14 +217,14 @@ void levantar_servidor_coordinador() {
 	if (bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr))
 			== -1) {
 		printf("Fallo el bind\n");
-		perror("bind");
+		free_parametros_config();
 		exit(1);
 	}
 
 	//3° Listen: se usa para dejar al socket escuchando las conexiones que se acumulan en una cola hasta que
 	//la aceptamos
 	if (listen(sockfd, BACKLOG) == -1) {
-		perror("listen");
+		free_parametros_config();
 		printf("Fallo el listen\n");
 		exit(1);
 	}
@@ -266,6 +259,7 @@ void levantar_servidor_coordinador() {
 		//pthread_join(punteroHilo, NULL);
 
 	}
+	free_parametros_config();
 	close(sockfd);
 }
 

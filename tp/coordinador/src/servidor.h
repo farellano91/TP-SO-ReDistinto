@@ -22,6 +22,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <commons/config.h>
+#include "funcionalidad_coordinador.h"
 
 #define BACKLOG 10     // Cuántas conexiones pendientes se mantienen en cola
 

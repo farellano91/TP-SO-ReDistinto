@@ -11,8 +11,7 @@ int main(void) {
 
 	//PARA CONVERSAR CON EL COORDINADOR
 	pthread_t punteroHiloInfoCoordinador;
-	pthread_create(&punteroHiloInfoCoordinador, NULL,
-			(void*) recibirInfoCoordinador, NULL);
+	pthread_create(&punteroHiloInfoCoordinador, NULL,(void*) recibirInfoCoordinador, NULL);
 
 	//PARA LEVANTAR LA CONSOLA
 	pthread_t punteroHiloConsola;

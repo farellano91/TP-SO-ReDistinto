@@ -62,7 +62,7 @@ int execute_line (char *line){
 
   if (!command)
     {
-      fprintf (stderr, "%s: No such command.\n", word);
+      fprintf (stderr, "Comando no reconocido.\n");
       return (-1);
     }
 

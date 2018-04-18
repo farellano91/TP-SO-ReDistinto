@@ -80,14 +80,18 @@ void levantar_servidor_planificador() {
 	//1° CREAMOS EL SOCKET
 	//sockfd: numero o descriptor que identifica al socket que creo
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
 		printf("Error al abrir el socket de escucha\n");
+		free(algoritmo_planificacion);
+		free(claves_iniciales_bloqueadas);
+		//MUERE EL HILO
 		exit(1);
 	}
 	printf("Se creo el socket %d\n", sockfd);
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 		perror("address already in use");
+		free(algoritmo_planificacion);
+		free(claves_iniciales_bloqueadas);
 		exit(1);
 	}
 
@@ -100,14 +104,16 @@ void levantar_servidor_planificador() {
 	if (bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr))
 			== -1) {
 		printf("Fallo el bind\n");
-		perror("bind");
+		free(algoritmo_planificacion);
+		free(claves_iniciales_bloqueadas);
 		exit(1);
 	}
 
 	//3° Listen: se usa para dejar al socket escuchando las conexiones que se acumulan en una cola hasta que
 	//la aceptamos
 	if (listen(sockfd, BACKLOG) == -1) {
-		perror("listen");
+		free(algoritmo_planificacion);
+		free(claves_iniciales_bloqueadas);
 		printf("Fallo el listen\n");
 		exit(1);
 	}
@@ -133,7 +139,9 @@ void levantar_servidor_planificador() {
 
 		read_fds = master; // copi el conjunto maestro como temporal
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) { //se encarga de llenar en read_fds todos los fd cliente que cambiaron
-			perror("select");
+			perror("Error en select");
+			free(algoritmo_planificacion);
+			free(claves_iniciales_bloqueadas);
 			exit(1);
 		}
 		// explorar conexiones existentes en busca de datos que leer
