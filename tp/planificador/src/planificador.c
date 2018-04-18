@@ -11,6 +11,8 @@
 #include "cliente.h"
 #include "consola.h"
 #include "servidor.h"
+#include "planificador.h"
+#include <commons/collections/list.h>
 
 int main(void) {
 
@@ -31,3 +33,4 @@ int main(void) {
 	pthread_join(punteroHiloConsola, NULL);
 	return EXIT_SUCCESS;
 }
+
