@@ -16,7 +16,7 @@ Para levantar el proyecto:</br>
   2°PLANIFICADOR</br>
     cd tp-2018-1c-Real-Mandril/tp/planificador/src/</br>
     make</br>
-    ./coordinador</br></br>
+    ./planificador</br></br>
   3°ESI</br>
     cd tp-2018-1c-Real-Mandril/tp/esi/src/</br>
     make</br>
