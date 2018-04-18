@@ -1,20 +1,13 @@
-/*
- ============================================================================
- Name        : c.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
 
+#include "funcionalidad_planificador.h"
 #include "cliente.h"
 #include "consola.h"
 #include "servidor.h"
-#include "planificador.h"
-#include <commons/collections/list.h>
+
 
 int main(void) {
+
+	get_parametros_config();
 
 	//PARA CONVERSAR CON EL COORDINADOR
 	pthread_t punteroHiloInfoCoordinador;
@@ -31,6 +24,8 @@ int main(void) {
 
 	pthread_join(punteroHiloInfoCoordinador, NULL);
 	pthread_join(punteroHiloConsola, NULL);
+	pthread_join(punteroHiloServidor, NULL);
+
 	return EXIT_SUCCESS;
 }
 

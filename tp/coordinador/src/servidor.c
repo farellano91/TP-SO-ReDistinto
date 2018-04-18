@@ -71,7 +71,7 @@ void recibo_lineas(int fdCliente) {
 				<= 0) {
 			if (numbytes == 0) {
 				//si el cliente se fue
-				printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
+				printf("Se fue: ESI de fd:%d, chau gato!!!\n", fdCliente);
 				free(bufferMensaje);
 				break;
 			}
@@ -85,7 +85,7 @@ void recibo_lineas(int fdCliente) {
 					<= 0) {
 				if (numbytes == 0) {
 					//si el cliente se fue
-					printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
+					printf("Se fue: ESI de fd:%d, chau gato!!!\n", fdCliente);
 					free(linea);
 					free(bufferMensaje);
 					free(buffer);
@@ -101,7 +101,7 @@ void recibo_lineas(int fdCliente) {
 				if (fd_planificador != -1) {
 					if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
 
-						t_InfoCoordinador infoCoordinador;
+						t_InfoCoordinador infoCoordinador = {.id = 0 , .clave =""};
 						if (strstr(linea, "GET") != NULL) {
 							infoCoordinador.id = 1;
 						} else {

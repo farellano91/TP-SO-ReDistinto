@@ -1,5 +1,6 @@
 #include "cliente.h"
 
+//PD:Si ejecuto esto la ip del coordinador ya lo libere ;)
 void saludo_inicial_coordinador(int sockfd) {
 	//Recibo saludo
 	void* bufferRecibido = malloc(sizeof(char) * 25);
@@ -34,16 +35,6 @@ void saludo_inicial_coordinador(int sockfd) {
 }
 
 int conectar_coodinador() {
-	//busco la ip y puerto
-	t_config* config = config_create("config.cfg");
-	if (!config) {
-		perror("No encuentro el archivo config");
-		exit(1);
-	}
-	int PORT = config_get_int_value(config, "PUERTO_CONFIG_COORDINADOR");
-	char * IP = malloc(sizeof(char) * 100);
-	strcpy(IP, config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
-	config_destroy(config);
 
 	//Creamos un socket
 	int sockfd;
@@ -51,22 +42,24 @@ int conectar_coodinador() {
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
+		free(ip_config_coordinador);
 		exit(1);
 	}
 
 	their_addr.sin_family = AF_INET;    // Ordenación de bytes de la máquina
-	their_addr.sin_port = htons(PORT);  // short, Ordenación de bytes de la red
-	their_addr.sin_addr.s_addr = inet_addr(IP);  //toma la ip directo
+	their_addr.sin_port = htons(puerto_config_coordinador);  // short, Ordenación de bytes de la red
+	their_addr.sin_addr.s_addr = inet_addr(ip_config_coordinador);  //toma la ip directo
 
 	memset(&(their_addr.sin_zero), 0, 8); // poner a cero el resto de la estructura
 
 	if (connect(sockfd, (struct sockaddr *) &their_addr,
 			sizeof(struct sockaddr)) == -1) {
 		perror("No se pudo conectar");
+		free(ip_config_coordinador);
 		exit(1);
 	}
 
-	free(IP);
+	free(ip_config_coordinador);
 	return (sockfd);
 }
 
@@ -76,10 +69,13 @@ void recibirInfoCoordinador() {
 	int fdCoordinador = conectar_coodinador();
 	saludo_inicial_coordinador(fdCoordinador);
 
-	t_InfoCoordinador infoCoordinador = { .id = 0, .clave = "" };
+	t_InfoCoordinador infoCoordinador;
 	int numbytes = 0;
 
 	while (1) {
+		infoCoordinador.id = 0;
+		strcpy(infoCoordinador.clave ,"");
+
 		if ((numbytes = recv(fdCoordinador, &infoCoordinador,
 				sizeof(t_InfoCoordinador), 0)) < 0) {
 			puts("Error al recibir notificacion del coordinador");

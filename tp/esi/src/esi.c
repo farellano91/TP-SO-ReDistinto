@@ -1,15 +1,7 @@
-/*
- ============================================================================
- Name        : c.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "funcionalidad_esi.h"
 #include "archivo.h"
 #include "cliente.h"
 
@@ -29,11 +21,12 @@ int main(int argc, char** argv) {
 	int fd_planificador = conectar_servidor(puerto_config_planificador,ip_config_planificador,"PLANIFICADOR");
 	saludo_inicial_servidor(fd_planificador,"PLANIFICADOR");
 
+	free_parametros_config();
 
 
 //2.- lee el archivo linea por linea
-	if (argc > 2) {
-		puts("Ingreso 2 o mas parametros");
+	if (argc != 2) {
+		puts("Parametros no correctos..bye bye!");
 		exit_gracefully(-1);
 	}
 	FILE* file = txt_open_file(argv[1], "r");

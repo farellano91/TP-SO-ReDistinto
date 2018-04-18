@@ -22,6 +22,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <commons/config.h>
+#include "funcionalidad_planificador.h"
 
 #define BACKLOG 10     // Cuántas conexiones pendientes se mantienen en cola
 
@@ -33,7 +34,9 @@ fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
 
 
 void levantar_servidor_planificador();
+
 void enviar_saludo(int fdCliente);
+
 void atender_cliente(void* idSocketCliente);
 
 #endif

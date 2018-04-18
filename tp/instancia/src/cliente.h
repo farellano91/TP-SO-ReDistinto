@@ -12,10 +12,13 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <commons/config.h>
+#include "funcionalidad_instancia.h"
 
 #define MAXDATASIZE 100 // máximo número de bytes que se pueden leer de una vez
 
+
 int conectar_coodinador();
+
 void saludo_inicial_coordinador(int sockfd);
 
 #endif

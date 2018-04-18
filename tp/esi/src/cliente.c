@@ -1,38 +1,17 @@
 #include "cliente.h"
 
-void free_parametros_config(){
-
-	free(ip_config_coordinador);
-	free(ip_config_planificador);
-}
-
-void get_parametros_config() {
-	t_config* config = config_create("config.cfg");
-	if (!config) {
-		printf("No encuentro el archivo config\n");
-		//Mato ESI
-		exit(1);
-	}
-
-	puerto_config_coordinador = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
-	ip_config_coordinador = malloc(sizeof(char) * 100);
-	strcpy(ip_config_coordinador,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
-
-	puerto_config_planificador = config_get_int_value(config,"PUERTO_CONFIG_PLANIFICADOR");
-	ip_config_planificador = malloc(sizeof(char) * 100);
-	strcpy(ip_config_planificador,config_get_string_value(config, "IP_CONFIG_PLANIFICADOR"));
-
-	config_destroy(config);
-}
-
 void saludo_inicial_servidor(int sockfd, char* nombre) {
 	//Recibo saludo
 	void* bufferRecibido = malloc(sizeof(char) * 25);
 	char * mensajeSaludoRecibido = malloc(sizeof(char) * 25);
 	int numbytes = 0;
 	if ((numbytes = recv(sockfd, bufferRecibido, 25, 0)) == -1) {
-		perror("recv");
 		printf("No se pudo recibir saludo del %s\n", nombre);
+
+		free(bufferRecibido);
+		free(mensajeSaludoRecibido);
+
+		//MUERO
 		exit(1);
 	}
 	memcpy(mensajeSaludoRecibido, bufferRecibido, 25);
@@ -46,7 +25,12 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 	memcpy(bufferEnvio, mensajeSaludoEnviado, 16);
 
 	if (send(sockfd, bufferEnvio, 16, 0) == -1) {
-		perror("recv");
+		printf("No se pudo enviar saludo al %s\n", nombre);
+
+		free(mensajeSaludoEnviado);
+		free(bufferEnvio);
+
+		//MUERO
 		exit(1);
 	}
 	printf("Envie mi saludo al %s exitosamente\n", nombre);
@@ -83,7 +67,6 @@ int conectar_servidor(int puerto , char* ip, char* nombre) {
 		exit(1);
 	}
 
-	free(ip);
 	return (sockfd);
 }
 

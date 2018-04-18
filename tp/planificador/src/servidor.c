@@ -77,15 +77,6 @@ void levantar_servidor_planificador() {
 	FD_ZERO(&read_fds);
 	int i;
 
-	//BUSCO MI PUERTO
-	t_config* config = config_create("config.cfg");
-	if (!config) {
-		perror("No encuentro el archivo config");
-		exit(1);
-	}
-	int MYPORT = config_get_int_value(config, "PUERTO_ESCUCHA");
-	config_destroy(config);
-
 	//1° CREAMOS EL SOCKET
 	//sockfd: numero o descriptor que identifica al socket que creo
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
@@ -101,7 +92,7 @@ void levantar_servidor_planificador() {
 	}
 
 	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
-	my_addr.sin_port = htons(MYPORT);    // short, Ordenación de bytes de la red
+	my_addr.sin_port = htons(puerto_escucha);    // short, Ordenación de bytes de la red
 	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
 	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
@@ -184,6 +175,10 @@ void levantar_servidor_planificador() {
 					//1.-encolo
 					//2.- planifico (esto lo hago revisando mi estructura GLOBALES que maneje)
 					//3.-lo dejo esperando hasta q le toque ejecutar o le digo q le toca
+
+
+					//NOTA: empezaria a usar algoritmo_planificacion;claves_iniciales_bloqueadas con lo cual en caso
+					//de explotar en el camino, tengo q liberar estas dos
 
 				}
 			}

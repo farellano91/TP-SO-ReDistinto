@@ -1,7 +1,25 @@
-13:06:04 **** Clean-only build of configuration Debug for project instancia ****
-make clean 
-rm -rf  ./src/cliente.o ./src/instancia.o  ./src/cliente.d ./src/instancia.d  instancia
+12:54:18 **** Incremental Build of configuration Debug for project instancia ****
+make all 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
+Building file: ../src/funcionalidad_instancia.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_instancia.d" -MT"src/funcionalidad_instancia.o" -o "src/funcionalidad_instancia.o" "../src/funcionalidad_instancia.c"
+Finished building: ../src/funcionalidad_instancia.c
+ 
+Building file: ../src/instancia.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/instancia.d" -MT"src/instancia.o" -o "src/instancia.o" "../src/instancia.c"
+Finished building: ../src/instancia.c
+ 
+Building target: instancia
+Invoking: GCC C Linker
+gcc  -o "instancia"  ./src/cliente.o ./src/funcionalidad_instancia.o ./src/instancia.o   -lcommons
+Finished building target: instancia
  
 
-13:06:05 Build Finished (took 193ms)
+12:54:19 Build Finished (took 385ms)
 

@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <commons/config.h>
+#include "funcionalidad_planificador.h"
 
 #define MAXDATASIZE 100 // máximo número de bytes que se pueden leer de una vez
 
