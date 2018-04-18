@@ -19,13 +19,17 @@ void exit_gracefully(int return_nr) {
 
 int main(int argc, char** argv) {
 
+	get_parametros_config();
+
 	//Conecta como cliente al coordinador
-	int fd_coordinador = conectar_servidor("PUERTO_CONFIG_COORDINADOR","IP_CONFIG_COORDINADOR","COORDINADOR");
+	int fd_coordinador = conectar_servidor(puerto_config_coordinador,ip_config_coordinador,"COORDINADOR");
 	saludo_inicial_servidor(fd_coordinador,"COORDINADOR");
 
 	//Conecta como cliente al planificador
-	int fd_planificador = conectar_servidor("PUERTO_CONFIG_PLANIFICADOR","IP_CONFIG_PLANIFICADOR","PLANIFICADOR");
+	int fd_planificador = conectar_servidor(puerto_config_planificador,ip_config_planificador,"PLANIFICADOR");
 	saludo_inicial_servidor(fd_planificador,"PLANIFICADOR");
+
+
 
 //2.- lee el archivo linea por linea
 	if (argc > 2) {
