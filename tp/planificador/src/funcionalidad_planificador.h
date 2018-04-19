@@ -42,7 +42,8 @@ void get_parametros_config();
 //libera todos los parametros que tenga
 void free_parametros_config();
 
-
+//Constante
+#define ALPHA 0,5
 
 enum t_operationCode {
 	GET = 0, SET = 1, STORE = 2,
@@ -58,33 +59,37 @@ typedef struct {
 
 } t_Esi;
 
+//Ojo: no olvidar reservar memoria cuando creemos un t_instruccion*
 typedef struct {
 	enum t_operationCode operation;
-	char * key;
-	char * value;
+	char *key;
+	char *value;
 
 } t_instruccion;
 
+//Ojo: no olvidar reservar memoria cuando creemos un t_nodoBloqueado*
 typedef struct {
-	t_Esi esi;
-	t_instruccion intruccion;
+	t_Esi* esi;
+	t_instruccion* intruccion;
 
 } t_nodoBloqueado;
 
-t_list* createlistReady();
 
-t_list* createlistBlocked();
+t_list* create_list_ready();
 
-t_list* createlistFinished();
+t_list* create_list_blocked();
 
-t_nodoBloqueado GetNodoBloqueado(t_Esi esi, t_instruccion instruccion);
+t_list* create_list_finished();
+
+t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, t_instruccion* instruccion);
+
 
 // dado un esi que me llega como parametro, me estima cuantas rafagas de cpu consumira.
-double GetTimeSJF(t_Esi esi);
+double  get_time_SJF(t_Esi* esi);
 
 // el cantidad de sentencias procesadas
 // si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. VER
-double GetTimeTHR(t_Esi esi, int cantSentenciasProcesadas);
+double getT_time_HRRN(t_Esi* esi, int cantSentenciasProcesadas);
 
 // Inserto en la lista Finalizadas y lista de Listos.
 
