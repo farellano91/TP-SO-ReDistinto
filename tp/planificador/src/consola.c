@@ -171,6 +171,7 @@ void levantar_consola() {
 		free(line);
 
 	}
+	puts("Adios consola");
 
 
 }

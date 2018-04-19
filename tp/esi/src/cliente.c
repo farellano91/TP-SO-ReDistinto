@@ -1,43 +1,65 @@
 #include "cliente.h"
 
+/*PROTOCOLO para la recepcion saludo de conexion
+ * ESI <-> PLANIFICADOR // COORDINADOR
+ * INT + CHAR* + INT
+ * INT: len del mensaje saludos
+ * CHAR*: mensaje saludo
+ * INT: id_esi que me da el planificador
+ * */
 void saludo_inicial_servidor(int sockfd, char* nombre) {
 	//Recibo saludo
-	void* bufferRecibido = malloc(sizeof(char) * 25);
-	char * mensajeSaludoRecibido = malloc(sizeof(char) * 25);
 	int numbytes = 0;
-	if ((numbytes = recv(sockfd, bufferRecibido, 25, 0)) == -1) {
-		printf("No se pudo recibir saludo del %s\n", nombre);
-
-		free(bufferRecibido);
-		free(mensajeSaludoRecibido);
-
+	int32_t longitud = 0;
+	if ((numbytes = recv(sockfd, &longitud, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir la longitud del saludo del %s\n", nombre);
 		//MUERO
 		exit(1);
 	}
-	memcpy(mensajeSaludoRecibido, bufferRecibido, 25);
+	char* mensajeSaludoRecibido = malloc(sizeof(char) * longitud);
+	if ((numbytes = recv(sockfd, mensajeSaludoRecibido, longitud, 0)) == -1) {
+		printf("No se pudo recibir saludo del %s\n", nombre);
+		//MUERO
+		exit(1);
+	}
+	int32_t id_esi_obtenido = 0;
+	if(strcmp(nombre,"PLANIFICADOR") == 0){
+		if ((numbytes = recv(sockfd, &id_esi_obtenido, sizeof(int32_t), 0))
+				== -1) {
+			printf("No se pudo recibir mi id que genero el planificador\n");
+			//MUERO
+			exit(1);
+		}
+
+	}
 	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
+	if(id_esi_obtenido != 0){
+		printf("ID recibido: %d\n", id_esi_obtenido);
+	}
+
 
 	//Envio saludo
-	void* bufferEnvio = malloc(sizeof(char) * 16);
-	char * mensajeSaludoEnviado = malloc(sizeof(char) * 16);
-	strcpy(mensajeSaludoEnviado, "Hola soy un ESI");
+	char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
+	strcpy(mensajeSaludoEnviado, "Hola, soy el ESI");
 	mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
-	memcpy(bufferEnvio, mensajeSaludoEnviado, 16);
 
-	if (send(sockfd, bufferEnvio, 16, 0) == -1) {
-		printf("No se pudo enviar saludo al %s\n", nombre);
+	int32_t longitud_mensaje = strlen(mensajeSaludoEnviado) + 1;
 
-		free(mensajeSaludoEnviado);
-		free(bufferEnvio);
-
-		//MUERO
+	void* bufferEnvio = malloc(sizeof(int32_t) + sizeof(char) * longitud_mensaje);
+	memcpy(bufferEnvio, &longitud_mensaje, sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t), mensajeSaludoEnviado,
+			longitud_mensaje);
+	if (send(sockfd, bufferEnvio,
+			sizeof(int32_t) + sizeof(char) * longitud_mensaje, 0) == -1) {
+		perror("recv");
+		printf("No se pudo enviar saludo\n");
 		exit(1);
 	}
-	printf("Envie mi saludo al %s exitosamente\n", nombre);
+	printf("Saludo enviado correctamente\n");
 
-	free(bufferRecibido);
-	free(mensajeSaludoEnviado);
 	free(bufferEnvio);
+	free(mensajeSaludoEnviado);
+
 	free(mensajeSaludoRecibido);
 
 }

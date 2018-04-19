@@ -6,7 +6,8 @@
 int main(void) {
 
 	get_parametros_config();
-
+	//TODO: leer los archivos .txt creador a partir del dump
+	//TODO: crea/cargar mis estructuras administrativas
 	int sockfd = conectar_coodinador();
 	saludo_inicial_coordinador(sockfd);
 

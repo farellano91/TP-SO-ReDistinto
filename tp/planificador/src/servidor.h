@@ -20,7 +20,7 @@
 #include <netinet/in.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <pthread.h>
+
 #include <commons/config.h>
 #include "funcionalidad_planificador.h"
 
@@ -35,7 +35,7 @@ fd_set read_fds; // conjunto temporal de descriptores de fichero para select()
 
 void levantar_servidor_planificador();
 
-void enviar_saludo(int fdCliente);
+void enviar_saludo(int fdCliente, int id_esi);
 
 void atender_cliente(void* idSocketCliente);
 

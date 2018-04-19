@@ -1,32 +1,12 @@
-23:00:22 **** Build of configuration Debug for project coordinador ****
+16:34:40 **** Incremental Build of configuration Debug for project esi ****
 make all 
-Building file: ../src/coordinador.c
+Building file: ../src/cliente.c
 Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/coordinador.d" -MT"src/coordinador.d" -o "src/coordinador.o" "../src/coordinador.c"
-Finished building: ../src/coordinador.c
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
  
-Building file: ../src/funcionalidad_coordinador.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_coordinador.d" -MT"src/funcionalidad_coordinador.d" -o "src/funcionalidad_coordinador.o" "../src/funcionalidad_coordinador.c"
-Finished building: ../src/funcionalidad_coordinador.c
- 
-Building file: ../src/servidor.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
-../src/servidor.c: In function ‘levantar_servidor_coordinador’:
-../src/servidor.c:257:13: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
-     (struct sockaddr *) &their_addr, &sin_size)) == -1) {
-             ^
-In file included from /usr/include/netinet/in.h:23:0,
-                 from ../src/servidor.h:11,
-                 from ../src/servidor.c:1:
-/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
- extern int accept (int __fd, __SOCKADDR_ARG __addr,
-            ^
-Finished building: ../src/servidor.c
- 
-Building target: coordinador
+Building target: esi
 Invoking: GCC C Linker
-gcc  -o "coordinador"  ./src/coordinador.o ./src/funcionalidad_coordinador.o ./src/servidor.o   -lcommons -lpthread
-Finished building target: coordinador
+gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o   -lcommons
+Finished building target: esi
  

@@ -7,21 +7,19 @@ void sigchld_handler(int s) {
 
 int recibir_saludo(int fdCliente) {
 	int resultado = 0;
-	void* bufferRecibido = malloc(sizeof(char) * 16);
-	char * mensajeSaludoRecibido = malloc(sizeof(char) * 16);
 	int numbytes = 0;
-	if ((numbytes = recv(fdCliente, bufferRecibido, 16, 0)) <= 0) {
-		if (numbytes == 0) {
-			//si el cliente se fue
-			printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
-			close(fdCliente); // si ya no conversare mas con el cliente, lo cierro
-
-		}
-
-	} else {
-		memcpy(mensajeSaludoRecibido, bufferRecibido, 16);
-		printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
+	int32_t longitud = 0;
+	if ((numbytes = recv(fdCliente, &longitud, sizeof(int32_t), 0)) == -1) {
+		//MUERO
+		exit(1);
 	}
+	char* mensajeSaludoRecibido = malloc(sizeof(char) * longitud);
+	if ((numbytes = recv(fdCliente, mensajeSaludoRecibido, longitud, 0)) == -1) {
+		printf("No se pudo recibir mensaje saludo\n");
+		//MUERO
+		exit(1);
+	}
+	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
 
 	if (strstr(mensajeSaludoRecibido, "ESI") != NULL) {
 		resultado = 1;
@@ -33,19 +31,30 @@ int recibir_saludo(int fdCliente) {
 		resultado = 3;
 	}
 
-	free(bufferRecibido);
 	free(mensajeSaludoRecibido);
 	return resultado;
 }
 
+/*PROTOCOLO para envio saludo al ESI
+ * ESI <-> PLANIFICADOR
+ * [INT + CHAR*]
+ * INT: len del mensaje saludos
+ * CHAR*: mensaje saludo
+ * */
+
 void enviar_saludo(int fdCliente) {
 
-	void* bufferEnvio = malloc(sizeof(char) * 25);
-	char * mensajeSaludoEnviado = malloc(sizeof(char) * 25);
+	char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
 	strcpy(mensajeSaludoEnviado, "Hola, soy el COORDINADOR");
 	mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
-	memcpy(bufferEnvio, mensajeSaludoEnviado, 25);
-	if (send(fdCliente, bufferEnvio, sizeof(char) * 25, 0) == -1) {
+
+	int32_t longitud_mensaje = strlen(mensajeSaludoEnviado) + 1;
+
+	void* bufferEnvio = malloc(sizeof(int32_t)+ sizeof(char)*longitud_mensaje);
+	memcpy(bufferEnvio, &longitud_mensaje,sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t),mensajeSaludoEnviado,longitud_mensaje);
+
+	if (send(fdCliente, bufferEnvio,sizeof(int32_t)+ sizeof(char)*longitud_mensaje, 0) == -1) {
 		perror("recv");
 		printf("No se pudo enviar saludo\n");
 		exit(1);
@@ -54,6 +63,8 @@ void enviar_saludo(int fdCliente) {
 
 	free(bufferEnvio);
 	free(mensajeSaludoEnviado);
+
+
 }
 
 void recibo_lineas(int fdCliente) {
@@ -170,7 +181,7 @@ void atender_cliente(void* idSocketCliente) {
 		break;
 	case 3:
 		//INSTANCIA
-		//TODO: encolar la instancia y etc...... ;)
+		//TODO: encolar la instancia y etc...... ;) OJO:si recv es 0 entonces se desconecto
 		break;
 
 	}
@@ -208,7 +219,7 @@ void levantar_servidor_coordinador() {
 		free_parametros_config();
 		exit(1);
 	}
-	printf("Se creo el socket %d\n", sockfd);
+	printf("Se creo el socket correctamente\n");
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 		printf("Address already in use\n");

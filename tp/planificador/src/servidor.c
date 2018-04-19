@@ -31,14 +31,30 @@ void sigchld_handler(int s) {
 //	return resultado;
 //}
 
-void enviar_saludo(int fdCliente) {
-	void* bufferEnvio = malloc(sizeof(char) * 25);
-	char * mensajeSaludoEnviado = malloc(sizeof(char) * 25);
-	strcpy(mensajeSaludoEnviado, "Hola, soy el PLANIFICADO");
+
+/*PROTOCOLO para envio saludo al ESI
+ * ESI <-> PLANIFICADOR
+ * [INT + CHAR* + INT]
+ * INT: len del mensaje saludos
+ * CHAR*: mensaje saludo
+ * INT: id_esi que me da el planificador (solo si id = 1)
+ * */
+
+//esto es solo para el ESI
+void enviar_saludo(int fdCliente, int id_esi) {
+
+	char * mensajeSaludoEnviado = malloc(sizeof(char) *100);
+	strcpy(mensajeSaludoEnviado, "Hola, soy el PLANIFICADOR");
 	mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
-	memcpy(bufferEnvio, mensajeSaludoEnviado, 25);
-	if (send(fdCliente, bufferEnvio, sizeof(char) * 25, 0) == -1) {
-		perror("recv");
+
+	int32_t longitud_mensaje = strlen(mensajeSaludoEnviado) + 1;
+	int32_t id_para_esi = id_esi;
+	void* bufferEnvio = malloc(sizeof(int32_t)*2 + sizeof(char)*longitud_mensaje);
+	memcpy(bufferEnvio, &longitud_mensaje,sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t),mensajeSaludoEnviado,longitud_mensaje);
+	memcpy(bufferEnvio + sizeof(int32_t) + longitud_mensaje,&id_para_esi,sizeof(int32_t));
+
+	if (send(fdCliente, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_mensaje, 0) == -1) {
 		printf("No se pudo enviar saludo\n");
 		exit(1);
 	}
@@ -51,7 +67,9 @@ void enviar_saludo(int fdCliente) {
 void atender_esi(void* idSocketCliente) {
 
 	int fdCliente = ((int *) idSocketCliente)[0];
-	enviar_saludo(fdCliente);
+	int id_esi = ((int *) idSocketCliente)[1];
+	enviar_saludo(fdCliente,id_esi);
+
 	free((int *) idSocketCliente);
 
 }
@@ -87,7 +105,7 @@ void levantar_servidor_planificador() {
 		//MUERE EL HILO
 		exit(1);
 	}
-	printf("Se creo el socket %d\n", sockfd);
+	printf("Se creo el socket correctamente\n");
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 		perror("address already in use");
@@ -164,9 +182,10 @@ void levantar_servidor_planificador() {
 						printf("Se conecto el ESI de ID: %i\n",
 								contador_id_esi);
 
-						//Envio mensaje de saludo al ESI
-						int *idSocketCliente = (int *) malloc(sizeof(int32_t));
+						//Envio mensaje de saludo al ESI (usando su fd y su ID)
+						int *idSocketCliente = (int *) malloc(sizeof(int32_t) * 2);
 						idSocketCliente[0] = socketCliente;
+						idSocketCliente[1] = contador_id_esi;
 
 						//CREAMOS UN HILO PARA ATENDERLO
 						pthread_t punteroHiloSaludo;
@@ -188,6 +207,8 @@ void levantar_servidor_planificador() {
 
 					//NOTA: empezaria a usar algoritmo_planificacion;claves_iniciales_bloqueadas con lo cual en caso
 					//de explotar en el camino, tengo q liberar estas dos
+
+
 				}
 			}
 		}

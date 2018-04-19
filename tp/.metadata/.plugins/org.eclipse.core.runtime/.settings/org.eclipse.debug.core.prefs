@@ -4,4 +4,4 @@
 //org.eclipse.debug.core.PREFERRED_DELEGATES/org.eclipse.cdt.launch.remoteApplicationLaunchType=org.eclipse.rse.remotecdt.dsf.debug,debug,;
 eclipse.preferences.version=1
 org.eclipse.debug.core.PREF_BREAKPOINT_MANAGER_ENABLED_STATE=true
-prefWatchExpressions=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<watchExpressions>\n<expression enabled\="true" text\="argv[0]"/>\n<expression enabled\="true" text\="config \=\= 2"/>\n<expression enabled\="true" text\="strlen(IP)"/>\n<expression enabled\="true" text\="idSocketCliente"/>\n<expression enabled\="true" text\="&amp;idSocketCliente"/>\n<expression enabled\="true" text\="*idSocketCliente"/>\n</watchExpressions>\n
+prefWatchExpressions=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<watchExpressions/>\n

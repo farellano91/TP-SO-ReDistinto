@@ -1,7 +1,15 @@
-20:50:33 **** Clean-only build of configuration Debug for project esi ****
-make clean 
-rm -rf  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o  ./src/archivo.d ./src/cliente.d ./src/esi.d ./src/funcionalidad_esi.d  esi
+16:34:40 **** Incremental Build of configuration Debug for project esi ****
+make all 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
+Building target: esi
+Invoking: GCC C Linker
+gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o   -lcommons
+Finished building target: esi
  
 
-20:50:33 Build Finished (took 74ms)
+16:34:40 Build Finished (took 289ms)
 

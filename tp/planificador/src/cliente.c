@@ -2,34 +2,47 @@
 
 //PD:Si ejecuto esto la ip del coordinador ya lo libere ;)
 void saludo_inicial_coordinador(int sockfd) {
+
 	//Recibo saludo
-	void* bufferRecibido = malloc(sizeof(char) * 25);
-	char * mensajeSaludoRecibido = malloc(sizeof(char) * 25);
 	int numbytes = 0;
-	if ((numbytes = recv(sockfd, bufferRecibido, 25, 0)) == -1) {
-		perror("recv");
-		printf("No se pudo recibir saludo del coordinador\n");
+	int32_t longitud = 0;
+	if ((numbytes = recv(sockfd, &longitud, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir la longitud del saludo\n");
+		//MUERO
 		exit(1);
 	}
-	memcpy(mensajeSaludoRecibido, bufferRecibido, 25);
+	char* mensajeSaludoRecibido = malloc(sizeof(char) * longitud);
+	if ((numbytes = recv(sockfd, mensajeSaludoRecibido, longitud, 0)) == -1) {
+		printf("No se pudo recibir saludo\n");
+		//MUERO
+		exit(1);
+	}
+
 	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
 
-	//Envio saludo
-	void* bufferEnvio = malloc(sizeof(char) * 16);
-	char * mensajeSaludoEnviado = malloc(sizeof(char) * 16);
-	strcpy(mensajeSaludoEnviado, "Hola soy un PLA");
-	mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
-	memcpy(bufferEnvio, mensajeSaludoEnviado, 16);
 
-	if (send(sockfd, bufferEnvio, 16, 0) == -1) {
+
+	//Envio saludo
+	char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
+	strcpy(mensajeSaludoEnviado, "Hola, soy el PLANIFICADOREITOR");
+	mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
+
+	int32_t longitud_mensaje = strlen(mensajeSaludoEnviado) + 1;
+
+	void* bufferEnvio = malloc(sizeof(int32_t)+ sizeof(char)*longitud_mensaje);
+	memcpy(bufferEnvio, &longitud_mensaje,sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t),mensajeSaludoEnviado,longitud_mensaje);
+
+	if (send(sockfd, bufferEnvio,sizeof(int32_t)+ sizeof(char)*longitud_mensaje, 0) == -1) {
 		perror("recv");
+		printf("No se pudo enviar saludo\n");
 		exit(1);
 	}
-	printf("Envie mi saludo al coordinador exitosamente\n");
+	printf("Saludo enviado correctamente\n");
 
-	free(bufferRecibido);
-	free(mensajeSaludoEnviado);
 	free(bufferEnvio);
+	free(mensajeSaludoEnviado);
+
 	free(mensajeSaludoRecibido);
 
 }
@@ -43,7 +56,7 @@ int conectar_coodinador() {
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
 		free(ip_config_coordinador);
-		exit(1);
+		pthread_exit(NULL);
 	}
 
 	their_addr.sin_family = AF_INET;    // Ordenación de bytes de la máquina
@@ -54,9 +67,9 @@ int conectar_coodinador() {
 
 	if (connect(sockfd, (struct sockaddr *) &their_addr,
 			sizeof(struct sockaddr)) == -1) {
-		perror("No se pudo conectar");
+		perror("No se pudo conectar al coordinador");
 		free(ip_config_coordinador);
-		exit(1);
+		pthread_exit(NULL);
 	}
 
 	free(ip_config_coordinador);
@@ -77,8 +90,12 @@ void recibirInfoCoordinador() {
 		strcpy(infoCoordinador.clave ,"");
 
 		if ((numbytes = recv(fdCoordinador, &infoCoordinador,
-				sizeof(t_InfoCoordinador), 0)) < 0) {
-			puts("Error al recibir notificacion del coordinador");
+				sizeof(t_InfoCoordinador), 0)) <= 0) {
+			if(numbytes < 0 ){
+				puts("Error al recibir notificacion del coordinador");
+			}else{
+				puts("Se fue el coordinador");
+			}
 			break;
 		} else {
 			switch (infoCoordinador.id) {
