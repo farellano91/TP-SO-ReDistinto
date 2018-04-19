@@ -66,6 +66,7 @@ void intHandler(int dummy) {
 void levantar_servidor_planificador() {
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
+
 	int contador_id_esi = 0;
 	int sockfd; // Escuchar sobre: sock_fd, nuevas conexiones sobre: idSocketCliente
 	struct sockaddr_in my_addr;    // información sobre mi dirección
@@ -187,7 +188,6 @@ void levantar_servidor_planificador() {
 
 					//NOTA: empezaria a usar algoritmo_planificacion;claves_iniciales_bloqueadas con lo cual en caso
 					//de explotar en el camino, tengo q liberar estas dos
-
 				}
 			}
 		}

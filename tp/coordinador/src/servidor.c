@@ -29,6 +29,10 @@ int recibir_saludo(int fdCliente) {
 	if (strstr(mensajeSaludoRecibido, "PLA") != NULL) {
 		resultado = 2;
 	}
+	if (strstr(mensajeSaludoRecibido, "INS") != NULL) {
+		resultado = 3;
+	}
+
 	free(bufferRecibido);
 	free(mensajeSaludoRecibido);
 	return resultado;
@@ -55,14 +59,6 @@ void enviar_saludo(int fdCliente) {
 void recibo_lineas(int fdCliente) {
 	int longitud = 0;
 	int numbytes = 0;
-
-	//busco retardo del archivo config
-	t_config* config = config_create("config.cfg");
-	if (!config) {
-		perror("No encuentro el archivo config");
-		exit(1);
-	}
-	int retardo = config_get_int_value(config, "RETARDO");
 
 	while (1) {
 		sleep(retardo);
@@ -102,6 +98,7 @@ void recibo_lineas(int fdCliente) {
 					if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
 
 						t_InfoCoordinador infoCoordinador = {.id = 0 , .clave =""};
+
 						if (strstr(linea, "GET") != NULL) {
 							infoCoordinador.id = 1;
 						} else {
@@ -136,13 +133,13 @@ void recibo_lineas(int fdCliente) {
 			free(buffer);
 		}
 	}
-	config_destroy(config);
 
 }
 
 /*PROTOCOLO:
  * tipo_cliente: 1 -> ESI
- * tipo_cliente:2 -> PLANIFICADOR
+ * tipo_cliente: 2 -> PLANIFICADOR
+ * tipo_cliente: 3 -> INSTANCIA
  * */
 void atender_cliente(void* idSocketCliente) {
 
@@ -164,6 +161,10 @@ void atender_cliente(void* idSocketCliente) {
 		while (1) {
 			//- No corto la comunicacion con el planificador -
 		}
+		break;
+	case 3:
+		//INSTANCIA
+		//TODO: encolar la instancia y etc...... ;)
 		break;
 
 	}
