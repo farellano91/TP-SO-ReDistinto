@@ -19,6 +19,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <commons/config.h>
+#include <commons/log.h>
+
+t_log * logger;
 
 int puerto_escucha_conexion;
 char* algoritmo_distribucion;
@@ -32,5 +35,6 @@ void get_parametros_config();
 //libera todos los parametros que tenga
 void free_parametros_config();
 
+void configure_logger();
 
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

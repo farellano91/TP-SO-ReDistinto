@@ -33,3 +33,8 @@ void free_parametros_config(){
 	free(algoritmo_distribucion);
 }
 
+void configure_logger() {
+  logger = log_create("log de operaciones.log","tp-redistinto",1,LOG_LEVEL_INFO);
+  log_info(logger, "Empezamos.....");
+
+}

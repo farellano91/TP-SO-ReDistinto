@@ -1,19 +1,32 @@
-20:50:30 **** Incremental Build of configuration Debug for project planificador ****
+23:00:22 **** Build of configuration Debug for project coordinador ****
 make all 
-make: No se hace nada para «all».
-20:50:33 **** Clean-only build of configuration Debug for project coordinador ****
-make clean 
-rm -rf  ./src/coordinador.o ./src/funcionalidad_coordinador.o ./src/servidor.o  ./src/coordinador.d ./src/funcionalidad_coordinador.d ./src/servidor.d  coordinador
+Building file: ../src/coordinador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/coordinador.d" -MT"src/coordinador.d" -o "src/coordinador.o" "../src/coordinador.c"
+Finished building: ../src/coordinador.c
  
-20:50:33 **** Clean-only build of configuration Debug for project esi ****
-make clean 
-rm -rf  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o  ./src/archivo.d ./src/cliente.d ./src/esi.d ./src/funcionalidad_esi.d  esi
+Building file: ../src/funcionalidad_coordinador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_coordinador.d" -MT"src/funcionalidad_coordinador.d" -o "src/funcionalidad_coordinador.o" "../src/funcionalidad_coordinador.c"
+Finished building: ../src/funcionalidad_coordinador.c
  
-20:50:33 **** Clean-only build of configuration Debug for project instancia ****
-make clean 
-rm -rf  ./src/cliente.o ./src/funcionalidad_instancia.o ./src/instancia.o  ./src/cliente.d ./src/funcionalidad_instancia.d ./src/instancia.d  instancia
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantar_servidor_coordinador’:
+../src/servidor.c:257:13: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+     (struct sockaddr *) &their_addr, &sin_size)) == -1) {
+             ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:1:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
  
-20:50:33 **** Clean-only build of configuration Debug for project planificador ****
-make clean 
-rm -rf  ./src/cliente.o ./src/consola.o ./src/funcionalidad_planificador.o ./src/planificador.o ./src/servidor.o  ./src/cliente.d ./src/consola.d ./src/funcionalidad_planificador.d ./src/planificador.d ./src/servidor.d  planificador
+Building target: coordinador
+Invoking: GCC C Linker
+gcc  -o "coordinador"  ./src/coordinador.o ./src/funcionalidad_coordinador.o ./src/servidor.o   -lcommons -lpthread
+Finished building target: coordinador
  

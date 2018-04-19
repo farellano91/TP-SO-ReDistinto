@@ -95,6 +95,12 @@ void recibo_lineas(int fdCliente) {
 				//Consulto si tengo un planificador conectado y si es GET/STORE lo que recibi
 				//-> envio al planificador la linea
 				if (fd_planificador != -1) {
+
+					//Ver pag.9 log de cada ESI N° - SECUENCIA
+					//TODO: falta saber el id del ESI ;) (revisar cuando estaria bueno cerrarlo posta
+					//ojo q tiene q logger siempre, leer pag.8!!!)
+					log_info(logger,linea);
+
 					if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
 
 						t_InfoCoordinador infoCoordinador = {.id = 0 , .clave =""};
@@ -178,6 +184,7 @@ void intHandler(int dummy) {
 	if (dummy != 0) {
 		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
 		free_parametros_config();
+		log_destroy(logger);
 		exit(dummy);
 
 	}
@@ -261,6 +268,7 @@ void levantar_servidor_coordinador() {
 
 	}
 	free_parametros_config();
+	log_destroy(logger);
 	close(sockfd);
 }
 

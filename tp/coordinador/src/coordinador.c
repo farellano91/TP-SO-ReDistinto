@@ -15,6 +15,7 @@
 
 int main(void) {
 	get_parametros_config();
+	configure_logger();
 	levantar_servidor_coordinador();
 	return EXIT_SUCCESS;
 }

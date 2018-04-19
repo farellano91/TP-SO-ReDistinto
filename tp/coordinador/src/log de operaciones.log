@@ -1,0 +1,8 @@
+[INFO] 23:01:26:878 tp-redistinto/(6728:6728): Empezamos.....
+[INFO] 23:01:49:455 tp-redistinto/(6728:6743): GET 03232:32323
+
+[INFO] 23:01:54:456 tp-redistinto/(6728:6743): SET 03232:32323 APA
+
+[INFO] 23:01:59:456 tp-redistinto/(6728:6743): SET 03232:32323 IPA
+
+[INFO] 23:02:04:457 tp-redistinto/(6728:6743): STORE 03232:32323
