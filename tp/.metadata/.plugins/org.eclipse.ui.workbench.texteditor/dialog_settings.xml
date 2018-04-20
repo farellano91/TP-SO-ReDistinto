@@ -2,21 +2,21 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="instruccion" key="selection"/>
+		<item value="recibir_saludo" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="fdCliente"/>
+			<item value="recibir_saludo"/>
 			<item value="instruccion"/>
 			<item value="Respuesta_para_planificador"/>
 			<item value="respuesta_para_planificador"/>
 			<item value="atender_esi"/>
-			<item value="recibir_saludo"/>
 			<item value="recibirInfoCoordinador"/>
 			<item value="strcmp"/>
 			<item value="enviar_saludo"/>
-			<item value="conectar_coodinador"/>
 		</list>
 		<list key="replacehistory">
 			<item value="29"/>
