@@ -67,18 +67,18 @@ void enviar_saludo(int fdCliente) {
 
 }
 
-void recibo_lineas(int fdCliente) {
+void recibo_lineas(int fd_esi) {
 	int longitud = 0;
 	int numbytes = 0;
 
 	while (1) {
 		sleep(retardo);
 		void* bufferMensaje = malloc(sizeof(int32_t));
-		if ((numbytes = recv(fdCliente, bufferMensaje, sizeof(int32_t), 0))
+		if ((numbytes = recv(fd_esi, bufferMensaje, sizeof(int32_t), 0))
 				<= 0) {
 			if (numbytes == 0) {
 				//si el cliente se fue
-				printf("Se fue: ESI de fd:%d, chau gato!!!\n", fdCliente);
+				printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
 				free(bufferMensaje);
 				break;
 			}
@@ -88,11 +88,11 @@ void recibo_lineas(int fdCliente) {
 			char * linea = malloc(sizeof(char) * longitud);
 			void* buffer = malloc(sizeof(char) * longitud);
 
-			if ((numbytes = recv(fdCliente, buffer, sizeof(char) * longitud, 0))
+			if ((numbytes = recv(fd_esi, buffer, sizeof(char) * longitud, 0))
 					<= 0) {
 				if (numbytes == 0) {
 					//si el cliente se fue
-					printf("Se fue: ESI de fd:%d, chau gato!!!\n", fdCliente);
+					printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
 					free(linea);
 					free(bufferMensaje);
 					free(buffer);
@@ -103,45 +103,72 @@ void recibo_lineas(int fdCliente) {
 				memcpy(linea, buffer, sizeof(char) * longitud);
 				printf("Recibi linea: %s\n", linea);
 
-				//Consulto si tengo un planificador conectado y si es GET/STORE lo que recibi
-				//-> envio al planificador la linea
-				if (fd_planificador != -1) {
+				//recibo el id del esi
+				int32_t id_esi = 0;
+				if ((numbytes = recv(fd_esi, &id_esi, sizeof(int32_t), 0))
+						<= 0) {
+					if (numbytes == 0) {
+						//si el cliente se fue
+						printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
+						free(linea);
+						free(bufferMensaje);
+						free(buffer);
+						break;
+					}
+				}else{
+					printf("ESI id:%d\n", id_esi);
+					//Consulto si tengo un planificador conectado y si es GET/STORE lo que recibi
+					//-> envio al planificador la linea
+					if (fd_planificador != -1) {
 
-					//Ver pag.9 log de cada ESI N° - SECUENCIA
-					//TODO: falta saber el id del ESI ;) (revisar cuando estaria bueno cerrarlo posta
-					//ojo q tiene q logger siempre, leer pag.8!!!)
-					log_info(logger,linea);
+						//Ver pag.9 log de cada ESI N° - SECUENCIA
+						//TODO: falta saber el id del ESI ;) (revisar cuando estaria bueno cerrarlo posta
+						//ojo q tiene q logger siempre, leer pag.8!!!)
 
-					if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
+						log_info(logger,linea);
 
-						t_InfoCoordinador infoCoordinador = {.id = 0 , .clave =""};
+						if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
 
-						if (strstr(linea, "GET") != NULL) {
-							infoCoordinador.id = 1;
+							t_InfoCoordinador infoCoordinador = {.id = 0 , .clave =""};
+
+							if (strstr(linea, "GET") != NULL) {
+								infoCoordinador.id = 1;
+							} else {
+								infoCoordinador.id = 2;
+							}
+							strcpy(infoCoordinador.clave, linea);
+
+							if (send(fd_planificador, &infoCoordinador,
+									sizeof(t_InfoCoordinador), 0) == -1) {
+								printf("No se pudo enviar la info\n");
+								exit(1);
+							}
+							printf("Se envio la INFO al PLANIFICADOR correctamente\n");
+
+							//TODO:Aca recibo la respuesta del planificador
+
 						} else {
-							infoCoordinador.id = 2;
-						}
-						strcpy(infoCoordinador.clave, linea);
+							//TODO: si no es un get ni store, entonces es un set:
+							//1.- aplicar algoritmo de distribucion para decidir q instancia va
+							//(usando una cola de instancias o cola de struct Instancia ;))
+							//2.- enviar la peticion a la instancia elegida
+							//3.- recibir una respuesta de la instancia
 
-						if (send(fd_planificador, &infoCoordinador,
-								sizeof(t_InfoCoordinador), 0) == -1) {
-							printf("No se pudo enviar la info\n");
+						}
+
+						//envio resultado al esi (por ahora todo es OK)
+						int32_t resultado_coordinador = 2;  //1:falle , 2:ok , 3: ok pero te bloqueaste
+						if (send(fd_esi, &resultado_coordinador,sizeof(int32_t), 0) == -1) {
+							printf("No se pudo enviar resultado al ESI\n");
 							exit(1);
 						}
-						printf("Se envio la INFO al PLANIFICADOR correctamente\n");
-
-						//TODO:Aca recibo la respuesta del planificador
-						//envio resultado al ESI
-
-					} else {
-						//TODO: si no es un get ni store, entonces es un set:
-						//1.- aplicar algoritmo de distribucion para decidir q instancia va
-						//(usando una cola de instancias o cola de struct Instancia ;))
-						//2.- enviar la peticion a la instancia elegida
-						//3.- recibir una respuesta de la instancia
-						//envio resultado al esi
+						printf("Envie resultado al ESI de ID:%d!!!\n",id_esi);
 					}
 				}
+
+
+
+
 
 
 			}

@@ -22,7 +22,7 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 		//MUERO
 		exit(1);
 	}
-	int32_t id_esi_obtenido = 0;
+	id_esi_obtenido = 0;
 	if(strcmp(nombre,"PLANIFICADOR") == 0){
 		if ((numbytes = recv(sockfd, &id_esi_obtenido, sizeof(int32_t), 0))
 				== -1) {
@@ -53,7 +53,7 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 		printf("Saludo enviado correctamente\n");
 
 	}else{
-		//(si es al planificador tengo q enviar mi struct_respuesta_saludo)
+		//si es al planificador tengo q enviar mi struct_respuesta_saludo)
 		char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
 		strcpy(mensajeSaludoEnviado, "Hola, soy el ESI");
 		mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';

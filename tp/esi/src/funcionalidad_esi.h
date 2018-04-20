@@ -24,4 +24,6 @@ void get_parametros_config();
 //libera todos los parametros que tenga
 void free_parametros_config();
 
+int32_t id_esi_obtenido;
+
 #endif /* FUNCIONALIDAD_ESI_H_ */

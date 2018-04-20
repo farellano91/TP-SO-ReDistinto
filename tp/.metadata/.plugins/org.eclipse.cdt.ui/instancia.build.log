@@ -1,6 +1,6 @@
-21:17:31 **** Incremental Build of configuration Debug for project instancia ****
+11:28:45 **** Incremental Build of configuration Debug for project instancia ****
 make all 
 make: Nothing to be done for 'all'.
 
-21:17:32 Build Finished (took 253ms)
+11:28:45 Build Finished (took 191ms)
 

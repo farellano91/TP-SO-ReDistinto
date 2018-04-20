@@ -126,4 +126,6 @@ void remove_esi_by_fd(t_list* lista , int fd);
 
 t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int fd_esi);
 
+void  continuar_comunicacion();
+
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

@@ -1,8 +1,22 @@
-21:17:31 **** Incremental Build of configuration Debug for project esi ****
+14:46:07 **** Incremental Build of configuration Debug for project esi ****
 make all 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
 Building file: ../src/esi.c
 Invoking: GCC C Compiler
 gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/esi.d" -MT"src/esi.o" -o "src/esi.o" "../src/esi.c"
+../src/esi.c: In function ‘main’:
+../src/esi.c:65:52: warning: passing argument 2 of ‘memcpy’ makes pointer from integer without a cast [-Wint-conversion]
+     memcpy(bufferEnvio + sizeof(int32_t)+longitud, id_esi_obtenido, sizeof(int32_t));
+                                                    ^
+In file included from ../src/funcionalidad_esi.h:8:0,
+                 from ../src/esi.c:4:
+/usr/include/string.h:42:14: note: expected ‘const void * restrict’ but argument is of type ‘int32_t {aka int}’
+ extern void *memcpy (void *__restrict __dest, const void *__restrict __src,
+              ^
 Finished building: ../src/esi.c
  
 Building target: esi
@@ -11,5 +25,5 @@ gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_e
 Finished building target: esi
  
 
-21:17:31 Build Finished (took 358ms)
+14:46:08 Build Finished (took 379ms)
 

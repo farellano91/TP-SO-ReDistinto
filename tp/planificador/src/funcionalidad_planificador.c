@@ -52,6 +52,21 @@ void aplico_algoritmo(){
 
 }
 
+//Envia permiso de hacer una lectura a ESI
+/*
+ * flags_continuar = 1 OK
+ *
+ * */
+void continuar_comunicacion(){
+
+	int32_t flags_continuar = 1;
+	t_Esi * primer_esi = list_get(list_ready,0);
+	if (send(primer_esi->fd, &flags_continuar, sizeof(int32_t), 0) == -1) {
+		printf("Error al tratar de enviar el permiso a ESI");
+	}
+	printf("Envie permiso ESI de ID: %d\n", primer_esi->id);
+}
+
 void remove_esi_by_fd(t_list* list, int fd){
 
 }

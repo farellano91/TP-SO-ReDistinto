@@ -23,6 +23,7 @@ void saludo_inicial_servidor(int fd,char* nombre);
 /*ESI envia al planificador una respuesta al saludo o a la instruccion que hizo
  * id_tipo_respuesta = 1 respuesta al saludo, lo cual solo lleva de datos el id_esi y el mensaje
  * id_tipo_respuesta = 2 respuesta una instruccion realizad, lo cual trae todo lleno
+ * id_tipo_respuesta = 3 respuesta indicado en mensaje que ya termine de leer todo
  * */
 typedef struct Respuesta_para_planificador{
 	int id_tipo_respuesta;
