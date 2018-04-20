@@ -36,31 +36,46 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 	if(id_esi_obtenido != 0){
 		printf("ID recibido: %d\n", id_esi_obtenido);
 	}
-
+	free(mensajeSaludoRecibido);
 
 	//Envio saludo
-	char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
-	strcpy(mensajeSaludoEnviado, "Hola, soy el ESI");
-	mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
+	if(strcmp(nombre,"PLANIFICADOR") == 0){
+		t_respuesta_para_planificador respuesta_planificador = {.id_tipo_respuesta = 1, .id_esi = id_esi_obtenido,
+				.mensaje = "", .instruccion = "" };
 
-	int32_t longitud_mensaje = strlen(mensajeSaludoEnviado) + 1;
+		strcpy(respuesta_planificador.mensaje, "Hola, soy el ESI");
+		respuesta_planificador.mensaje[strlen(respuesta_planificador.mensaje)] = '\0';
 
-	void* bufferEnvio = malloc(sizeof(int32_t) + sizeof(char) * longitud_mensaje);
-	memcpy(bufferEnvio, &longitud_mensaje, sizeof(int32_t));
-	memcpy(bufferEnvio + sizeof(int32_t), mensajeSaludoEnviado,
-			longitud_mensaje);
-	if (send(sockfd, bufferEnvio,
-			sizeof(int32_t) + sizeof(char) * longitud_mensaje, 0) == -1) {
-		perror("recv");
-		printf("No se pudo enviar saludo\n");
-		exit(1);
+		if (send(sockfd, &respuesta_planificador,sizeof(t_respuesta_para_planificador), 0) == -1) {
+			printf("No se pudo enviar saludo al planificador\n");
+			exit(1);
+		}
+		printf("Saludo enviado correctamente\n");
+
+	}else{
+		//(si es al planificador tengo q enviar mi struct_respuesta_saludo)
+		char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
+		strcpy(mensajeSaludoEnviado, "Hola, soy el ESI");
+		mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';
+
+		int32_t longitud_mensaje = strlen(mensajeSaludoEnviado) + 1;
+
+		void* bufferEnvio = malloc(sizeof(int32_t) + sizeof(char) * longitud_mensaje);
+		memcpy(bufferEnvio, &longitud_mensaje, sizeof(int32_t));
+		memcpy(bufferEnvio + sizeof(int32_t), mensajeSaludoEnviado,
+				longitud_mensaje);
+		if (send(sockfd, bufferEnvio,sizeof(int32_t) + sizeof(char) * longitud_mensaje, 0) == -1) {
+			printf("No se pudo enviar saludo\n");
+			exit(1);
+		}
+		printf("Saludo enviado correctamente\n");
+
+		free(bufferEnvio);
+		free(mensajeSaludoEnviado);
+
+
 	}
-	printf("Saludo enviado correctamente\n");
 
-	free(bufferEnvio);
-	free(mensajeSaludoEnviado);
-
-	free(mensajeSaludoRecibido);
 
 }
 

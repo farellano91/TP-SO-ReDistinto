@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <commons/config.h>
 
+
 //se usa durante la comunicacion con los esis
 int puerto_escucha;
 
@@ -35,6 +36,8 @@ char* ip_config_coordinador;
 
 int puerto_config_coordinador;
 
+//este flag es para el caso de que la consola me deje en pausa
+int status_planificador;
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
@@ -43,7 +46,7 @@ void get_parametros_config();
 void free_parametros_config();
 
 //Constante
-#define ALPHA 0,5
+#define ALPHA 0.5
 
 enum t_operationCode {
 	GET = 0, SET = 1, STORE = 2,
@@ -52,10 +55,12 @@ enum t_operationCode {
 // revisar los tipos si son correctos la info y si van aca .
 typedef struct {
 	int id;
+	int fd;
 	int status;
 	int contadorInicial;
 	int contadorReal;
 	int tiempoEnListo;
+	int cantSentenciasProcesadas;
 
 } t_Esi;
 
@@ -75,6 +80,24 @@ typedef struct {
 } t_nodoBloqueado;
 
 
+
+/*ESI envia al planificador una respuesta al saludo o a la instruccion que hizo
+ * id_tipo_respuesta = 1 respuesta al saludo, lo cual solo lleva de datos el id_esi y el mensaje
+ * id_tipo_respuesta = 2 respuesta una instruccion realizad, lo cual trae todo lleno
+ * */
+typedef struct Respuesta_para_planificador{
+	int id_tipo_respuesta;
+	int id_esi; //1 o 2
+	char mensaje[100];
+	char clave[40];
+} __attribute__((packed)) t_respuesta_para_planificador;
+
+
+t_list* list_ready;
+t_list* list_blocked;
+t_list* list_finished;
+
+
 t_list* create_list_ready();
 
 t_list* create_list_blocked();
@@ -89,11 +112,18 @@ double  get_time_SJF(t_Esi* esi);
 
 // el cantidad de sentencias procesadas
 // si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. VER
-double getT_time_HRRN(t_Esi* esi, int cantSentenciasProcesadas);
+double getT_time_HRRN(t_Esi* esi);
 
 // Inserto en la lista Finalizadas y lista de Listos.
 
 // Inserto en la lista de bloqueas, pero en base al nodo block.
 
+
+void aplico_algoritmo();
+
+//Remueve (y libera) cualquiere t_Esi de la lista que tenga ese fd
+void remove_esi_by_fd(t_list* lista , int fd);
+
+t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int fd_esi);
 
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

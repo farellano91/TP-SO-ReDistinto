@@ -20,6 +20,17 @@ int conectar_servidor(int puerto , char* ip, char* nombre);
 
 void saludo_inicial_servidor(int fd,char* nombre);
 
+/*ESI envia al planificador una respuesta al saludo o a la instruccion que hizo
+ * id_tipo_respuesta = 1 respuesta al saludo, lo cual solo lleva de datos el id_esi y el mensaje
+ * id_tipo_respuesta = 2 respuesta una instruccion realizad, lo cual trae todo lleno
+ * */
+typedef struct Respuesta_para_planificador{
+	int id_tipo_respuesta;
+	int id_esi; //1 o 2
+	char mensaje[100];
+	char instruccion[40];
+} __attribute__((packed)) t_respuesta_para_planificador;
+
 #endif
 
 

@@ -69,7 +69,6 @@ void atender_esi(void* idSocketCliente) {
 	int fdCliente = ((int *) idSocketCliente)[0];
 	int id_esi = ((int *) idSocketCliente)[1];
 	enviar_saludo(fdCliente,id_esi);
-
 	free((int *) idSocketCliente);
 
 }
@@ -81,7 +80,17 @@ void intHandler(int dummy) {
 
 	}
 }
+
+void crear_listas_globales(){
+	list_ready = create_list_ready();
+	list_blocked = create_list_blocked();
+	list_finished = create_list_finished();
+
+}
 void levantar_servidor_planificador() {
+	//cree mis listas globales
+	crear_listas_globales();
+
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
 
@@ -187,26 +196,49 @@ void levantar_servidor_planificador() {
 						idSocketCliente[0] = socketCliente;
 						idSocketCliente[1] = contador_id_esi;
 
-						//CREAMOS UN HILO PARA ATENDERLO
-						pthread_t punteroHiloSaludo;
-						pthread_create(&punteroHiloSaludo, NULL,
-								(void*) atender_esi, idSocketCliente);
 
+						atender_esi(idSocketCliente);
+//						//CREAMOS UN HILO PARA ATENDERLO (AQUI NO ES NECESARIO Q SEA UN HILO??)
+//						pthread_t punteroHiloSaludo;
+//						pthread_create(&punteroHiloSaludo, NULL,
+//								(void*) atender_esi, idSocketCliente);
 					}
 				} else {
-					//si el fd que cambio es diferente del que esta en listen, entonces
-					//significa que un cliente esta mandando algo: en este caso me esta dando la respuesta a
-					//la orde que le mande
+					//RECIBO DATOS DESDE ESI QUE PUEDEN SER RESPUESTA A UNA OPERACION O MENSAJE SALUDO
+					int numbytes = 0;
+					t_respuesta_para_planificador respuesta = {.id_tipo_respuesta = 0, .id_esi = 0,
+									.mensaje = "", .clave = "" };
 
-					//TODO: PUEDO RECIBIR->respuesta de mi saludo o resultado de la instruccion que le dije q
-					//hiciera puedo diferencia que caso es pero en ambas situaciones tengo que
-					//1.-encolo
-					//2.- planifico (esto lo hago revisando mi estructura GLOBALES que maneje)
-					//3.-lo dejo esperando hasta q le toque ejecutar o le digo q le toca
+					if ((numbytes = recv(i, &respuesta, sizeof(respuesta), 0)) <= 0) {
+						printf("Se desconecto el ESI de fd:%d\n",i);//no llegue a saber que id era
+						if (numbytes == 0) {
+						// conexión cerrada
+							printf("Se fue el ESI de fd: %d\n", i);
+						} else {
+							perror("ERROR: al recibir respuesta del ESI");
+						}
+						close(i); // si ya no conversare mas con el cliente, lo cierro
+						FD_CLR(i, &master); // eliminar del conjunto maestro
+						remove_esi_by_fd(list_ready,i); //Lo borramos de ready, liberar memoria!!, i es el fd del ESI
+					}else{
+						if(respuesta.id_tipo_respuesta == 1){
+							//Respuesta al primer saludo (todo nuevo)
+							printf("ESI id: %d envio saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
+							t_Esi* nuevo_esi = creo_esi(respuesta,i);
+							list_add_in_index(list_ready,0,nuevo_esi);
+							aplico_algoritmo();
+							//continuar_comunicacion();
+
+						}else{
+							//Respuesta de una operacion que le pedi
+							//aplico_algoritmo();
+							//continuar_comunicacion();
+
+						}
+					}
 
 
-					//NOTA: empezaria a usar algoritmo_planificacion;claves_iniciales_bloqueadas con lo cual en caso
-					//de explotar en el camino, tengo q liberar estas dos
+
 
 
 				}

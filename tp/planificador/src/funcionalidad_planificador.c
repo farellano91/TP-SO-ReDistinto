@@ -33,6 +33,29 @@ void get_parametros_config() {
 }
 
 
+t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int fd_esi){
+	t_Esi* esi = malloc(sizeof(t_Esi));
+	esi->contadorInicial = 0;
+	esi->contadorReal = 0;
+	esi->tiempoEnListo = 0;
+	esi->cantSentenciasProcesadas = 0;
+	esi->fd = fd_esi;  //lo necesito para luego saber a quien mandar el send
+	esi->id = respuesta.id_esi;
+
+	return esi;
+}
+
+void aplico_algoritmo(){
+	//COntrolo que no este en pausa => status_planificador
+	//1.- Ordena la lista list_ready (VG)
+
+
+}
+
+void remove_esi_by_fd(t_list* list, int fd){
+
+}
+
 
 t_list* create_list_ready(){
 	t_list * Lready = list_create();
@@ -74,10 +97,10 @@ double  get_time_SJF(t_Esi* esi){
 
 
 // el cantidad de sentencias procesadas
-// si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. VER
-double getT_time_HRRN(t_Esi* esi, int cantSentenciasProcesadas){
+// si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. OK
+double getT_time_HRRN(t_Esi* esi){
 
-	return ( cantSentenciasProcesadas +  get_time_SJF(esi) ) / get_time_SJF(esi);
+	return ( esi->cantSentenciasProcesadas +  get_time_SJF(esi) ) / get_time_SJF(esi);
 }
 
 /*------------------------------ORDENAMIENTO SIN DESALOJO--------------------------*/

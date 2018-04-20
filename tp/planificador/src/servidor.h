@@ -39,5 +39,7 @@ void enviar_saludo(int fdCliente, int id_esi);
 
 void atender_cliente(void* idSocketCliente);
 
+
+
 #endif
 
