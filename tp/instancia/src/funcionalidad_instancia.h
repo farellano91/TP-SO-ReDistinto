@@ -28,10 +28,10 @@ void get_parametros_config();
 void free_parametros_config();
 
 //Recibo los datos para mis entradas (para armar el storage)
-void recibo_datos_entrada(sockfd);
+void recibo_datos_entrada(int sockfd);
 
 //Envio mis datos al coordinador
-void envio_datos(sockfd);
+void envio_datos(int sockfd);
 
 
 int tamanio_entrada;
