@@ -1,7 +1,6 @@
-12:18:59 **** Clean-only build of configuration Debug for project coordinador ****
-make clean 
-rm -rf  ./src/coordinador.o ./src/funcionalidad_coordinador.o ./src/servidor.o  ./src/coordinador.d ./src/funcionalidad_coordinador.d ./src/servidor.d  coordinador
- 
+16:19:31 **** Incremental Build of configuration Debug for project coordinador ****
+make all 
+make: No se hace nada para «all».
 
-12:19:00 Build Finished (took 71ms)
+16:19:31 Build Finished (took 57ms)
 

@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <commons/config.h>
+#include <commons/collections/list.h>
 
 char* ip_config_coordinador;
 int puerto_config_coordinador;
@@ -24,7 +25,26 @@ int intervalo_dump;
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
 
-//libera todos los parametros que tenga
 void free_parametros_config();
+
+//Recibo los datos para mis entradas (para armar el storage)
+void recibo_datos_entrada(sockfd);
+
+//Envio mis datos al coordinador
+void envio_datos(sockfd);
+
+
+int tamanio_entrada;
+
+int cant_entrada;
+
+//Para tener la tabla de entradas
+t_list* tabla_entrada;
+
+typedef struct {
+	int clave;
+	int numero_entrada;
+	int tamanio_variable;
+} t_fila_tabla_entrada;
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

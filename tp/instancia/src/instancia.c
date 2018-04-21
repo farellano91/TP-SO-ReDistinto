@@ -5,15 +5,18 @@
 
 int main(void) {
 
+	cant_entrada = 0;
+	tamanio_entrada = 0;
 	get_parametros_config();
 	//TODO: leer los archivos .txt creador a partir del dump
 	//TODO: crea/cargar mis estructuras administrativas
 	int sockfd = conectar_coodinador();
 	saludo_inicial_coordinador(sockfd);
 
-	//TODO:comunicarme con coordinador para crear mi void*
-	//TODO:preparar funciones para guardado.txt
-
+	//REcibo datos de entrada
+	recibo_datos_entrada(sockfd);
+	//Envio mis datos
+	envio_datos(sockfd);
 
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
 	free(algoritmo_reemplazo);
