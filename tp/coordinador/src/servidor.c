@@ -208,7 +208,12 @@ void atender_cliente(void* idSocketCliente) {
 		break;
 	case 3:
 		//INSTANCIA
-		//TODO: encolar la instancia y etc...... ;) OJO:si recv es 0 entonces se desconecto
+		//1:Envio datos de entrada
+		envio_datos_entrada(fdCliente);
+		//2:Recibo datos para crear la instancia
+		t_Instancia* instancia_nueva = creo_instancia(fdCliente);
+		//3:Encolo la INSTANCIA
+		agrego_instancia_lista(list_instancias,instancia_nueva);
 		break;
 
 	}
@@ -229,6 +234,10 @@ void intHandler(int dummy) {
 }
 void levantar_servidor_coordinador() {
 	fd_planificador = -1;
+
+	//creo mi lista de instancia
+	list_instancias = create_list_instancias();
+
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
 
