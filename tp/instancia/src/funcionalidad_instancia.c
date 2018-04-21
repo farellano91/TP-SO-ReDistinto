@@ -50,7 +50,7 @@ void recibo_datos_entrada(int fd_coordinador){
 		printf("No se pudo recibir la cantidad de entradas\n");
 		exit(1);
 	}
-
+	printf("Recibi los datos de las entradas correctamente\n");
 	free(buffer);
 }
 

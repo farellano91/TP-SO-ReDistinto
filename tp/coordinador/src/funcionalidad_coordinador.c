@@ -83,9 +83,13 @@ t_Instancia* creo_instancia(int fd_instancia){
 	instancia_nueva->tamanio_libre = tamanio_entrada * cantidad_entradas;
 
 	free(mensajeSaludoRecibido);
+	printf("Se creo la instancia de nombre:%s\n",instancia_nueva->nombre_instancia);
 	return (instancia_nueva);
 }
 
 void agrego_instancia_lista(t_list* list_instancias,t_Instancia* instancia_nueva){
+
+	pthread_mutex_lock(&mutex);
 	list_add(list_instancias,instancia_nueva); //esto lo encola al final
+	pthread_mutex_unlock(&mutex);
 }

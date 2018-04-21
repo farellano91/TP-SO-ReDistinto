@@ -18,6 +18,9 @@ int main(void) {
 	//Envio mis datos
 	envio_datos(sockfd);
 
+	// TODO:espero q el coordinador me de una tarea para hacer
+
+
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
 	free(algoritmo_reemplazo);
 	free(punto_montaje);

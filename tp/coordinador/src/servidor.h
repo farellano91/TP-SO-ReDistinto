@@ -45,5 +45,6 @@ typedef struct InfoCoordinador{
 	char clave[40];
 } __attribute__((packed)) t_InfoCoordinador;
 
+
 #endif
 

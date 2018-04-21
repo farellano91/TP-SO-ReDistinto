@@ -21,6 +21,9 @@
 #include <commons/config.h>
 #include <commons/log.h>
 #include <commons/collections/list.h>
+#include <pthread.h>
+
+pthread_mutex_t mutex;
 
 t_log * logger;
 
@@ -53,5 +56,6 @@ void envio_datos_entrada(int fd_instancia);
 t_Instancia* creo_instancia(int fd_instancia);
 
 void agrego_instancia_lista(t_list* list_instancias,t_Instancia* instancia_nueva);
+
 
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

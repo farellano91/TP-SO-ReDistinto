@@ -1,6 +1,6 @@
-15:55:42 **** Incremental Build of configuration Debug for project planificador ****
+17:04:47 **** Incremental Build of configuration Debug for project planificador ****
 make all 
 make: No se hace nada para «all».
 
-15:55:42 Build Finished (took 69ms)
+17:04:47 Build Finished (took 63ms)
 
