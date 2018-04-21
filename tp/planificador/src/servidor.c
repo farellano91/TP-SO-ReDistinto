@@ -91,6 +91,9 @@ void levantar_servidor_planificador() {
 	//cree mis listas globales
 	crear_listas_globales();
 
+	//inicializo mi esi_ejecucion
+	esi_ejecutando = NULL;
+
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
 
@@ -224,7 +227,8 @@ void levantar_servidor_planificador() {
 							//Respuesta al primer saludo (todo nuevo)
 							printf("ESI id: %d envio saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
-							list_add_in_index(list_ready,0,nuevo_esi);
+							agregar_en_Lista(list_ready,nuevo_esi);
+
 							if(aplico_algoritmo()){
 								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
 								continuar_comunicacion();
@@ -244,7 +248,7 @@ void levantar_servidor_planificador() {
 							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
-							//saco_lista();
+							cambio_de_lista(list_ready,list_finished,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
 
 						}
 					}

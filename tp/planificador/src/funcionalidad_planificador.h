@@ -26,8 +26,8 @@
 int puerto_escucha;
 
 char* algoritmo_planificacion;
-double ALPHA;
-
+//double ALPHA;
+#define ALPHA 0.5
 int estimacion_inicial;
 
 char* claves_iniciales_bloqueadas;
@@ -73,8 +73,8 @@ typedef struct {
 
 //Ojo: no olvidar reservar memoria cuando creemos un t_nodoBloqueado*
 typedef struct {
-	t_Esi esi;
-	t_instruccion intruccion;
+	t_Esi* esi;
+	t_instruccion* intruccion;
 
 } t_nodoBloqueado;
 
@@ -96,6 +96,7 @@ t_list* list_ready;
 t_list* list_blocked;
 t_list* list_finished;
 
+t_Esi* esi_ejecutando;
 
 t_list* create_list_ready();
 
@@ -121,6 +122,10 @@ bool ordenar_por_SJFt(t_Esi * esi_menor, t_Esi * esi);
 
 bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi);
 
+void agregar_en_Lista(t_list* lista, t_Esi *esi);
+
+void agregar_en_bloqueados(t_Esi *esi, t_instruccion * instruccionBloqueante);
+
 bool aplico_algoritmo();
 
 //Remueve (y libera) cualquiere t_Esi de la lista que tenga ese fd
@@ -131,5 +136,7 @@ t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int fd_esi);
 void  continuar_comunicacion();
 
 void order_list(t_list* lista, void * funcion);
+
+void cambio_de_lista(t_list* list_ready,t_list* list_finished, int id_esi);
 
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */
