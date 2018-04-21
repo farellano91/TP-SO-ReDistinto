@@ -26,6 +26,7 @@
 int puerto_escucha;
 
 char* algoritmo_planificacion;
+double ALPHA;
 
 int estimacion_inicial;
 
@@ -37,7 +38,7 @@ char* ip_config_coordinador;
 int puerto_config_coordinador;
 
 //este flag es para el caso de que la consola me deje en pausa
-int status_planificador;
+bool planificador_en_pausa;
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
@@ -45,8 +46,6 @@ void get_parametros_config();
 //libera todos los parametros que tenga
 void free_parametros_config();
 
-//Constante
-#define ALPHA 0.5
 
 enum t_operationCode {
 	GET = 0, SET = 1, STORE = 2,
@@ -74,8 +73,8 @@ typedef struct {
 
 //Ojo: no olvidar reservar memoria cuando creemos un t_nodoBloqueado*
 typedef struct {
-	t_Esi* esi;
-	t_instruccion* intruccion;
+	t_Esi esi;
+	t_instruccion intruccion;
 
 } t_nodoBloqueado;
 
@@ -118,8 +117,11 @@ double getT_time_HRRN(t_Esi* esi);
 
 // Inserto en la lista de bloqueas, pero en base al nodo block.
 
+bool ordenar_por_SJFt(t_Esi * esi_menor, t_Esi * esi);
 
-void aplico_algoritmo();
+bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi);
+
+bool aplico_algoritmo();
 
 //Remueve (y libera) cualquiere t_Esi de la lista que tenga ese fd
 void remove_esi_by_fd(t_list* lista , int fd);
@@ -127,5 +129,7 @@ void remove_esi_by_fd(t_list* lista , int fd);
 t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int fd_esi);
 
 void  continuar_comunicacion();
+
+void order_list(t_list* lista, void * funcion);
 
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

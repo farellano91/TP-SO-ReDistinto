@@ -225,15 +225,18 @@ void levantar_servidor_planificador() {
 							printf("ESI id: %d envio saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
 							list_add_in_index(list_ready,0,nuevo_esi);
-							//aplico_algoritmo();
-							continuar_comunicacion();
-
+							if(aplico_algoritmo()){
+								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
+								continuar_comunicacion();
+							}
 						}
 						if(respuesta.id_tipo_respuesta == 2){
 							//Respuesta de una operacion que le pedi
 							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
-							//aplico_algoritmo();
-							continuar_comunicacion();
+							if(aplico_algoritmo()){
+								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
+								continuar_comunicacion();
+							}
 
 						}
 						if(respuesta.id_tipo_respuesta == 3){

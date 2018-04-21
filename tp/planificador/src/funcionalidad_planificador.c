@@ -1,5 +1,6 @@
 #include "funcionalidad_planificador.h"
 
+
 void free_parametros_config(){
 	free(algoritmo_planificacion);
 	free(ip_config_coordinador);
@@ -17,7 +18,10 @@ void get_parametros_config() {
 	puerto_escucha = config_get_int_value(config,"PUERTO_ESCUCHA");
 
 	algoritmo_planificacion = malloc(sizeof(char) * 100);
+	// HRRN , SJF, SJFD
 	strcpy(algoritmo_planificacion,config_get_string_value(config, "ALGORITMO_PLANIFICACION"));
+
+	ALPHA = config_get_double_value(config,"ALPHA");
 
 	estimacion_inicial = config_get_int_value(config,"ESTIMACION_INICIAL");
 
@@ -45,11 +49,24 @@ t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int fd_esi){
 	return esi;
 }
 
-void aplico_algoritmo(){
-	//COntrolo que no este en pausa => status_planificador
-	//1.- Ordena la lista list_ready (VG)
-
-
+bool aplico_algoritmo(){
+//1.- Ordena la lista list_ready (VG)
+if(!planificador_en_pausa){
+	bool sContinuarComunicacion = true;
+	if (strcmp(algoritmo_planificacion,"SJF") == 0){
+		order_list(list_ready,  (void*) ordenar_por_SJFt);
+	}
+	// Ordena igual que SJFD pero desaloja el ESI que actualmente este procesando.
+	if (strcmp(algoritmo_planificacion,"SJFD") == 0){
+		 order_list(list_ready,  (void*) ordenar_por_SJFt);
+			sContinuarComunicacion = false;
+     }
+	if (strcmp(algoritmo_planificacion,"HRRN") == 0){
+		order_list(list_ready,  (void*) ordenar_por_HRRN);
+	}
+   return sContinuarComunicacion;
+}
+return false;
 }
 
 //Envia permiso de hacer una lectura a ESI
@@ -67,13 +84,16 @@ void continuar_comunicacion(){
 	printf("Envie permiso ESI de ID: %d\n", primer_esi->id);
 }
 
+// en base a este ejemplo: https://github.com/sisoputnfrba/ansisop-panel/blob/master/panel/kernel.c
 void remove_esi_by_fd(t_list* list, int fd){
-
+	bool _esElfd(int* _fd) { return *_fd == fd;}
+	list_remove_and_destroy_by_condition(list,(void*) _esElfd, free);
 }
 
 
 t_list* create_list_ready(){
 	t_list * Lready = list_create();
+
 	return Lready;
 }
 t_list* create_list_blocked(){
@@ -119,23 +139,31 @@ double getT_time_HRRN(t_Esi* esi){
 }
 
 /*------------------------------ORDENAMIENTO SIN DESALOJO--------------------------*/
-
 //Ordena mi list (seria sobre mi lista de ready)
-void order_list(t_list* lista, void* funcion){
+void order_list(t_list* lista, void * funcion){
 	list_sort(lista, (void*) funcion);
 }
 
 //Criterio de ordenamiento por get_time_SJF (sin desalojo)
 //condicion para q el primer parametro este antes del segundo parametro
-bool por_SJF_sin_desalojo(t_Esi * esi_menor, t_Esi * esi) {
+bool ordenar_por_SJFt(t_Esi * esi_menor, t_Esi * esi) {
 	return (get_time_SJF(esi_menor) < get_time_SJF(esi));
 }
 
-////Criterio de ordenamiento por GetTimeTHR sin desalojo
+////Criterio de ordenamiento por GetTimeTHR
 ////condicion para q el primer parametro este antes del segundo parametro
-//bool por_HRRN_sin_desalojo(t_Esi * esi_menor, t_Esi * esi) {
-//	return (GetTimeTHR(esi_menor) > GetTimeTHR(esi));
-//}
+bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi) {
+	return (getT_time_HRRN(esi_menor) > getT_time_HRRN(esi));
+}
 
+void agregar_en_bloqueados(t_Esi *esi, t_instruccion * instruccionBloqueante){
+	t_nodoBloqueado* nodoBloqueado = get_nodo_bloqueado(esi,instruccionBloqueante);
+	list_add( list_blocked,nodoBloqueado);
+}
+
+//Tanto para lista de listos como para la de finalizados.
+void agregar_en_Lista(t_list* lista, t_Esi *esi){
+		list_add( lista ,esi);
+}
 //TODO: criterio de ordenamiento SJF con DESALOJO
 

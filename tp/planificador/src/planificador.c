@@ -8,7 +8,7 @@
 int main(void) {
 
 	get_parametros_config();
-	status_planificador = 1;
+	planificador_en_pausa = false;
 	//PARA CONVERSAR CON EL COORDINADOR
 	pthread_t punteroHiloInfoCoordinador;
 	pthread_create(&punteroHiloInfoCoordinador, NULL,(void*) recibirInfoCoordinador, NULL);
