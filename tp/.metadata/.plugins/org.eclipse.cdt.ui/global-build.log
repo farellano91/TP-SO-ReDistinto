@@ -1,21 +1,77 @@
-17:04:47 **** Incremental Build of configuration Debug for project coordinador ****
+22:31:12 **** Build of configuration Debug for project coordinador ****
 make all 
-make: No se hace nada para «all».
-17:04:47 **** Incremental Build of configuration Debug for project esi ****
+Building file: ../src/coordinador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/coordinador.d" -MT"src/coordinador.d" -o "src/coordinador.o" "../src/coordinador.c"
+Finished building: ../src/coordinador.c
+ 
+Building file: ../src/funcionalidad_coordinador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_coordinador.d" -MT"src/funcionalidad_coordinador.d" -o "src/funcionalidad_coordinador.o" "../src/funcionalidad_coordinador.c"
+Finished building: ../src/funcionalidad_coordinador.c
+ 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantar_servidor_coordinador’:
+../src/servidor.c:300:13: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+     (struct sockaddr *) &their_addr, &sin_size)) == -1) {
+             ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:1:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: coordinador
+Invoking: GCC C Linker
+gcc  -o "coordinador"  ./src/coordinador.o ./src/funcionalidad_coordinador.o ./src/servidor.o   -lcommons -lpthread
+Finished building target: coordinador
+ 
+22:31:12 **** Build of configuration Debug for project esi ****
 make all 
-make: No se hace nada para «all».
-17:04:47 **** Incremental Build of configuration Debug for project instancia ****
+Building file: ../src/archivo.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/archivo.d" -MT"src/archivo.d" -o "src/archivo.o" "../src/archivo.c"
+Finished building: ../src/archivo.c
+ 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.d" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
+Building file: ../src/esi.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/esi.d" -MT"src/esi.d" -o "src/esi.o" "../src/esi.c"
+Finished building: ../src/esi.c
+ 
+Building file: ../src/funcionalidad_esi.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_esi.d" -MT"src/funcionalidad_esi.d" -o "src/funcionalidad_esi.o" "../src/funcionalidad_esi.c"
+Finished building: ../src/funcionalidad_esi.c
+ 
+Building target: esi
+Invoking: GCC C Linker
+gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o   -lcommons
+Finished building target: esi
+ 
+22:31:13 **** Build of configuration Debug for project instancia ****
 make all 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.d" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
+Building file: ../src/funcionalidad_instancia.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_instancia.d" -MT"src/funcionalidad_instancia.d" -o "src/funcionalidad_instancia.o" "../src/funcionalidad_instancia.c"
+Finished building: ../src/funcionalidad_instancia.c
+ 
 Building file: ../src/instancia.c
 Invoking: GCC C Compiler
 gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/instancia.d" -MT"src/instancia.d" -o "src/instancia.o" "../src/instancia.c"
-In file included from ../src/instancia.c:3:0:
-../src/funcionalidad_instancia.h:31:1: warning: parameter names (without types) in function declaration [enabled by default]
- void recibo_datos_entrada(sockfd);
- ^
-../src/funcionalidad_instancia.h:34:1: warning: parameter names (without types) in function declaration [enabled by default]
- void envio_datos(sockfd);
- ^
 Finished building: ../src/instancia.c
  
 Building target: instancia
@@ -23,6 +79,45 @@ Invoking: GCC C Linker
 gcc  -o "instancia"  ./src/cliente.o ./src/funcionalidad_instancia.o ./src/instancia.o   -lcommons
 Finished building target: instancia
  
-17:04:47 **** Incremental Build of configuration Debug for project planificador ****
+22:31:14 **** Build of configuration Debug for project planificador ****
 make all 
-make: No se hace nada para «all».
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.d" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
+Building file: ../src/consola.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/consola.d" -MT"src/consola.d" -o "src/consola.o" "../src/consola.c"
+Finished building: ../src/consola.c
+ 
+Building file: ../src/funcionalidad_planificador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_planificador.d" -MT"src/funcionalidad_planificador.d" -o "src/funcionalidad_planificador.o" "../src/funcionalidad_planificador.c"
+Finished building: ../src/funcionalidad_planificador.c
+ 
+Building file: ../src/planificador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/planificador.d" -MT"src/planificador.d" -o "src/planificador.o" "../src/planificador.c"
+Finished building: ../src/planificador.c
+ 
+Building file: ../src/servidor.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
+../src/servidor.c: In function ‘levantar_servidor_planificador’:
+../src/servidor.c:184:16: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+        (struct sockaddr *) &their_addr, &sin_size))
+                ^
+In file included from /usr/include/netinet/in.h:23:0,
+                 from ../src/servidor.h:11,
+                 from ../src/servidor.c:1:
+/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
+ extern int accept (int __fd, __SOCKADDR_ARG __addr,
+            ^
+Finished building: ../src/servidor.c
+ 
+Building target: planificador
+Invoking: GCC C Linker
+gcc  -o "planificador"  ./src/cliente.o ./src/consola.o ./src/funcionalidad_planificador.o ./src/planificador.o ./src/servidor.o   -lcommons -lpthread -lreadline
+Finished building target: planificador
+ 

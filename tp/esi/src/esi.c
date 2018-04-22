@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
 	int numbytes = 0;
 	int32_t permiso = 0; //1: OK
 	int32_t resultado_coordinador = 0; //1:falle , 2:ok , 3: ok pero te bloqueaste
+	printf("Espero permiso para empezar...\n");
 	while (fgets(line, 500, file)) {
 		//TODO:parseo la linea
 
@@ -125,7 +126,7 @@ int main(int argc, char** argv) {
 		printf("No se pudo enviar respuesta al planificador\n");
 		exit(1);
 	}
-	printf("Respuesta de que termine enviado correctamente al planificador\n");
+	printf("TERMINE!!\n");
 
 	free(line);
 	txt_close_file(file);

@@ -121,15 +121,11 @@ void recibo_lineas(int fd_esi) {
 					//-> envio al planificador la linea
 					if (fd_planificador != -1) {
 
-						//Ver pag.9 log de cada ESI N° - SECUENCIA
-						//TODO: falta saber el id del ESI ;) (revisar cuando estaria bueno cerrarlo posta
-						//ojo q tiene q logger siempre, leer pag.8!!!)
-
 						log_info(logger,linea);
 
 						if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
 
-							t_InfoCoordinador infoCoordinador = {.id = 0 , .clave =""};
+							t_InfoCoordinador infoCoordinador = {.id = 0 , .clave ="" , .id_esi= 0};
 
 							if (strstr(linea, "GET") != NULL) {
 								infoCoordinador.id = 1;
@@ -137,7 +133,7 @@ void recibo_lineas(int fd_esi) {
 								infoCoordinador.id = 2;
 							}
 							strcpy(infoCoordinador.clave, linea);
-
+							infoCoordinador.id_esi = id_esi;
 							if (send(fd_planificador, &infoCoordinador,
 									sizeof(t_InfoCoordinador), 0) == -1) {
 								printf("No se pudo enviar la info\n");

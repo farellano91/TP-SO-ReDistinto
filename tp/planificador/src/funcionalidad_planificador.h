@@ -64,20 +64,26 @@ typedef struct {
 } t_Esi;
 
 //Ojo: no olvidar reservar memoria cuando creemos un t_instruccion*
-typedef struct {
-	enum t_operationCode operation;
-	char *key;
-	char *value;
-
-} t_instruccion;
+//typedef struct {
+//	enum t_operationCode operation;
+//	char clave[40];
+//	char value[100];
+//
+//} t_instruccion;
 
 //Ojo: no olvidar reservar memoria cuando creemos un t_nodoBloqueado*
 typedef struct {
 	t_Esi* esi;
-	t_instruccion* intruccion;
+	char clave[40];
 
 } t_nodoBloqueado;
 
+
+typedef struct {
+	t_Esi* esi;
+	char clave[40];
+
+} t_esiBloqueador;
 
 
 /*ESI envia al planificador una respuesta al saludo o a la instruccion que hizo
@@ -93,18 +99,20 @@ typedef struct Respuesta_para_planificador{
 
 
 t_list* list_ready;
+
+//lista de t_nodoBloqueado
 t_list* list_blocked;
+
 t_list* list_finished;
 
-t_Esi* esi_ejecutando;
+t_list* list_execute;
 
-t_list* create_list_ready();
+//lista (tabla) de t_esi_bloqueador
+t_list* list_esi_bloqueador;
 
-t_list* create_list_blocked();
+t_list* create_list();
 
-t_list* create_list_finished();
-
-t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, t_instruccion* instruccion);
+t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char clave[40]);
 
 
 // dado un esi que me llega como parametro, me estima cuantas rafagas de cpu consumira.
@@ -124,12 +132,16 @@ bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi);
 
 void agregar_en_Lista(t_list* lista, t_Esi *esi);
 
-void agregar_en_bloqueados(t_Esi *esi, t_instruccion * instruccionBloqueante);
+void agregar_en_bloqueados(t_Esi *esi, char clave[40]);
+
+bool aplico_algoritmo_ultimo();
+
+bool aplico_algoritmo_primer_ingreso();
 
 bool aplico_algoritmo();
 
-//Remueve (y libera) cualquiere t_Esi de la lista que tenga ese fd
-void remove_esi_by_fd(t_list* lista , int fd);
+//Remueve (y libera) cualquiere t_Esi de todas las lista
+void remove_esi_by_fd(int fd);
 
 t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int fd_esi);
 
@@ -138,5 +150,7 @@ void  continuar_comunicacion();
 void order_list(t_list* lista, void * funcion);
 
 void cambio_de_lista(t_list* list_ready,t_list* list_finished, int id_esi);
+
+void free_recurso(int i);
 
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

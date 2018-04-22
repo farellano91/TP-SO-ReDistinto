@@ -91,5 +91,6 @@ void agrego_instancia_lista(t_list* list_instancias,t_Instancia* instancia_nueva
 
 	pthread_mutex_lock(&mutex);
 	list_add(list_instancias,instancia_nueva); //esto lo encola al final
+	printf("Se agrego la instancia de nombre:%s a la lista\n",instancia_nueva->nombre_instancia);
 	pthread_mutex_unlock(&mutex);
 }

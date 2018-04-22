@@ -88,7 +88,7 @@ void recibirInfoCoordinador() {
 	while (1) {
 		infoCoordinador.id = 0;
 		strcpy(infoCoordinador.clave ,"");
-
+		infoCoordinador.id_esi = 0;
 		if ((numbytes = recv(fdCoordinador, &infoCoordinador,
 				sizeof(t_InfoCoordinador), 0)) <= 0) {
 			if(numbytes < 0 ){
@@ -101,11 +101,21 @@ void recibirInfoCoordinador() {
 			switch (infoCoordinador.id) {
 			case 1:
 				puts("Recibi un GET!!!!!!!!!!!!!");
-				//TODO:CODIGO PARA HACER SI RECIBO GET y mando respuesta
+				//Controlo si get es sobre un recurso tomado
+//				if(find_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi)){
+//					//muevo de execute a block al ESI
+//					//envio mensaje de que se bloqueo ese ESI
+//				}else{
+//					//registro la clave y continua
+//					//envio mensaje de ejecutado OK
+//				}
 				break;
 			case 2:
 				puts("Recibi un STORE!!!!!!!!!!!");
-				//TODO:CODIGO PARA HACER SI RECIBO STORE y mando respuesta
+				//libero el recurso (borro de list_esi_bloqueador el esi q corresponda)
+				//libero_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi);
+				//paso de bloqueado a listo todos los ESIs que querian esa clave
+				//envio mensaje de ejecutado OK
 				break;
 
 			}

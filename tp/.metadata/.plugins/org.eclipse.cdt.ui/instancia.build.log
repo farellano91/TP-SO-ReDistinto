@@ -1,15 +1,18 @@
-17:04:47 **** Incremental Build of configuration Debug for project instancia ****
+22:31:13 **** Build of configuration Debug for project instancia ****
 make all 
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.d" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
+Building file: ../src/funcionalidad_instancia.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_instancia.d" -MT"src/funcionalidad_instancia.d" -o "src/funcionalidad_instancia.o" "../src/funcionalidad_instancia.c"
+Finished building: ../src/funcionalidad_instancia.c
+ 
 Building file: ../src/instancia.c
 Invoking: GCC C Compiler
 gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/instancia.d" -MT"src/instancia.d" -o "src/instancia.o" "../src/instancia.c"
-In file included from ../src/instancia.c:3:0:
-../src/funcionalidad_instancia.h:31:1: warning: parameter names (without types) in function declaration [enabled by default]
- void recibo_datos_entrada(sockfd);
- ^
-../src/funcionalidad_instancia.h:34:1: warning: parameter names (without types) in function declaration [enabled by default]
- void envio_datos(sockfd);
- ^
 Finished building: ../src/instancia.c
  
 Building target: instancia
@@ -18,5 +21,5 @@ gcc  -o "instancia"  ./src/cliente.o ./src/funcionalidad_instancia.o ./src/insta
 Finished building target: instancia
  
 
-17:04:47 Build Finished (took 170ms)
+22:31:14 Build Finished (took 592ms)
 

@@ -19,8 +19,13 @@ int main(void) {
 	envio_datos(sockfd);
 
 	// TODO:espero q el coordinador me de una tarea para hacer
+    // recibo_sentencia(sockfd);
+    //envio_resultado(sockfd);
 
-
+	//while para q no termine
+	while(1){
+		/*nada*/
+	}
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
 	free(algoritmo_reemplazo);
 	free(punto_montaje);

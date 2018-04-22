@@ -43,6 +43,7 @@ int fd_planificador;
 typedef struct InfoCoordinador{
 	int id; //1 o 2
 	char clave[40];
+	int id_esi;
 } __attribute__((packed)) t_InfoCoordinador;
 
 

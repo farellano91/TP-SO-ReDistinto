@@ -82,17 +82,15 @@ void intHandler(int dummy) {
 }
 
 void crear_listas_globales(){
-	list_ready = create_list_ready();
-	list_blocked = create_list_blocked();
-	list_finished = create_list_finished();
+	list_ready = create_list();
+	list_blocked = create_list();
+	list_finished = create_list();
+	list_execute = create_list();
 
 }
 void levantar_servidor_planificador() {
 	//cree mis listas globales
 	crear_listas_globales();
-
-	//inicializo mi esi_ejecucion
-	esi_ejecutando = NULL;
 
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
@@ -221,7 +219,9 @@ void levantar_servidor_planificador() {
 						}
 						close(i); // si ya no conversare mas con el cliente, lo cierro
 						FD_CLR(i, &master); // eliminar del conjunto maestro
-						remove_esi_by_fd(list_ready,i); //Lo borramos de ready, liberar memoria!!, i es el fd del ESI
+						remove_esi_by_fd(i); //Lo borramos de todos lados, no lo usaremos mas!
+						free_recurso(i); //liberamos los recursos que tenia ya que murio el esi
+
 					}else{
 						if(respuesta.id_tipo_respuesta == 1){
 							//Respuesta al primer saludo (todo nuevo)
@@ -229,7 +229,7 @@ void levantar_servidor_planificador() {
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
 							agregar_en_Lista(list_ready,nuevo_esi);
 
-							if(aplico_algoritmo()){
+							if(aplico_algoritmo_primer_ingreso()){
 								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
 								continuar_comunicacion();
 							}
@@ -248,8 +248,11 @@ void levantar_servidor_planificador() {
 							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
-							cambio_de_lista(list_ready,list_finished,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
-
+							cambio_de_lista(list_execute,list_finished,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
+							if(aplico_algoritmo_ultimo()){
+								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
+								continuar_comunicacion();
+							}
 						}
 					}
 
