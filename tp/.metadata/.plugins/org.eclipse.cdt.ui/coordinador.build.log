@@ -1,4 +1,4 @@
-22:31:12 **** Build of configuration Debug for project coordinador ****
+22:39:10 **** Build of configuration Debug for project coordinador ****
 make all 
 Building file: ../src/coordinador.c
 Invoking: GCC C Compiler
@@ -14,7 +14,7 @@ Building file: ../src/servidor.c
 Invoking: GCC C Compiler
 gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.d" -o "src/servidor.o" "../src/servidor.c"
 ../src/servidor.c: In function ‘levantar_servidor_coordinador’:
-../src/servidor.c:300:13: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
+../src/servidor.c:306:13: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
      (struct sockaddr *) &their_addr, &sin_size)) == -1) {
              ^
 In file included from /usr/include/netinet/in.h:23:0,
@@ -31,5 +31,5 @@ gcc  -o "coordinador"  ./src/coordinador.o ./src/funcionalidad_coordinador.o ./s
 Finished building target: coordinador
  
 
-22:31:12 Build Finished (took 385ms)
+22:39:10 Build Finished (took 273ms)
 

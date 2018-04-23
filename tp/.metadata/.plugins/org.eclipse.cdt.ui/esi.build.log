@@ -1,4 +1,4 @@
-22:31:12 **** Build of configuration Debug for project esi ****
+22:39:10 **** Build of configuration Debug for project esi ****
 make all 
 Building file: ../src/archivo.c
 Invoking: GCC C Compiler
@@ -26,5 +26,5 @@ gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_e
 Finished building target: esi
  
 
-22:31:13 Build Finished (took 786ms)
+22:39:10 Build Finished (took 316ms)
 

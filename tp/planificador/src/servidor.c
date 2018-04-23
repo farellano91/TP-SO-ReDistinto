@@ -86,6 +86,7 @@ void crear_listas_globales(){
 	list_blocked = create_list();
 	list_finished = create_list();
 	list_execute = create_list();
+	list_esi_bloqueador = create_list();
 
 }
 void levantar_servidor_planificador() {

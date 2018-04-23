@@ -113,7 +113,7 @@ t_list* list_esi_bloqueador;
 t_list* create_list();
 
 t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char clave[40]);
-
+t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char clave[40]);
 
 // dado un esi que me llega como parametro, me estima cuantas rafagas de cpu consumira.
 double  get_time_SJF(t_Esi* esi);

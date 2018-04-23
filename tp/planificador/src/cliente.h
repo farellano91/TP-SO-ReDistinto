@@ -34,6 +34,16 @@ typedef struct InfoCoordinador{
  * */
 void recibirInfoCoordinador();
 
+//Busca dentro de list_esi_bloqueador si hay un esi de id y clave que ya tomo el recurso
+bool find_recurso_by_clave_id(char clave[40],int id_esi);
+
+//libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
+void libero_recurso_by_clave_id(char clave[40],int id_esi);
+
+//paso de bloqueado a listo todos los ESIs que querian esa clave
+void move_all_esi_bloqueado_listo(char clave[40]);
+
+void send_mensaje(int fdCoordinador,int tipo_respuesta);
 #endif
 
 

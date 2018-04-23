@@ -1,0 +1,60 @@
+[INFO] 22:54:52:944 tp-redistinto/(6100:6100): Empezamos.....
+[INFO] 22:56:05:698 tp-redistinto/(6100:6184): GET 0111:0111
+
+[INFO] 22:57:25:941 tp-redistinto/(6210:6210): Empezamos.....
+[INFO] 22:57:39:117 tp-redistinto/(6210:6217): GET 0111:0111
+
+[INFO] 22:58:33:989 tp-redistinto/(6227:6227): Empezamos.....
+[INFO] 22:59:12:891 tp-redistinto/(6227:6280): GET 0111:0111
+
+[INFO] 23:02:36:135 tp-redistinto/(6377:6377): Empezamos.....
+[INFO] 23:02:45:186 tp-redistinto/(6377:6384): GET 0111:0111
+
+[INFO] 23:06:20:260 tp-redistinto/(6582:6582): Empezamos.....
+[INFO] 23:06:40:63 tp-redistinto/(6582:6589): GET 0111:0111
+
+[INFO] 23:06:45:63 tp-redistinto/(6582:6589): GET 0111:0112
+
+[INFO] 23:06:50:65 tp-redistinto/(6582:6589): STORE 0111:0111
+
+[INFO] 23:06:55:65 tp-redistinto/(6582:6589): STORE 0111:0112
+
+[INFO] 23:19:02:218 tp-redistinto/(6582:6691): GET 0111:0111
+
+[INFO] 23:19:27:593 tp-redistinto/(6582:6691): GET 0111:0112
+
+[INFO] 23:19:37:646 tp-redistinto/(6582:6691): STORE 0111:0111
+
+[INFO] 23:37:45:674 tp-redistinto/(6896:6896): Empezamos.....
+[INFO] 23:37:56:397 tp-redistinto/(6896:6903): GET 0111:0111
+
+[INFO] 23:38:01:398 tp-redistinto/(6896:6903): GET 0111:0112
+
+[INFO] 23:38:06:398 tp-redistinto/(6896:6903): STORE 0111:0111
+
+[INFO] 23:38:11:399 tp-redistinto/(6896:6903): STORE 0111:0112
+
+[INFO] 23:38:15:359 tp-redistinto/(6896:6905): GET 0111:0111
+
+[INFO] 23:38:20:359 tp-redistinto/(6896:6905): GET 0111:0112
+
+[INFO] 23:38:25:360 tp-redistinto/(6896:6905): STORE 0111:0111
+
+[INFO] 23:38:30:361 tp-redistinto/(6896:6905): STORE 0111:0112
+
+[INFO] 23:38:54:814 tp-redistinto/(6896:6907): GET 0111:0111
+
+[INFO] 23:38:59:814 tp-redistinto/(6896:6907): GET 0111:0112
+
+[INFO] 23:39:04:815 tp-redistinto/(6896:6907): STORE 0111:0111
+
+[INFO] 23:39:09:815 tp-redistinto/(6896:6907): STORE 0111:0112
+
+[INFO] 23:39:09:816 tp-redistinto/(6896:6909): GET 0111:0111
+
+[INFO] 23:39:14:816 tp-redistinto/(6896:6909): GET 0111:0112
+
+[INFO] 23:39:19:817 tp-redistinto/(6896:6909): STORE 0111:0111
+
+[INFO] 23:39:24:818 tp-redistinto/(6896:6909): STORE 0111:0112
+

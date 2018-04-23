@@ -86,6 +86,7 @@ void recibirInfoCoordinador() {
 	int numbytes = 0;
 
 	while (1) {
+		//TODO:ANALIZAR COMO CAMBIA AL USAR EL PARSE
 		infoCoordinador.id = 0;
 		strcpy(infoCoordinador.clave ,"");
 		infoCoordinador.id_esi = 0;
@@ -101,25 +102,103 @@ void recibirInfoCoordinador() {
 			switch (infoCoordinador.id) {
 			case 1:
 				puts("Recibi un GET!!!!!!!!!!!!!");
-				//Controlo si get es sobre un recurso tomado
-//				if(find_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi)){
-//					//muevo de execute a block al ESI
-//					//envio mensaje de que se bloqueo ese ESI
-//				}else{
-//					//registro la clave y continua
-//					//envio mensaje de ejecutado OK
-//				}
+				//Controlo si get es sobre un recurso tomado (osea dentro de list_esi_bloqueador para un unico ESI PAG.10)
+				if(find_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi)){
+
+					//muevo de execute a block al ESI
+					bool _esElid(t_Esi* un_esi) { return un_esi->id == infoCoordinador.id_esi;}
+					t_Esi* esi_buscado = list_find(list_execute,(void*) _esElid);
+					list_remove_by_condition(list_execute,(void*) _esElid);
+					t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_buscado,infoCoordinador.clave);
+					list_add(list_blocked,esi_bloqueado);
+
+					printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d\n",infoCoordinador.id_esi);
+
+					//envio mensaje de que se bloqueo ese ESI
+					send_mensaje(fdCoordinador,3);
+				}else{
+					//registro la clave y continua (cargo en lis_esi_bloqueador)
+					bool _esElid(t_Esi* un_esi) { return un_esi->id == infoCoordinador.id_esi;}
+					t_Esi* esi_buscado = list_find(list_execute,(void*) _esElid);
+					t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_buscado,infoCoordinador.clave);
+					list_add(list_esi_bloqueador,esi_bloqueador);
+
+					printf("Registro que ahora la clave:%s lo tomo el ESI ID:%d\n",infoCoordinador.clave,infoCoordinador.id_esi);
+
+					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
+					send_mensaje(fdCoordinador,2);
+				}
 				break;
 			case 2:
 				puts("Recibi un STORE!!!!!!!!!!!");
-				//libero el recurso (borro de list_esi_bloqueador el esi q corresponda)
-				//libero_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi);
+				//libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
+				//TODO:por ahora se supone que solo puedo hacer STORE de los recursos que tome
+				libero_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi);
+
 				//paso de bloqueado a listo todos los ESIs que querian esa clave
-				//envio mensaje de ejecutado OK
+				move_all_esi_bloqueado_listo(infoCoordinador.clave);
+
+				//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
+				send_mensaje(fdCoordinador,2);
 				break;
 
 			}
 		}
 
 	}
+}
+
+void send_mensaje(int fdCoordinador,int tipo_respuesta){
+	if (send(fdCoordinador, &tipo_respuesta,sizeof(int32_t), 0) == -1) {
+		perror("recv");
+		printf("No se pudo enviar el resultado del GET o STORE\n");
+		exit(1);
+	}
+	printf("Mensaje de ejecucion de GET o STORE enviado correctamente al coordinador\n");
+
+}
+
+
+bool find_recurso_by_clave_id(char clave[40],int id_esi){
+
+	bool resultado = false;
+	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
+
+	if(!list_is_empty(list_esi_bloqueador) &&
+			list_find(list_esi_bloqueador, (void*)_esElidClave) != NULL){
+		//Ya esta tomado ese recurso
+		resultado = true;
+	}
+	return resultado;
+}
+
+void libero_recurso_by_clave_id(char clave[40],int id_esi){
+	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
+
+	if(!list_is_empty(list_esi_bloqueador) &&
+			list_find(list_esi_bloqueador, (void*)_esElidClave) != NULL){
+
+		//Solo lo saco de la lista
+		list_remove_by_condition(list_esi_bloqueador,(void*)_esElidClave);
+		printf("Libero la clave:%s que tenia tomado el ESI ID:%d\n",clave,id_esi);
+	}
+}
+
+void move_all_esi_bloqueado_listo(char clave[40]){
+
+	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave));}
+	int cant_esis_mover = 0;
+
+	if(list_find(list_blocked, (void*)_esElid) != NULL){
+		cant_esis_mover = list_count_satisfying(list_blocked, (void*)_esElid);
+	}
+	int contador = 0;
+	while (contador < cant_esis_mover){
+		t_nodoBloqueado* nodoBloqueado = list_find(list_blocked,(void*) _esElid);
+		list_remove_by_condition(list_blocked,(void*) _esElid);
+		t_Esi* esi = nodoBloqueado->esi;
+		list_add(list_ready,esi);
+		contador++;
+	}
+
 }

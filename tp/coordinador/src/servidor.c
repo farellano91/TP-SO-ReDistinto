@@ -100,6 +100,7 @@ void recibo_lineas(int fd_esi) {
 				}
 			} else {
 
+				int32_t resultado_coordinador = 0;  //1:falle , 2:ok , 3: ok pero te bloqueaste
 				memcpy(linea, buffer, sizeof(char) * longitud);
 				printf("Recibi linea: %s\n", linea);
 
@@ -120,7 +121,7 @@ void recibo_lineas(int fd_esi) {
 					//Consulto si tengo un planificador conectado y si es GET/STORE lo que recibi
 					//-> envio al planificador la linea
 					if (fd_planificador != -1) {
-
+						int32_t respuesta_planificador = 0;
 						log_info(logger,linea);
 
 						if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
@@ -141,8 +142,14 @@ void recibo_lineas(int fd_esi) {
 							}
 							printf("Se envio la INFO al PLANIFICADOR correctamente\n");
 
-							//TODO:Aca recibo la respuesta del planificador
-
+							//TODO:Aca recibo la respuesta del planificador 1:falle , 2:ok , 3: ok pero te bloqueaste
+							if ((numbytes = recv(fd_planificador, &respuesta_planificador, sizeof(int32_t), 0)) == -1) {
+								printf("No se pudo recibir respuesta del planificador\n");
+								//MUERO
+								exit(1);
+							}
+							printf("Respuesta del planificador recibida");
+							resultado_coordinador = respuesta_planificador;
 						} else {
 							//TODO: si no es un get ni store, entonces es un set:
 							//1.- aplicar algoritmo de distribucion para decidir q instancia va
@@ -152,8 +159,7 @@ void recibo_lineas(int fd_esi) {
 
 						}
 
-						//envio resultado al esi (por ahora todo es OK)
-						int32_t resultado_coordinador = 2;  //1:falle , 2:ok , 3: ok pero te bloqueaste
+						//envio resultado al esi
 						if (send(fd_esi, &resultado_coordinador,sizeof(int32_t), 0) == -1) {
 							printf("No se pudo enviar resultado al ESI\n");
 							exit(1);

@@ -209,6 +209,18 @@ t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char clave[40]){
 	return nodoBloqueado;
 }
 
+//creo t_esiBloqueador usando un esi (que no deberia liberarlo aun) y su clave
+t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char clave[40]){
+
+	t_esiBloqueador* esiBloqueador = malloc(sizeof(t_esiBloqueador));
+	esiBloqueador->esi = malloc(sizeof(t_Esi));
+
+	esiBloqueador->esi = esi;
+	strcpy(esiBloqueador->clave,clave);
+
+	return esiBloqueador;
+}
+
 // dado un esi que me llega como parametro, me estima cuantas rafagas de cpu consumira.
 double  get_time_SJF(t_Esi* esi){
 	// alpha lo leo por config = 5
@@ -255,13 +267,15 @@ void agregar_en_Lista(t_list* lista, t_Esi *esi){
 //TODO: criterio de ordenamiento SJF con DESALOJO
 
 //Mueve mi esi de una lista a otra
-void cambio_de_lista(t_list* list_desde,t_list* list_finished, int id_esi){
+void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int id_esi){
 
 	bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
 	t_Esi* esi_buscado = list_find(list_desde,(void*) _esElid);
 
 	list_remove_by_condition(list_desde,(void*) _esElid);
+	agregar_en_Lista(list_hasta,esi_buscado);
 
-	agregar_en_Lista(list_finished,esi_buscado);
+
+
 }
 

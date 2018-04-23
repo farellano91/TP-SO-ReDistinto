@@ -5,7 +5,7 @@
 		<item value="true" key="ShowStatusLine"/>
 		<item value="false" key="FilterByLocation"/>
 		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;workingSet workingSetName=&quot;&quot;/&gt;" key="WorkingSet"/>
-		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;History&gt;&#x0A;&lt;historyRootNode&gt;&#x0A;&lt;infoNode path=&quot;/coordinador/src/coordinador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/esi/src/esi.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;/historyRootNode&gt;&#x0A;&lt;/History&gt;" key="History"/>
+		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;History&gt;&#x0A;&lt;historyRootNode&gt;&#x0A;&lt;infoNode path=&quot;/coordinador/src/coordinador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/esi/src/esi.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/planificador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;/historyRootNode&gt;&#x0A;&lt;/History&gt;" key="History"/>
 		<section name="DialogBoundsSettings">
 			<item value="600" key="DIALOG_WIDTH"/>
 			<item value="0" key="DIALOG_Y_ORIGIN"/>
@@ -19,6 +19,7 @@
 		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
 		<item value="false" key="WizardProjectsImportPage.STORE_NESTED_PROJECTS"/>
 		<list key="WizardProjectsImportPage.STORE_DIRECTORIES">
+			<item value="/home/utnso/workspace/tp-2018-1c-Real-Mandril/tp"/>
 			<item value="/home/utnso/tp-2018-1c-Real-Mandril/tp/coordinador"/>
 		</list>
 		<list key="WizardProjectsImportPage.STORE_ARCHIVES">
