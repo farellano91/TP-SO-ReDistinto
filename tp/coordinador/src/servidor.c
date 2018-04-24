@@ -83,6 +83,7 @@ void recibo_lineas(int fd_esi) {
 
 		} else {
 			printf("Proceso sentencia de ESI ID:%d\n",id_esi);
+
 			int32_t operacion = 0;
 			if ((numbytes = recv(fd_esi, &operacion, sizeof(int32_t), 0))
 					<= 0) {
@@ -107,7 +108,7 @@ void recibo_lineas(int fd_esi) {
 
 						 /*ORDENO LA COLA PARA TOMAR EL PRIMERO EN LA SIGUIENTE FUNCION */
 						//2.- enviar la peticion a la instancia elegida
-						envio_tarea_instancia(2,get_clave_recibida(fd_esi),get_valor_recibido(fd_esi),id_esi);
+						envio_tarea_instancia(2,get_clave_valor(fd_esi),id_esi);
 						//3.- recibir una respuesta de la instancia
 						//seteo tipo respuesta en resultado_linea
 
@@ -129,9 +130,23 @@ void recibo_lineas(int fd_esi) {
 	}
 }
 
-char* get_valor_recibido(int fd_esi){
+char ** get_clave_valor(int fd_esi){
+
+	int leng_clave = 0;
 	int leng_valor = 0;
 	int numbytes = 0;
+	if ((numbytes = recv(fd_esi, &leng_clave, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir el tamaño de la clave\n");
+		//MUERO
+		exit(1);
+	}
+	char* clave = malloc(sizeof(char) * leng_clave);
+	if ((numbytes = recv(fd_esi, clave, sizeof(char) * leng_clave, 0)) == -1) {
+		printf("No se pudo recibir la clave\n");
+		//MUERO
+		exit(1);
+	}
+
 	if ((numbytes = recv(fd_esi, &leng_valor, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir el tamaño del valor\n");
 		//MUERO
@@ -143,9 +158,13 @@ char* get_valor_recibido(int fd_esi){
 		//MUERO
 		exit(1);
 	}
-	printf("Recibi valor: %s de longitud: %d correctamente\n",valor,leng_valor);
-	return valor;
+	printf("Recibi clave: %s valor: %s correctamente\n",clave,valor);
 
+	char ** resultado = malloc(sizeof(char*) * 2);
+	resultado[0] = clave;
+	resultado[1] = valor;
+
+	return resultado;
 }
 
 
@@ -169,7 +188,6 @@ char* get_clave_recibida(int fd_esi){
 }
 
 void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi){
-	//envio resultado al esi
 	if (send(fd_esi, &resultado_linea,sizeof(int32_t), 0) == -1) {
 		printf("No se pudo enviar resultado al ESI\n");
 		exit(1);
@@ -190,12 +208,20 @@ int recibo_resultado_planificador(int resultado_linea){
 	return resultado_planificador;
 }
 
-void envio_tarea_instancia(int32_t id_operacion, char* clave_recibida, char* valor_recibido, int32_t id_esi){
+void envio_tarea_instancia(int32_t id_operacion, char** clave_valor_recibido, int32_t id_esi){
 	//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
+
+	loggeo_info(id_operacion,id_esi,clave_valor_recibido[0],clave_valor_recibido[1]);
+	printf("Se envio la tarea con clave: %s valor: %s ID de ESI:%d a la INSTANCIA correctamente\n",clave_valor_recibido[0],clave_valor_recibido[1],id_esi);
+
+	free(clave_valor_recibido[0]);
+	free(clave_valor_recibido[1]);
+	free(clave_valor_recibido);
 }
 
 void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi){
 
+	loggeo_info(id_operacion,id_esi,clave_recibida,"");
 	int32_t len_clave = strlen(clave_recibida) + 1;
 
 	//envio: ID_OPERACION,ID_ESI,LENG_CLAVE,CLAVE
@@ -214,6 +240,35 @@ void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t 
 	free(bufferEnvio);
 }
 
+void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* valor_recibida){
+	char* registro = malloc(sizeof(char)*500);
+	strcpy(registro,"ESI ");
+	strcat(registro,string_itoa(id_esi));
+	switch (id_operacion) {
+		case 1:
+			//GET q tiene CLAVE
+			strcat(registro," GET ");
+			strcat(registro,clave_recibida);
+			break;
+		case 2:
+			//SET  q tiene CLAVE VALOR
+			strcat(registro," SET ");
+			strcat(registro,clave_recibida);
+			strcat(registro," ");
+			strcat(registro,valor_recibida);
+			break;
+		case 3:
+			//STORE q tiene CLAVE
+			strcat(registro," STORE ");
+			strcat(registro,clave_recibida);
+			break;
+
+		default:
+			break;
+	}
+	log_info(logger,registro);
+	free(registro);
+}
 
 /*PROTOCOLO:
  * tipo_cliente: 1 -> ESI

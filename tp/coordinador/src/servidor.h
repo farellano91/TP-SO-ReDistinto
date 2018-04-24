@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <pthread.h>
+#include <commons/string.h>
 #include <commons/config.h>
 #include "funcionalidad_coordinador.h"
 
@@ -37,7 +38,7 @@ typedef struct InfoCoordinador{
 	char* clave;
 } t_InfoCoordinador;
 
-char* get_valor_recibido(int fd_esi);
+char ** get_clave_valor(int fd_esi);
 
 char* get_clave_recibida(int fd_esi);
 
@@ -47,7 +48,7 @@ int recibo_resultado_planificador();
 
 void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi);
 
-void envio_tarea_instancia(int32_t id_operacion, char* clave_recibida, char* valor_recibido , int32_t id_esi);
+void envio_tarea_instancia(int32_t id_operacion, char** clave_valor_recibido , int32_t id_esi);
 
 void levantar_servidor_coordinador();
 
@@ -59,7 +60,8 @@ void atender_cliente(void* idSocketCliente);
 
 //Para ESI
 void recibo_lineas(int fdCliente);
-/**/
+
+void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* valor_recibida);
 
 #endif
 

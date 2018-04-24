@@ -1,4 +1,4 @@
-12:29:56 **** Incremental Build of configuration Debug for project esi ****
+14:47:53 **** Incremental Build of configuration Debug for project esi ****
 make all 
 Building file: ../src/esi.c
 Invoking: GCC C Compiler
@@ -11,5 +11,5 @@ gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_e
 Finished building target: esi
  
 
-12:29:57 Build Finished (took 693ms)
+14:47:54 Build Finished (took 394ms)
 
