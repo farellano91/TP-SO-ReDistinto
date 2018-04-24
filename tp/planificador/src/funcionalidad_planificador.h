@@ -74,14 +74,14 @@ typedef struct {
 //Ojo: no olvidar reservar memoria cuando creemos un t_nodoBloqueado*
 typedef struct {
 	t_Esi* esi;
-	char clave[40];
+	char* clave;
 
 } t_nodoBloqueado;
 
 
 typedef struct {
 	t_Esi* esi;
-	char clave[40];
+	char* clave;
 
 } t_esiBloqueador;
 
@@ -94,7 +94,6 @@ typedef struct Respuesta_para_planificador{
 	int id_tipo_respuesta;
 	int id_esi; //1 o 2
 	char mensaje[100];
-	char clave[40];
 } __attribute__((packed)) t_respuesta_para_planificador;
 
 
@@ -112,8 +111,8 @@ t_list* list_esi_bloqueador;
 
 t_list* create_list();
 
-t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char clave[40]);
-t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char clave[40]);
+t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char* clave);
+t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char* clave);
 
 // dado un esi que me llega como parametro, me estima cuantas rafagas de cpu consumira.
 double  get_time_SJF(t_Esi* esi);
@@ -132,7 +131,7 @@ bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi);
 
 void agregar_en_Lista(t_list* lista, t_Esi *esi);
 
-void agregar_en_bloqueados(t_Esi *esi, char clave[40]);
+void agregar_en_bloqueados(t_Esi *esi, char* clave);
 
 bool aplico_algoritmo_ultimo();
 

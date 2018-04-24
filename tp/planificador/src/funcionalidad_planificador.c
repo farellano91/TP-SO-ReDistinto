@@ -170,10 +170,27 @@ void continuar_comunicacion(){
 // en base a este ejemplo: https://github.com/sisoputnfrba/ansisop-panel/blob/master/panel/kernel.c
 
 void free_nodoBLoqueado(t_nodoBloqueado* nodoBloqueado){
-	free(nodoBloqueado->esi);
-	free(nodoBloqueado);
+
+
+	if (nodoBloqueado->clave)
+		free(nodoBloqueado->clave);
+	if (nodoBloqueado)
+		free(nodoBloqueado);
+
 
 }
+
+//TODO:analizar si esto funciona, (si el esi esta liberado lo toma como NULL?)
+void free_esiBloqueador(t_esiBloqueador* nodoBloqueado){
+
+
+	if (nodoBloqueado->clave)
+		free(nodoBloqueado->clave);
+	if (nodoBloqueado)
+		free(nodoBloqueado);
+
+}
+
 void remove_esi_by_fd(int fd){
 	bool _esElfd(t_Esi* un_esi) { return un_esi->fd == fd;}
 	list_remove_and_destroy_by_condition(list_ready,(void*) _esElfd, free);
@@ -181,14 +198,30 @@ void remove_esi_by_fd(int fd){
 	list_remove_and_destroy_by_condition(list_finished,(void*) _esElfd, free);
 
 	bool _esElfdBlocked(t_nodoBloqueado* nodo_bloqueado) { return nodo_bloqueado->esi->fd == fd;}
-	list_remove_and_destroy_by_condition(list_blocked,(void*) _esElfd,(void*) free_nodoBLoqueado);
+	list_remove_and_destroy_by_condition(list_blocked,(void*) _esElfdBlocked,(void*) free_nodoBLoqueado);
+
+	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
+	list_remove_and_destroy_by_condition(list_esi_bloqueador,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
+
 
 }
-
+//libero tooodos los get clave que tenia tomado el esi de fd
 void free_recurso(int fd){
-	//libero la clave que tenia tomado este esi (si es que tenia algo)
+
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
-	list_remove_and_destroy_by_condition(list_esi_bloqueador,(void*) _esElfdEsiBloqueador,(void*) free_nodoBLoqueado);
+	int cant_esis_borrar = 0;
+
+	if(list_find(list_blocked, (void*)_esElfdEsiBloqueador) != NULL){
+		cant_esis_borrar = list_count_satisfying(list_esi_bloqueador, (void*)_esElfdEsiBloqueador);
+	}
+	int contador = 0;
+	while (contador < cant_esis_borrar){
+
+		t_esiBloqueador * eb = list_find(list_esi_bloqueador, (void*)_esElfdEsiBloqueador);
+		printf("Libero clave:%s de ESI ID:%d\n", eb->clave,eb->esi->id);
+		list_remove_and_destroy_by_condition(list_esi_bloqueador,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
+		contador++;
+	}
 
 }
 
@@ -198,24 +231,28 @@ t_list* create_list(){
 	return Lready;
 }
 
-t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char clave[40]){
+t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char* clave){
 
 	t_nodoBloqueado* nodoBloqueado = malloc(sizeof(t_nodoBloqueado));
-	nodoBloqueado->esi = malloc(sizeof(t_Esi));
-
-	nodoBloqueado->esi = esi;
+//	nodoBloqueado->esi = malloc(sizeof(t_Esi));
+	int len = strlen(clave) + 1;
+	nodoBloqueado->clave = malloc(sizeof(char)* len);
 	strcpy(nodoBloqueado->clave,clave);
+	nodoBloqueado->esi = esi;
+
 
 	return nodoBloqueado;
 }
 
 //creo t_esiBloqueador usando un esi (que no deberia liberarlo aun) y su clave
-t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char clave[40]){
+t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char* clave){
 
 	t_esiBloqueador* esiBloqueador = malloc(sizeof(t_esiBloqueador));
-	esiBloqueador->esi = malloc(sizeof(t_Esi));
+//	esiBloqueador->esi = malloc(sizeof(t_Esi));
 
 	esiBloqueador->esi = esi;
+	int len = strlen(clave) + 1;
+	esiBloqueador->clave = malloc(sizeof(char)* len);
 	strcpy(esiBloqueador->clave,clave);
 
 	return esiBloqueador;
@@ -255,7 +292,7 @@ bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi) {
 	return (getT_time_HRRN(esi_menor) > getT_time_HRRN(esi));
 }
 
-void agregar_en_bloqueados(t_Esi *esi, char clave[40]){
+void agregar_en_bloqueados(t_Esi *esi, char* clave){
 	t_nodoBloqueado* nodoBloqueado = get_nodo_bloqueado(esi,clave);
 	list_add(list_blocked,nodoBloqueado);
 }

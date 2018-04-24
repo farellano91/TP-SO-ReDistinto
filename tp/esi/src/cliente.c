@@ -22,9 +22,9 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 		//MUERO
 		exit(1);
 	}
-	id_esi_obtenido = 0;
+	ID_ESI_OBTENIDO = 0;
 	if(strcmp(nombre,"PLANIFICADOR") == 0){
-		if ((numbytes = recv(sockfd, &id_esi_obtenido, sizeof(int32_t), 0))
+		if ((numbytes = recv(sockfd, &ID_ESI_OBTENIDO, sizeof(int32_t), 0))
 				== -1) {
 			printf("No se pudo recibir mi id que genero el planificador\n");
 			//MUERO
@@ -33,15 +33,15 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 
 	}
 	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
-	if(id_esi_obtenido != 0){
-		printf("ID recibido: %d\n", id_esi_obtenido);
+	if(ID_ESI_OBTENIDO != 0){
+		printf("ID recibido: %d\n", ID_ESI_OBTENIDO);
 	}
 	free(mensajeSaludoRecibido);
 
 	//Envio saludo
 	if(strcmp(nombre,"PLANIFICADOR") == 0){
-		t_respuesta_para_planificador respuesta_planificador = {.id_tipo_respuesta = 1, .id_esi = id_esi_obtenido,
-				.mensaje = "", .instruccion = "" };
+		t_respuesta_para_planificador respuesta_planificador = {.id_tipo_respuesta = 1, .id_esi = ID_ESI_OBTENIDO,
+				.mensaje = "" };
 
 		strcpy(respuesta_planificador.mensaje, "Hola, soy el ESI");
 		respuesta_planificador.mensaje[strlen(respuesta_planificador.mensaje)] = '\0';
@@ -53,7 +53,6 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 		printf("Saludo enviado correctamente\n");
 
 	}else{
-		//si es al planificador tengo q enviar mi struct_respuesta_saludo)
 		char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
 		strcpy(mensajeSaludoEnviado, "Hola, soy el ESI");
 		mensajeSaludoEnviado[strlen(mensajeSaludoEnviado)] = '\0';

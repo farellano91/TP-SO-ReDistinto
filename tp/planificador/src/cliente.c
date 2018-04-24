@@ -82,71 +82,106 @@ void recibirInfoCoordinador() {
 	int fdCoordinador = conectar_coodinador();
 	saludo_inicial_coordinador(fdCoordinador);
 
-	t_InfoCoordinador infoCoordinador;
 	int numbytes = 0;
 
 	while (1) {
-		//TODO:ANALIZAR COMO CAMBIA AL USAR EL PARSE
-		infoCoordinador.id = 0;
-		strcpy(infoCoordinador.clave ,"");
-		infoCoordinador.id_esi = 0;
-		if ((numbytes = recv(fdCoordinador, &infoCoordinador,
-				sizeof(t_InfoCoordinador), 0)) <= 0) {
+		//recibo: ID_OPERACION,ID_ESI,LENG_CLAVE,CLAVE
+		int32_t id_operacion = 0;
+		int32_t id_esi = 0;
+		int32_t leng_clave = 0;
+		if ((numbytes = recv(fdCoordinador, &id_operacion,sizeof(int32_t), 0)) <= 0) {
 			if(numbytes < 0 ){
-				puts("Error al recibir notificacion del coordinador");
+				puts("Error al recibir tarea desde el coordinador");
 			}else{
 				puts("Se fue el coordinador");
 			}
 			break;
 		} else {
-			switch (infoCoordinador.id) {
+			printf("Recibi operacion tipo: %d del coordinador\n",id_operacion);
+			//recibo el id_esi y len_clave
+			if ((numbytes = recv(fdCoordinador, &id_esi, sizeof(int32_t), 0)) <= 0) {
+				if (numbytes < 0) {
+					puts("Error al recibir el id del esi de la tarea que mando el coordinador");
+				} else {
+					puts("Se fue el coordinador");
+				}
+
+			} else {
+				if ((numbytes = recv(fdCoordinador, &leng_clave, sizeof(int32_t), 0)) <= 0) {
+					if (numbytes < 0) {
+						puts("Error al recibir la longitud de la clave de la tarea que mando el coordinador");
+					} else {
+						puts("Se fue el coordinador");
+					}
+				} else {
+					printf("Recibi id de esi:%d y longitud de clave:%d\n",id_esi,leng_clave);
+				}
+			}
+
+			char* clave = malloc(sizeof(char)*leng_clave);
+
+			//recibo ahora si la clave
+			if ((numbytes = recv(fdCoordinador,clave,sizeof(char)*leng_clave, 0)) <= 0) {
+				if (numbytes < 0) {
+					puts("Error al recibir la clave de la tarea que mando el coordinador");
+				} else {
+					puts("Se fue el coordinador");
+				}
+
+			} else {
+				printf("Recibi la clave %s correctamente\n",clave);
+			}
+
+			switch (id_operacion) {
 			case 1:
 				puts("Recibi un GET!!!!!!!!!!!!!");
 				//Controlo si get es sobre un recurso tomado (osea dentro de list_esi_bloqueador para un unico ESI PAG.10)
-				if(find_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi)){
+				if(find_recurso_by_clave_id(clave,id_esi)){
 
 					//muevo de execute a block al ESI
-					bool _esElid(t_Esi* un_esi) { return un_esi->id == infoCoordinador.id_esi;}
+					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
 					t_Esi* esi_buscado = list_find(list_execute,(void*) _esElid);
 					list_remove_by_condition(list_execute,(void*) _esElid);
-					t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_buscado,infoCoordinador.clave);
+					t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_buscado,clave);
 					list_add(list_blocked,esi_bloqueado);
 
-					printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d\n",infoCoordinador.id_esi);
+					printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d\n",id_esi);
 
 					//envio mensaje de que se bloqueo ese ESI
 					send_mensaje(fdCoordinador,3);
 				}else{
 					//registro la clave y continua (cargo en lis_esi_bloqueador)
-					bool _esElid(t_Esi* un_esi) { return un_esi->id == infoCoordinador.id_esi;}
+					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
 					t_Esi* esi_buscado = list_find(list_execute,(void*) _esElid);
-					t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_buscado,infoCoordinador.clave);
+					t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_buscado,clave);
 					list_add(list_esi_bloqueador,esi_bloqueador);
 
-					printf("Registro que ahora la clave:%s lo tomo el ESI ID:%d\n",infoCoordinador.clave,infoCoordinador.id_esi);
+					printf("Registro que ahora la clave:%s lo tomo el ESI ID:%d\n",clave,id_esi);
 
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
 					send_mensaje(fdCoordinador,2);
 				}
 				break;
-			case 2:
+			case 3:
 				puts("Recibi un STORE!!!!!!!!!!!");
 				//libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
 				//TODO:por ahora se supone que solo puedo hacer STORE de los recursos que tome
-				libero_recurso_by_clave_id(infoCoordinador.clave,infoCoordinador.id_esi);
+				libero_recurso_by_clave_id(clave,id_esi);
 
 				//paso de bloqueado a listo todos los ESIs que querian esa clave
-				move_all_esi_bloqueado_listo(infoCoordinador.clave);
+				move_all_esi_bloqueado_listo(clave);
 
 				//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
 				send_mensaje(fdCoordinador,2);
 				break;
 
 			}
+			free(clave);
 		}
 
 	}
 }
+
 
 void send_mensaje(int fdCoordinador,int tipo_respuesta){
 	if (send(fdCoordinador, &tipo_respuesta,sizeof(int32_t), 0) == -1) {
@@ -154,12 +189,12 @@ void send_mensaje(int fdCoordinador,int tipo_respuesta){
 		printf("No se pudo enviar el resultado del GET o STORE\n");
 		exit(1);
 	}
-	printf("Mensaje de ejecucion de GET o STORE enviado correctamente al coordinador\n");
+	printf("Envié respuesta de la ejecucion de la operacion al coordinador\n");
 
 }
 
 
-bool find_recurso_by_clave_id(char clave[40],int id_esi){
+bool find_recurso_by_clave_id(char* clave,int id_esi){
 
 	bool resultado = false;
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
@@ -172,7 +207,7 @@ bool find_recurso_by_clave_id(char clave[40],int id_esi){
 	return resultado;
 }
 
-void libero_recurso_by_clave_id(char clave[40],int id_esi){
+void libero_recurso_by_clave_id(char* clave,int id_esi){
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
 
 	if(!list_is_empty(list_esi_bloqueador) &&
@@ -184,7 +219,7 @@ void libero_recurso_by_clave_id(char clave[40],int id_esi){
 	}
 }
 
-void move_all_esi_bloqueado_listo(char clave[40]){
+void move_all_esi_bloqueado_listo(char* clave){
 
 	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave));}
 	int cant_esis_mover = 0;

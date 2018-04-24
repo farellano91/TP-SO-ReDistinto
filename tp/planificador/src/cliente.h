@@ -20,11 +20,6 @@
 int conectar_coodinador();
 void saludo_inicial_coordinador(int sockfd);
 
-typedef struct InfoCoordinador{
-	int id; //1 o 2
-	char clave[40];
-	int id_esi;
-} __attribute__((packed)) t_InfoCoordinador;
 
 /*Protocolo:
  * Caso: donde el coordinador me envia una operacion (get o store) + clave
@@ -35,13 +30,13 @@ typedef struct InfoCoordinador{
 void recibirInfoCoordinador();
 
 //Busca dentro de list_esi_bloqueador si hay un esi de id y clave que ya tomo el recurso
-bool find_recurso_by_clave_id(char clave[40],int id_esi);
+bool find_recurso_by_clave_id(char* clave,int id_esi);
 
 //libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
-void libero_recurso_by_clave_id(char clave[40],int id_esi);
+void libero_recurso_by_clave_id(char* clave,int id_esi);
 
 //paso de bloqueado a listo todos los ESIs que querian esa clave
-void move_all_esi_bloqueado_listo(char clave[40]);
+void move_all_esi_bloqueado_listo(char* clave);
 
 void send_mensaje(int fdCoordinador,int tipo_respuesta);
 #endif

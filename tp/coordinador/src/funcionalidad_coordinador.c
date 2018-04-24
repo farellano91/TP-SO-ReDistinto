@@ -22,7 +22,7 @@ void get_parametros_config(){
 
 	cantidad_entradas = config_get_int_value(config,"CANTIDAD_ENTRADAS");
 	tamanio_entrada = config_get_int_value(config,"TAMANIO_ENTRADA");
-	retardo = config_get_int_value(config,"RETARDO");
+	RETARDO = config_get_int_value(config,"RETARDO");
 
 	config_destroy(config);
 }
@@ -40,7 +40,7 @@ void configure_logger() {
 }
 
 
-t_list* create_list_instancias(){
+t_list* create_list(){
 	t_list * Lready = list_create();
 	return Lready;
 }
@@ -87,10 +87,10 @@ t_Instancia* creo_instancia(int fd_instancia){
 	return (instancia_nueva);
 }
 
-void agrego_instancia_lista(t_list* list_instancias,t_Instancia* instancia_nueva){
+void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
 	pthread_mutex_lock(&mutex);
-	list_add(list_instancias,instancia_nueva); //esto lo encola al final
+	list_add(list,instancia_nueva); //esto lo encola al final
 	printf("Se agrego la instancia de nombre:%s a la lista\n",instancia_nueva->nombre_instancia);
 	pthread_mutex_unlock(&mutex);
 }

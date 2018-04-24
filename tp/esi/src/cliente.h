@@ -27,9 +27,8 @@ void saludo_inicial_servidor(int fd,char* nombre);
  * */
 typedef struct Respuesta_para_planificador{
 	int id_tipo_respuesta;
-	int id_esi; //1 o 2
+	int id_esi;
 	char mensaje[100];
-	char instruccion[40];
 } __attribute__((packed)) t_respuesta_para_planificador;
 
 #endif

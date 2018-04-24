@@ -68,119 +68,152 @@ void enviar_saludo(int fdCliente) {
 }
 
 void recibo_lineas(int fd_esi) {
-	int longitud = 0;
 	int numbytes = 0;
-
+	int32_t resultado_linea = 0;
 	while (1) {
-		sleep(retardo);
-		void* bufferMensaje = malloc(sizeof(int32_t));
-		if ((numbytes = recv(fd_esi, bufferMensaje, sizeof(int32_t), 0))
+		sleep(RETARDO);
+		int32_t id_esi = 0;
+		if ((numbytes = recv(fd_esi, &id_esi, sizeof(int32_t), 0))
 				<= 0) {
 			if (numbytes == 0) {
 				//si el cliente se fue
 				printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
-				free(bufferMensaje);
 				break;
 			}
 
 		} else {
-			memcpy(&longitud, bufferMensaje, sizeof(int32_t));
-			char * linea = malloc(sizeof(char) * longitud);
-			void* buffer = malloc(sizeof(char) * longitud);
-
-			if ((numbytes = recv(fd_esi, buffer, sizeof(char) * longitud, 0))
+			printf("Proceso sentencia de ESI ID:%d\n",id_esi);
+			int32_t operacion = 0;
+			if ((numbytes = recv(fd_esi, &operacion, sizeof(int32_t), 0))
 					<= 0) {
 				if (numbytes == 0) {
 					//si el cliente se fue
 					printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
-					free(linea);
-					free(bufferMensaje);
-					free(buffer);
 					break;
 				}
 			} else {
-
-				int32_t resultado_coordinador = 0;  //1:falle , 2:ok , 3: ok pero te bloqueaste
-				memcpy(linea, buffer, sizeof(char) * longitud);
-				printf("Recibi linea: %s\n", linea);
-
-				//recibo el id del esi
-				int32_t id_esi = 0;
-				if ((numbytes = recv(fd_esi, &id_esi, sizeof(int32_t), 0))
-						<= 0) {
-					if (numbytes == 0) {
-						//si el cliente se fue
-						printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
-						free(linea);
-						free(bufferMensaje);
-						free(buffer);
+				switch (operacion) {
+					case 1:
+						//recibi un GET  q tiene LONG + CLAVE
+						envio_tarea_planificador(1,get_clave_recibida(fd_esi),id_esi);
+						resultado_linea = recibo_resultado_planificador();
 						break;
-					}
-				}else{
-					printf("ESI id:%d\n", id_esi);
-					//Consulto si tengo un planificador conectado y si es GET/STORE lo que recibi
-					//-> envio al planificador la linea
-					if (fd_planificador != -1) {
-						int32_t respuesta_planificador = 0;
-						log_info(logger,linea);
+					case 2:
+						//recibi un SET  q tiene [LONG + CLAVE + LONG + VALOR]
 
-						if ((strstr(linea, "STORE") != NULL) || (strstr(linea, "GET") != NULL)) {
+						////TODO:
+						//1.- aplicar algoritmo de distribucion para decidir q instancia va
+						//(usando una cola de instancias o cola de struct Instancia ;))
 
-							t_InfoCoordinador infoCoordinador = {.id = 0 , .clave ="" , .id_esi= 0};
+						 /*ORDENO LA COLA PARA TOMAR EL PRIMERO EN LA SIGUIENTE FUNCION */
+						//2.- enviar la peticion a la instancia elegida
+						envio_tarea_instancia(2,get_clave_recibida(fd_esi),get_valor_recibido(fd_esi),id_esi);
+						//3.- recibir una respuesta de la instancia
+						//seteo tipo respuesta en resultado_linea
 
-							if (strstr(linea, "GET") != NULL) {
-								infoCoordinador.id = 1;
-							} else {
-								infoCoordinador.id = 2;
-							}
-							strcpy(infoCoordinador.clave, linea);
-							infoCoordinador.id_esi = id_esi;
-							if (send(fd_planificador, &infoCoordinador,
-									sizeof(t_InfoCoordinador), 0) == -1) {
-								printf("No se pudo enviar la info\n");
-								exit(1);
-							}
-							printf("Se envio la INFO al PLANIFICADOR correctamente\n");
+						break;
+					case 3:
+						//recibi un STORE  q tiene LONG + CLAVE
+						envio_tarea_planificador(3,get_clave_recibida(fd_esi),id_esi);
+						resultado_linea = recibo_resultado_planificador();
+						break;
 
-							//TODO:Aca recibo la respuesta del planificador 1:falle , 2:ok , 3: ok pero te bloqueaste
-							if ((numbytes = recv(fd_planificador, &respuesta_planificador, sizeof(int32_t), 0)) == -1) {
-								printf("No se pudo recibir respuesta del planificador\n");
-								//MUERO
-								exit(1);
-							}
-							printf("Respuesta del planificador recibida");
-							resultado_coordinador = respuesta_planificador;
-						} else {
-							//TODO: si no es un get ni store, entonces es un set:
-							//1.- aplicar algoritmo de distribucion para decidir q instancia va
-							//(usando una cola de instancias o cola de struct Instancia ;))
-							//2.- enviar la peticion a la instancia elegida
-							//3.- recibir una respuesta de la instancia
-
-						}
-
-						//envio resultado al esi
-						if (send(fd_esi, &resultado_coordinador,sizeof(int32_t), 0) == -1) {
-							printf("No se pudo enviar resultado al ESI\n");
-							exit(1);
-						}
-						printf("Envie resultado al ESI de ID:%d!!!\n",id_esi);
-					}
+					default:
+						break;
 				}
 
 
-
-
-
-
+				envio_resultado_esi(fd_esi,resultado_linea,id_esi);
 			}
-			free(linea);
-			free(bufferMensaje);
-			free(buffer);
 		}
 	}
+}
+
+char* get_valor_recibido(int fd_esi){
+	int leng_valor = 0;
+	int numbytes = 0;
+	if ((numbytes = recv(fd_esi, &leng_valor, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir el tamaño del valor\n");
+		//MUERO
+		exit(1);
+	}
+	char* valor = malloc(sizeof(char) * leng_valor);
+	if ((numbytes = recv(fd_esi, valor, sizeof(char) * leng_valor, 0)) == -1) {
+		printf("No se pudo recibir la valor\n");
+		//MUERO
+		exit(1);
+	}
+	printf("Recibi valor: %s de longitud: %d correctamente\n",valor,leng_valor);
+	return valor;
 
 }
+
+
+char* get_clave_recibida(int fd_esi){
+	int leng_clave = 0;
+	int numbytes = 0;
+	if ((numbytes = recv(fd_esi, &leng_clave, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir el tamaño de la clave\n");
+		//MUERO
+		exit(1);
+	}
+	char* clave = malloc(sizeof(char) * leng_clave);
+	if ((numbytes = recv(fd_esi, clave, sizeof(char) * leng_clave, 0)) == -1) {
+		printf("No se pudo recibir la clave\n");
+		//MUERO
+		exit(1);
+	}
+	printf("Recibi clave: %s de longitud: %d correctamente\n",clave,leng_clave);
+	return clave;
+
+}
+
+void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi){
+	//envio resultado al esi
+	if (send(fd_esi, &resultado_linea,sizeof(int32_t), 0) == -1) {
+		printf("No se pudo enviar resultado al ESI\n");
+		exit(1);
+	}
+	printf("Envie resultado al ESI de ID:%d!!!\n",id_esi);
+}
+
+int recibo_resultado_planificador(int resultado_linea){
+	//TODO:Aca recibo la respuesta del planificador 1:falle , 2:ok , 3: ok pero te bloqueaste
+	int32_t resultado_planificador = 0;
+	int numbytes = 0;
+	if ((numbytes = recv(FD_PLANIFICADOR, &resultado_planificador, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir respuesta del planificador\n");
+		//MUERO
+		exit(1);
+	}
+	printf("Respuesta del planificador recibida\n");
+	return resultado_planificador;
+}
+
+void envio_tarea_instancia(int32_t id_operacion, char* clave_recibida, char* valor_recibido, int32_t id_esi){
+	//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
+}
+
+void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi){
+
+	int32_t len_clave = strlen(clave_recibida) + 1;
+
+	//envio: ID_OPERACION,ID_ESI,LENG_CLAVE,CLAVE
+	void* bufferEnvio = malloc(sizeof(int32_t)*3 + sizeof(char)*len_clave);
+	memcpy(bufferEnvio,&id_operacion,sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t),&id_esi,sizeof(int32_t));
+	memcpy(bufferEnvio + (sizeof(int32_t)*2),&len_clave,sizeof(int32_t));
+	memcpy(bufferEnvio + (sizeof(int32_t)*3),clave_recibida,sizeof(char)*len_clave);
+
+	if (send(FD_PLANIFICADOR,bufferEnvio,(sizeof(int32_t)*3) + sizeof(char)*len_clave, 0) == -1) {
+		printf("No se pudo enviar la info\n");
+		exit(1);
+	}
+	printf("Se envio la tarea con clave: %s ID de ESI:%d al PLANIFICADOR correctamente\n",clave_recibida,id_esi);
+	free(clave_recibida);
+	free(bufferEnvio);
+}
+
 
 /*PROTOCOLO:
  * tipo_cliente: 1 -> ESI
@@ -203,7 +236,7 @@ void atender_cliente(void* idSocketCliente) {
 		break;
 	case 2:
 		//PLANIFICADOR (me guardo el fd)
-		fd_planificador = fdCliente;
+		FD_PLANIFICADOR = fdCliente;
 		while (1) {
 			//- No corto la comunicacion con el planificador -
 		}
@@ -215,7 +248,7 @@ void atender_cliente(void* idSocketCliente) {
 		//2:Recibo datos para crear la instancia
 		t_Instancia* instancia_nueva = creo_instancia(fdCliente);
 		//3:Encolo la INSTANCIA
-		agrego_instancia_lista(list_instancias,instancia_nueva);
+		agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
 		break;
 
 	}
@@ -235,10 +268,10 @@ void intHandler(int dummy) {
 	}
 }
 void levantar_servidor_coordinador() {
-	fd_planificador = -1;
+	FD_PLANIFICADOR = -1;
 
 	//creo mi lista de instancia
-	list_instancias = create_list_instancias();
+	LIST_INSTANCIAS = create_list();
 
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);

@@ -31,7 +31,7 @@ int puerto_escucha_conexion;
 char* algoritmo_distribucion;
 int32_t cantidad_entradas;
 int32_t tamanio_entrada;
-int retardo;
+int RETARDO;
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
@@ -47,15 +47,15 @@ typedef struct {
 	int tamanio_libre;
 } t_Instancia;
 
-t_list* list_instancias;
+t_list* LIST_INSTANCIAS;
 
-t_list* create_list_instancias();
+t_list* create_list();
 
 void envio_datos_entrada(int fd_instancia);
 
 t_Instancia* creo_instancia(int fd_instancia);
 
-void agrego_instancia_lista(t_list* list_instancias,t_Instancia* instancia_nueva);
+void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva);
 
 
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

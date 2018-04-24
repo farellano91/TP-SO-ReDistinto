@@ -7,7 +7,7 @@ OBJS := esi.o archivo.o cliente.o funcionalidad_esi.o
 all: esi
 
 esi: $(OBJS)
-	$(CC) -o esi $(OBJS) -lcommons
+	$(CC) -o esi $(OBJS) -lcommons -lparsi
 
 esi.o: esi.c archivo.h cliente.h funcionalidad_esi.h
 	$(CC) -c esi.c
