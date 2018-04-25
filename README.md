@@ -20,7 +20,7 @@ Para levantar el proyecto:</br>
   3°ESI</br>
     cd tp-2018-1c-Real-Mandril/tp/esi/src/</br>
     make</br>
-    ./esi archivo_inicial.txt</br></br>
+    ./esi script.esi</br></br>
   4°INSTANCIA</br>
     cd tp-2018-1c-Real-Mandril/tp/instancia/src/</br>
     make</br>
