@@ -241,7 +241,7 @@ void levantar_servidor_planificador() {
 					}else{
 						if(respuesta.id_tipo_respuesta == 1){
 							//Respuesta al primer saludo (todo nuevo)
-							printf("Recibi de ESI id: %d la respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
+							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
 							agregar_en_Lista(LIST_READY,nuevo_esi);
 
@@ -252,7 +252,7 @@ void levantar_servidor_planificador() {
 						}
 						if(respuesta.id_tipo_respuesta == 2){
 							//Respuesta de una operacion que le pedi
-							printf("Recibi de ESI id: %d la respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
+							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
 							if(aplico_algoritmo()){
 								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
 								continuar_comunicacion();
@@ -262,7 +262,7 @@ void levantar_servidor_planificador() {
 
 						if(respuesta.id_tipo_respuesta == 3){
 							//Respuesta de que termino de leer las lineas
-							printf("Recibi de ESI id: %d la respuesta: %s nos despedimos de el!!!\n",respuesta.id_esi,respuesta.mensaje);
+							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
 							cambio_de_lista(LIST_EXECUTE,LIST_FINISHED,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado

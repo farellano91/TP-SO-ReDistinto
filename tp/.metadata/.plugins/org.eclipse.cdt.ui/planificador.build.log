@@ -1,6 +1,7 @@
-17:29:43 **** Incremental Build of configuration Debug for project planificador ****
-make all 
-make: Nothing to be done for 'all'.
+20:26:38 **** Clean-only build of configuration Debug for project planificador ****
+make clean 
+rm -rf  ./src/cliente.o ./src/consola.o ./src/funcionalidad_planificador.o ./src/planificador.o ./src/servidor.o  ./src/cliente.d ./src/consola.d ./src/funcionalidad_planificador.d ./src/planificador.d ./src/servidor.d  planificador
+ 
 
-17:29:44 Build Finished (took 869ms)
+20:26:38 Build Finished (took 66ms)
 

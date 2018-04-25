@@ -97,7 +97,7 @@ void recibirInfoCoordinador() {
 			}
 			break;
 		} else {
-			printf("Recibi operacion tipo: %d del coordinador\n",id_operacion);
+
 			//recibo el id_esi y len_clave
 			if ((numbytes = recv(fdCoordinador, &id_esi, sizeof(int32_t), 0)) <= 0) {
 				if (numbytes < 0) {
@@ -113,8 +113,6 @@ void recibirInfoCoordinador() {
 					} else {
 						puts("Se fue el coordinador");
 					}
-				} else {
-					printf("Recibi id de esi:%d y longitud de clave:%d\n",id_esi,leng_clave);
 				}
 			}
 
@@ -128,13 +126,11 @@ void recibirInfoCoordinador() {
 					puts("Se fue el coordinador");
 				}
 
-			} else {
-				printf("Recibi la clave %s correctamente\n",clave);
 			}
 
 			switch (id_operacion) {
 			case 1:
-				puts("Recibi un GET!!!!!!!!!!!!!");
+				printf("Coordinador envio GET clave: %s del ESI ID: %d\n",clave,id_esi);
 				//Controlo si get es sobre un recurso tomado (osea dentro de LIST_ESI_BLOQUEADOR para un unico ESI PAG.10)
 				if(find_recurso_by_clave(clave)){
 
@@ -163,7 +159,8 @@ void recibirInfoCoordinador() {
 				}
 				break;
 			case 3:
-				puts("Recibi un STORE!!!!!!!!!!!");
+
+				printf("Coordinador envio STORE clave: %s del ESI ID: %d\n",clave,id_esi);
 				//libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
 				//TODO:por ahora se supone que solo puedo hacer STORE de los recursos que tome
 				libero_recurso_by_clave_id(clave,id_esi);
@@ -222,7 +219,7 @@ void libero_recurso_by_clave_id(char* clave,int id_esi){
 
 void move_all_esi_bloqueado_listo(char* clave){
 
-	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave));}
+	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave)==0);}
 	int cant_esis_mover = 0;
 
 	if(list_find(LIST_BLOCKED, (void*)_esElid) != NULL){
