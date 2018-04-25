@@ -21,24 +21,29 @@
 #include <arpa/inet.h>
 #include <commons/config.h>
 
+void desbloquea_flag();
+
+//consulta si el flag de bloqueo esta activo, esto para saber si tengo q mandarlo a bloqueado
+//cuando recibo su mensaje
+bool bloqueado_flag();
 
 //se usa durante la comunicacion con los esis
-int puerto_escucha;
+int PUERTO_ESCUCHA;
 
-char* algoritmo_planificacion;
+char* ALGORITMO_PLANIFICACION;
 //double ALPHA;
 #define ALPHA 0.5
-int estimacion_inicial;
+int ESTIMACION_INICIAL;
 
-char* claves_iniciales_bloqueadas;
+char* CLAVES_INICIALES_BLOQUEADAS;
 
 //se usa para hablar con el coordinador
-char* ip_config_coordinador;
+char* IP_CONFIG_COORDINADOR;
 
-int puerto_config_coordinador;
+int PUERTO_CONFIG_COORDINADOR;
 
 //este flag es para el caso de que la consola me deje en pausa
-bool planificador_en_pausa;
+bool PLANIFICADOR_EN_PAUSA;
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
@@ -55,7 +60,7 @@ enum t_operationCode {
 typedef struct {
 	int id;
 	int fd;
-	int status;
+	int status; //1:bloqueado 2:ok
 	int contadorInicial;
 	int contadorReal;
 	int tiempoEnListo;
@@ -97,17 +102,17 @@ typedef struct Respuesta_para_planificador{
 } __attribute__((packed)) t_respuesta_para_planificador;
 
 
-t_list* list_ready;
+t_list* LIST_READY;
 
 //lista de t_nodoBloqueado
-t_list* list_blocked;
+t_list* LIST_BLOCKED;
 
-t_list* list_finished;
+t_list* LIST_FINISHED;
 
-t_list* list_execute;
+t_list* LIST_EXECUTE;
 
 //lista (tabla) de t_esi_bloqueador
-t_list* list_esi_bloqueador;
+t_list* LIST_ESI_BLOQUEADOR;
 
 t_list* create_list();
 
@@ -148,7 +153,7 @@ void  continuar_comunicacion();
 
 void order_list(t_list* lista, void * funcion);
 
-void cambio_de_lista(t_list* list_ready,t_list* list_finished, int id_esi);
+void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int id_esi);
 
 void free_recurso(int i);
 

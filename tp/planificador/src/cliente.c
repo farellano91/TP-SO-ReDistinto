@@ -55,24 +55,24 @@ int conectar_coodinador() {
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
-		free(ip_config_coordinador);
+		free(IP_CONFIG_COORDINADOR);
 		pthread_exit(NULL);
 	}
 
 	their_addr.sin_family = AF_INET;    // Ordenación de bytes de la máquina
-	their_addr.sin_port = htons(puerto_config_coordinador);  // short, Ordenación de bytes de la red
-	their_addr.sin_addr.s_addr = inet_addr(ip_config_coordinador);  //toma la ip directo
+	their_addr.sin_port = htons(PUERTO_CONFIG_COORDINADOR);  // short, Ordenación de bytes de la red
+	their_addr.sin_addr.s_addr = inet_addr(IP_CONFIG_COORDINADOR);  //toma la ip directo
 
 	memset(&(their_addr.sin_zero), 0, 8); // poner a cero el resto de la estructura
 
 	if (connect(sockfd, (struct sockaddr *) &their_addr,
 			sizeof(struct sockaddr)) == -1) {
 		perror("No se pudo conectar al coordinador");
-		free(ip_config_coordinador);
+		free(IP_CONFIG_COORDINADOR);
 		pthread_exit(NULL);
 	}
 
-	free(ip_config_coordinador);
+	free(IP_CONFIG_COORDINADOR);
 	return (sockfd);
 }
 
@@ -135,16 +135,16 @@ void recibirInfoCoordinador() {
 			switch (id_operacion) {
 			case 1:
 				puts("Recibi un GET!!!!!!!!!!!!!");
-				//Controlo si get es sobre un recurso tomado (osea dentro de list_esi_bloqueador para un unico ESI PAG.10)
+				//Controlo si get es sobre un recurso tomado (osea dentro de LIST_ESI_BLOQUEADOR para un unico ESI PAG.10)
 				if(find_recurso_by_clave_id(clave,id_esi)){
 
 					//muevo de execute a block al ESI
 					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
-					t_Esi* esi_buscado = list_find(list_execute,(void*) _esElid);
-					list_remove_by_condition(list_execute,(void*) _esElid);
+					t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
+//					list_remove_by_condition(LIST_EXECUTE,(void*) _esElid);
 					t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_buscado,clave);
-					list_add(list_blocked,esi_bloqueado);
-
+					list_add(LIST_BLOCKED,esi_bloqueado);
+					esi_buscado->status=1;
 					printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d\n",id_esi);
 
 					//envio mensaje de que se bloqueo ese ESI
@@ -152,9 +152,9 @@ void recibirInfoCoordinador() {
 				}else{
 					//registro la clave y continua (cargo en lis_esi_bloqueador)
 					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
-					t_Esi* esi_buscado = list_find(list_execute,(void*) _esElid);
+					t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
 					t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_buscado,clave);
-					list_add(list_esi_bloqueador,esi_bloqueador);
+					list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
 
 					printf("Registro que ahora la clave:%s lo tomo el ESI ID:%d\n",clave,id_esi);
 
@@ -199,8 +199,8 @@ bool find_recurso_by_clave_id(char* clave,int id_esi){
 	bool resultado = false;
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
 
-	if(!list_is_empty(list_esi_bloqueador) &&
-			list_find(list_esi_bloqueador, (void*)_esElidClave) != NULL){
+	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
 		//Ya esta tomado ese recurso
 		resultado = true;
 	}
@@ -210,11 +210,11 @@ bool find_recurso_by_clave_id(char* clave,int id_esi){
 void libero_recurso_by_clave_id(char* clave,int id_esi){
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
 
-	if(!list_is_empty(list_esi_bloqueador) &&
-			list_find(list_esi_bloqueador, (void*)_esElidClave) != NULL){
+	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
 
 		//Solo lo saco de la lista
-		list_remove_by_condition(list_esi_bloqueador,(void*)_esElidClave);
+		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*)_esElidClave);
 		printf("Libero la clave:%s que tenia tomado el ESI ID:%d\n",clave,id_esi);
 	}
 }
@@ -224,15 +224,15 @@ void move_all_esi_bloqueado_listo(char* clave){
 	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave));}
 	int cant_esis_mover = 0;
 
-	if(list_find(list_blocked, (void*)_esElid) != NULL){
-		cant_esis_mover = list_count_satisfying(list_blocked, (void*)_esElid);
+	if(list_find(LIST_BLOCKED, (void*)_esElid) != NULL){
+		cant_esis_mover = list_count_satisfying(LIST_BLOCKED, (void*)_esElid);
 	}
 	int contador = 0;
 	while (contador < cant_esis_mover){
-		t_nodoBloqueado* nodoBloqueado = list_find(list_blocked,(void*) _esElid);
-		list_remove_by_condition(list_blocked,(void*) _esElid);
+		t_nodoBloqueado* nodoBloqueado = list_find(LIST_BLOCKED,(void*) _esElid);
+		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
 		t_Esi* esi = nodoBloqueado->esi;
-		list_add(list_ready,esi);
+		list_add(LIST_READY,esi);
 		contador++;
 	}
 

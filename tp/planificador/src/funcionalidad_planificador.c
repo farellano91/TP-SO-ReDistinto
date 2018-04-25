@@ -2,9 +2,9 @@
 
 
 void free_parametros_config(){
-	free(algoritmo_planificacion);
-	free(ip_config_coordinador);
-	free(claves_iniciales_bloqueadas);
+	free(ALGORITMO_PLANIFICACION);
+	free(IP_CONFIG_COORDINADOR);
+	free(CLAVES_INICIALES_BLOQUEADAS);
 }
 
 void get_parametros_config() {
@@ -15,21 +15,21 @@ void get_parametros_config() {
 		exit(1);
 	}
 
-	puerto_escucha = config_get_int_value(config,"PUERTO_ESCUCHA");
+	PUERTO_ESCUCHA = config_get_int_value(config,"PUERTO_ESCUCHA");
 
-	algoritmo_planificacion = malloc(sizeof(char) * 100);
+	ALGORITMO_PLANIFICACION = malloc(sizeof(char) * 100);
 	// HRRN , SJF, SJFD
-	strcpy(algoritmo_planificacion,config_get_string_value(config, "ALGORITMO_PLANIFICACION"));
+	strcpy(ALGORITMO_PLANIFICACION,config_get_string_value(config, "ALGORITMO_PLANIFICACION"));
 
-	estimacion_inicial = config_get_int_value(config,"ESTIMACION_INICIAL");
+	ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
 
-	ip_config_coordinador = malloc(sizeof(char) * 100);
-	strcpy(ip_config_coordinador,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
+	IP_CONFIG_COORDINADOR = malloc(sizeof(char) * 100);
+	strcpy(IP_CONFIG_COORDINADOR,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
 
-	puerto_config_coordinador = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
+	PUERTO_CONFIG_COORDINADOR = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
 
-	claves_iniciales_bloqueadas = malloc(sizeof(char) * 100);
-	strcpy(claves_iniciales_bloqueadas,config_get_string_value(config, "CLAVES_INICIALES_BLOQUEADAS"));
+	CLAVES_INICIALES_BLOQUEADAS = malloc(sizeof(char) * 100);
+	strcpy(CLAVES_INICIALES_BLOQUEADAS,config_get_string_value(config, "CLAVES_INICIALES_BLOQUEADAS"));
 
 	config_destroy(config);
 }
@@ -48,34 +48,15 @@ t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int fd_esi){
 }
 
 bool aplico_algoritmo_ultimo(){
-//1.- Ordena la lista list_ready (VG)
-	bool con_desalojo = false;
-	if (!planificador_en_pausa) {
+	//si entro aca no estoy en exc, estoy en finish
+	if (!PLANIFICADOR_EN_PAUSA) {
 		bool sContinuarComunicacion = true;
-		if (strcmp(algoritmo_planificacion, "SJF") == 0) {
-			order_list(list_ready, (void*) ordenar_por_SJFt);
+		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+			list_remove(LIST_READY, 0);
 		}
-		// Ordena igual que SJFD pero desaloja el ESI que actualmente este procesando.
-		if (strcmp(algoritmo_planificacion, "SJFD") == 0) {
-			order_list(list_ready, (void*) ordenar_por_SJFt);
-			con_desalojo = false;
-		}
-		if (strcmp(algoritmo_planificacion, "HRRN") == 0) {
-			order_list(list_ready, (void*) ordenar_por_HRRN);
-		}
-
-		if (list_is_empty(list_execute) && !list_is_empty(list_ready)) {
-			list_add(list_execute, list_get(list_ready, 0));
-			list_remove(list_ready, 0);
-		} else {
-			if(con_desalojo){
-				//el primero de ready lo mando a execute (si es que hay)
-				//el q estaba en execute pasa a ready (si es que hay)
-			}
-		}
-
 		//pregunto si hay alguien al menos
-		if (list_is_empty(list_execute) && list_is_empty(list_ready)) {
+		if (list_is_empty(LIST_EXECUTE) && list_is_empty(LIST_READY)) {
 			sContinuarComunicacion = false;
 		}
 		return sContinuarComunicacion;
@@ -84,30 +65,31 @@ bool aplico_algoritmo_ultimo(){
 }
 
 bool aplico_algoritmo(){
-//1.- Ordena la lista list_ready (VG)
-	bool con_desalojo = false;
-	if (!planificador_en_pausa) {
+	if (!PLANIFICADOR_EN_PAUSA) {
 		bool sContinuarComunicacion = true;
-		if (strcmp(algoritmo_planificacion, "SJF") == 0) {
-			order_list(list_ready, (void*) ordenar_por_SJFt);
-		}
-		// Ordena igual que SJFD pero desaloja el ESI que actualmente este procesando.
-		if (strcmp(algoritmo_planificacion, "SJFD") == 0) {
-			order_list(list_ready, (void*) ordenar_por_SJFt);
-			con_desalojo = true;
-		}
-		if (strcmp(algoritmo_planificacion, "HRRN") == 0) {
-			order_list(list_ready, (void*) ordenar_por_HRRN);
-		}
-
 		//Pregunto si tengo alguno en EXECUTE (si esta vacio entra el primero de ready)
-		if (list_is_empty(list_execute) && !list_is_empty(list_ready)) {
-			list_add(list_execute, list_get(list_ready, 0));
-			list_remove(list_ready, 0);
+		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+			list_remove(LIST_READY, 0);
 		} else {
-			if(con_desalojo){
-				//el primero de ready lo mando a execute
-				//el q estaba en execute pasa a ready
+			if(bloqueado_flag()){
+				desbloquea_flag();
+				//copio exec ->  bloqueado esto lo hice, ahora solo lo saco de exec
+				list_remove(LIST_EXECUTE, 0);
+				//toma el primero de listo -> exec y lo saca de listo
+				list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+				list_remove(LIST_READY, 0);
+			}else{
+				if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
+					//exc -> listo
+					list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
+					list_remove(LIST_EXECUTE, 0);
+					//ordeno lista
+					order_list(LIST_READY, (void*) ordenar_por_SJFt);
+					//el primero de listo va a exec
+					list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+					list_remove(LIST_READY, 0);
+				}
 			}
 		}
 		return sContinuarComunicacion;
@@ -115,36 +97,38 @@ bool aplico_algoritmo(){
 	return false;
 }
 
-bool aplico_algoritmo_primer_ingreso(){
-//1.- Ordena la lista list_ready (VG)
-	bool con_desalojo = false;
+void desbloquea_flag(){
+	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
+	un_esi->status = 0;
+}
 
-	if (!planificador_en_pausa) {
+bool bloqueado_flag(){
+	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
+	return (un_esi->status == 1);
+}
+
+bool aplico_algoritmo_primer_ingreso(){
+//1.- Ordena la lista LIST_READY (VG)
+	if (!PLANIFICADOR_EN_PAUSA) {
 		bool sContinuarComunicacion = true;
-		if (strcmp(algoritmo_planificacion, "SJF") == 0) {
-			order_list(list_ready, (void*) ordenar_por_SJFt);
+		if (strcmp(ALGORITMO_PLANIFICACION, "SJF") == 0) {
+			order_list(LIST_READY, (void*) ordenar_por_SJFt);
 		}
 		// Ordena igual que SJFD pero desaloja el ESI que actualmente este procesando.
-		if (strcmp(algoritmo_planificacion, "SJFD") == 0) {
-			order_list(list_ready, (void*) ordenar_por_SJFt);
-			con_desalojo = true;
+		if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
+			order_list(LIST_READY, (void*) ordenar_por_SJFt);
+
 		}
-		if (strcmp(algoritmo_planificacion, "HRRN") == 0) {
-			order_list(list_ready, (void*) ordenar_por_HRRN);
+		if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0) {
+			order_list(LIST_READY, (void*) ordenar_por_HRRN);
 		}
 
 		//Pregunto si tengo alguno en EXECUTE (si esta vacio entro)
-		if (list_is_empty(list_execute) && !list_is_empty(list_ready)) {
-			list_add(list_execute, list_get(list_ready, 0));
-			list_remove(list_ready, 0);
+		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+			list_remove(LIST_READY, 0);
 		} else {
-			if(con_desalojo){
-				//el primero de ready lo mando a execute
-				//el q estaba en execute pasa a ready
-			}else{
-				sContinuarComunicacion = false;
-			}
-
+			sContinuarComunicacion = false;
 		}
 		return sContinuarComunicacion;
 	}
@@ -158,7 +142,7 @@ bool aplico_algoritmo_primer_ingreso(){
 void continuar_comunicacion(){
 
 	int32_t flags_continuar = 1;
-	t_Esi * primer_esi = list_get(list_execute,0);
+	t_Esi * primer_esi = list_get(LIST_EXECUTE,0);
 	if (send(primer_esi->fd, &flags_continuar, sizeof(int32_t), 0) == -1) {
 		printf("Error al tratar de enviar el permiso a ESI\n");
 	}else{
@@ -193,15 +177,15 @@ void free_esiBloqueador(t_esiBloqueador* nodoBloqueado){
 
 void remove_esi_by_fd(int fd){
 	bool _esElfd(t_Esi* un_esi) { return un_esi->fd == fd;}
-	list_remove_and_destroy_by_condition(list_ready,(void*) _esElfd, free);
-	list_remove_and_destroy_by_condition(list_execute,(void*) _esElfd, free);
-	list_remove_and_destroy_by_condition(list_finished,(void*) _esElfd, free);
+	list_remove_and_destroy_by_condition(LIST_READY,(void*) _esElfd, free);
+	list_remove_and_destroy_by_condition(LIST_EXECUTE,(void*) _esElfd, free);
+	list_remove_and_destroy_by_condition(LIST_FINISHED,(void*) _esElfd, free);
 
 	bool _esElfdBlocked(t_nodoBloqueado* nodo_bloqueado) { return nodo_bloqueado->esi->fd == fd;}
-	list_remove_and_destroy_by_condition(list_blocked,(void*) _esElfdBlocked,(void*) free_nodoBLoqueado);
+	list_remove_and_destroy_by_condition(LIST_BLOCKED,(void*) _esElfdBlocked,(void*) free_nodoBLoqueado);
 
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
-	list_remove_and_destroy_by_condition(list_esi_bloqueador,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
+	list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
 
 
 }
@@ -211,15 +195,15 @@ void free_recurso(int fd){
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
 	int cant_esis_borrar = 0;
 
-	if(list_find(list_blocked, (void*)_esElfdEsiBloqueador) != NULL){
-		cant_esis_borrar = list_count_satisfying(list_esi_bloqueador, (void*)_esElfdEsiBloqueador);
+	if(list_find(LIST_BLOCKED, (void*)_esElfdEsiBloqueador) != NULL){
+		cant_esis_borrar = list_count_satisfying(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 	}
 	int contador = 0;
 	while (contador < cant_esis_borrar){
 
-		t_esiBloqueador * eb = list_find(list_esi_bloqueador, (void*)_esElfdEsiBloqueador);
+		t_esiBloqueador * eb = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 		printf("Libero clave:%s de ESI ID:%d\n", eb->clave,eb->esi->id);
-		list_remove_and_destroy_by_condition(list_esi_bloqueador,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
+		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
 		contador++;
 	}
 
@@ -294,7 +278,7 @@ bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi) {
 
 void agregar_en_bloqueados(t_Esi *esi, char* clave){
 	t_nodoBloqueado* nodoBloqueado = get_nodo_bloqueado(esi,clave);
-	list_add(list_blocked,nodoBloqueado);
+	list_add(LIST_BLOCKED,nodoBloqueado);
 }
 
 //Tanto para lista de listos como para la de finalizados.

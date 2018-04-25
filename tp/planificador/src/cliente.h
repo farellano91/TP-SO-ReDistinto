@@ -29,7 +29,7 @@ void saludo_inicial_coordinador(int sockfd);
  * */
 void recibirInfoCoordinador();
 
-//Busca dentro de list_esi_bloqueador si hay un esi de id y clave que ya tomo el recurso
+//Busca dentro de LIST_ESI_BLOQUEADOR si hay un esi de id y clave que ya tomo el recurso
 bool find_recurso_by_clave_id(char* clave,int id_esi);
 
 //libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)

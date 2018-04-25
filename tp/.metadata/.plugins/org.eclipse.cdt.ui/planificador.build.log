@@ -1,9 +1,19 @@
-14:47:54 **** Incremental Build of configuration Debug for project planificador ****
+14:00:32 **** Incremental Build of configuration Debug for project planificador ****
 make all 
 Building file: ../src/cliente.c
 Invoking: GCC C Compiler
 gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
 Finished building: ../src/cliente.c
+ 
+Building file: ../src/funcionalidad_planificador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_planificador.d" -MT"src/funcionalidad_planificador.o" -o "src/funcionalidad_planificador.o" "../src/funcionalidad_planificador.c"
+Finished building: ../src/funcionalidad_planificador.c
+ 
+Building file: ../src/planificador.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/planificador.d" -MT"src/planificador.o" -o "src/planificador.o" "../src/planificador.c"
+Finished building: ../src/planificador.c
  
 Building file: ../src/servidor.c
 Invoking: GCC C Compiler
@@ -26,5 +36,5 @@ gcc  -o "planificador"  ./src/cliente.o ./src/consola.o ./src/funcionalidad_plan
 Finished building target: planificador
  
 
-14:47:55 Build Finished (took 609ms)
+14:00:32 Build Finished (took 487ms)
 

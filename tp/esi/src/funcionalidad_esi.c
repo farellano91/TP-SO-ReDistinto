@@ -1,8 +1,8 @@
 #include "funcionalidad_esi.h"
 
 void free_parametros_config(){
-	free(ip_config_coordinador);
-	free(ip_config_planificador);
+	free(IP_CONFIG_COORDINADOR);
+	free(IP_CONFIG_PLANIFICADOR);
 }
 
 void get_parametros_config() {
@@ -13,13 +13,13 @@ void get_parametros_config() {
 		exit(1);
 	}
 
-	puerto_config_coordinador = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
-	ip_config_coordinador = malloc(sizeof(char) * 100);
-	strcpy(ip_config_coordinador,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
+	PUERTO_CONFIG_COORDINADOR = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
+	IP_CONFIG_COORDINADOR = malloc(sizeof(char) * 100);
+	strcpy(IP_CONFIG_COORDINADOR,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
 
-	puerto_config_planificador = config_get_int_value(config,"PUERTO_CONFIG_PLANIFICADOR");
-	ip_config_planificador = malloc(sizeof(char) * 100);
-	strcpy(ip_config_planificador,config_get_string_value(config, "IP_CONFIG_PLANIFICADOR"));
+	PUERTO_CONFIG_PLANIFICADOR = config_get_int_value(config,"PUERTO_CONFIG_PLANIFICADOR");
+	IP_CONFIG_PLANIFICADOR = malloc(sizeof(char) * 100);
+	strcpy(IP_CONFIG_PLANIFICADOR,config_get_string_value(config, "IP_CONFIG_PLANIFICADOR"));
 
 	config_destroy(config);
 }

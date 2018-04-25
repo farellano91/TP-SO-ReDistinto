@@ -14,10 +14,13 @@
 #include <commons/config.h>
 #include <parsi/parser.h>
 
-char* ip_config_coordinador;
-int puerto_config_coordinador;
-char* ip_config_planificador;
-int puerto_config_planificador;
+char* IP_CONFIG_COORDINADOR;
+
+int PUERTO_CONFIG_COORDINADOR;
+
+char* IP_CONFIG_PLANIFICADOR;
+
+int PUERTO_CONFIG_PLANIFICADOR;
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();

@@ -82,11 +82,11 @@ void intHandler(int dummy) {
 }
 
 void crear_listas_globales(){
-	list_ready = create_list();
-	list_blocked = create_list();
-	list_finished = create_list();
-	list_execute = create_list();
-	list_esi_bloqueador = create_list();
+	LIST_READY = create_list();
+	LIST_BLOCKED = create_list();
+	LIST_FINISHED = create_list();
+	LIST_EXECUTE = create_list();
+	LIST_ESI_BLOQUEADOR = create_list();
 
 }
 void levantar_servidor_planificador() {
@@ -111,8 +111,8 @@ void levantar_servidor_planificador() {
 	//sockfd: numero o descriptor que identifica al socket que creo
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 		printf("Error al abrir el socket de escucha\n");
-		free(algoritmo_planificacion);
-		free(claves_iniciales_bloqueadas);
+		free(ALGORITMO_PLANIFICACION);
+		free(CLAVES_INICIALES_BLOQUEADAS);
 		//MUERE EL HILO
 		exit(1);
 	}
@@ -120,13 +120,13 @@ void levantar_servidor_planificador() {
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 		perror("address already in use");
-		free(algoritmo_planificacion);
-		free(claves_iniciales_bloqueadas);
+		free(ALGORITMO_PLANIFICACION);
+		free(CLAVES_INICIALES_BLOQUEADAS);
 		exit(1);
 	}
 
 	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
-	my_addr.sin_port = htons(puerto_escucha);    // short, Ordenación de bytes de la red
+	my_addr.sin_port = htons(PUERTO_ESCUCHA);    // short, Ordenación de bytes de la red
 	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
 	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
@@ -134,16 +134,16 @@ void levantar_servidor_planificador() {
 	if (bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr))
 			== -1) {
 		printf("Fallo el bind\n");
-		free(algoritmo_planificacion);
-		free(claves_iniciales_bloqueadas);
+		free(ALGORITMO_PLANIFICACION);
+		free(CLAVES_INICIALES_BLOQUEADAS);
 		exit(1);
 	}
 
 	//3° Listen: se usa para dejar al socket escuchando las conexiones que se acumulan en una cola hasta que
 	//la aceptamos
 	if (listen(sockfd, BACKLOG) == -1) {
-		free(algoritmo_planificacion);
-		free(claves_iniciales_bloqueadas);
+		free(ALGORITMO_PLANIFICACION);
+		free(CLAVES_INICIALES_BLOQUEADAS);
 		printf("Fallo el listen\n");
 		exit(1);
 	}
@@ -170,8 +170,8 @@ void levantar_servidor_planificador() {
 		read_fds = master; // copi el conjunto maestro como temporal
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) { //se encarga de llenar en read_fds todos los fd cliente que cambiaron
 			perror("Error en select");
-			free(algoritmo_planificacion);
-			free(claves_iniciales_bloqueadas);
+			free(ALGORITMO_PLANIFICACION);
+			free(CLAVES_INICIALES_BLOQUEADAS);
 			exit(1);
 		}
 		// explorar conexiones existentes en busca de datos que leer
@@ -228,7 +228,7 @@ void levantar_servidor_planificador() {
 							//Respuesta al primer saludo (todo nuevo)
 							printf("Recibi de ESI id: %d la respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
-							agregar_en_Lista(list_ready,nuevo_esi);
+							agregar_en_Lista(LIST_READY,nuevo_esi);
 
 							if(aplico_algoritmo_primer_ingreso()){
 								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
@@ -244,18 +244,19 @@ void levantar_servidor_planificador() {
 							}
 
 						}
+
 						if(respuesta.id_tipo_respuesta == 3){
 							//Respuesta de que termino de leer las lineas
-							printf("Recibi de ESI id: %d la respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
+							printf("Recibi de ESI id: %d la respuesta: %s nos despedimos de el!!!\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
-							cambio_de_lista(list_execute,list_finished,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
+							cambio_de_lista(LIST_EXECUTE,LIST_FINISHED,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
 							free_recurso(i);
 							if(aplico_algoritmo_ultimo()){
 								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
 								continuar_comunicacion();
 							}
-							printf("ESI id: %d Termino, nos despedimos de el!!\n",respuesta.id_esi);
+
 						}
 					}
 
