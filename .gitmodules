@@ -12,3 +12,5 @@
 	url = https://github.com/sisoputnfrba/so-commons-library.git
 [submodule "tp/planificador/so-commons-library"]
 	url = https://github.com/sisoputnfrba/so-commons-library.git
+[submodule "tp/esi/parsi"] 
+  	url = https://github.com/sisoputnfrba/parsi.git
