@@ -1,3 +1,4 @@
 GET jugador1
- SET jugador2 messi
-           STORE jugador1
+STORE jugador1
+GET materias:K3002
+

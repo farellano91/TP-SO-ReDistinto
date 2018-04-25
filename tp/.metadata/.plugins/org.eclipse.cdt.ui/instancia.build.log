@@ -1,6 +1,7 @@
-13:51:32 **** Incremental Build of configuration Debug for project instancia ****
-make all 
-make: Nothing to be done for 'all'.
+15:34:52 **** Clean-only build of configuration Debug for project instancia ****
+make clean 
+rm -rf  ./src/cliente.o ./src/funcionalidad_instancia.o ./src/instancia.o  ./src/cliente.d ./src/funcionalidad_instancia.d ./src/instancia.d  instancia
+ 
 
-13:51:32 Build Finished (took 222ms)
+15:34:52 Build Finished (took 257ms)
 

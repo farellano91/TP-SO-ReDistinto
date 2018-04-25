@@ -1,10 +1,15 @@
 #include "funcionalidad_planificador.h"
 
 
+void free_claves_iniciales(){
+	string_iterate_lines(CLAVES_INICIALES_BLOQUEADAS,(void*)free);
+	free(CLAVES_INICIALES_BLOQUEADAS);
+}
+
 void free_parametros_config(){
 	free(ALGORITMO_PLANIFICACION);
 	free(IP_CONFIG_COORDINADOR);
-	free(CLAVES_INICIALES_BLOQUEADAS);
+	free_claves_iniciales();
 }
 
 void get_parametros_config() {
@@ -28,8 +33,9 @@ void get_parametros_config() {
 
 	PUERTO_CONFIG_COORDINADOR = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
 
-	CLAVES_INICIALES_BLOQUEADAS = malloc(sizeof(char) * 100);
-	strcpy(CLAVES_INICIALES_BLOQUEADAS,config_get_string_value(config, "CLAVES_INICIALES_BLOQUEADAS"));
+	CLAVES_INICIALES_BLOQUEADAS = malloc(sizeof(char*) * 100);
+//	strcpy(CLAVES_INICIALES_BLOQUEADAS,config_get_string_value(config, "CLAVES_INICIALES_BLOQUEADAS"));
+	CLAVES_INICIALES_BLOQUEADAS = config_get_array_value(config, "CLAVES_INICIALES_BLOQUEADAS");
 
 	config_destroy(config);
 }
@@ -143,11 +149,16 @@ void continuar_comunicacion(){
 
 	int32_t flags_continuar = 1;
 	t_Esi * primer_esi = list_get(LIST_EXECUTE,0);
-	if (send(primer_esi->fd, &flags_continuar, sizeof(int32_t), 0) == -1) {
-		printf("Error al tratar de enviar el permiso a ESI\n");
+	if(primer_esi == NULL){
+		list_remove(LIST_EXECUTE, 0);
 	}else{
-		printf("Envie permiso de ejecucion al ESI de ID: %d\n", primer_esi->id);
+		if (send(primer_esi->fd, &flags_continuar, sizeof(int32_t), 0) == -1) {
+			printf("Error al tratar de enviar el permiso a ESI\n");
+		}else{
+			printf("Envie permiso de ejecucion al ESI de ID: %d\n", primer_esi->id);
+		}
 	}
+
 
 }
 

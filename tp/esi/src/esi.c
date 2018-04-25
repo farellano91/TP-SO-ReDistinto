@@ -232,18 +232,41 @@ int main(int argc, char** argv) {
 
 	}
 
-	//Send resultado al planificador q ya no tengo mas lineas para leer
-	t_respuesta_para_planificador respuesta_planificador = {
-			.id_tipo_respuesta = 3, .id_esi = ID_ESI_OBTENIDO, .mensaje = ""};
-	strcpy(respuesta_planificador.mensaje, "TERMINE DE LEER TODO CAPO");
-	respuesta_planificador.mensaje[strlen(respuesta_planificador.mensaje)] =
-			'\0';
-	if (send(fd_planificador, &respuesta_planificador,
-			sizeof(t_respuesta_para_planificador), 0) == -1) {
-		printf("No se pudo enviar respuesta al planificador\n");
-		exit(1);
+	//recv de permiso por parte del planificador (sabemos que los permisos son solo int32_t)
+	if ((numbytes = recv(fd_planificador, &permiso, sizeof(int32_t), 0))
+			<= 0) {
+
+		if (numbytes == 0) {
+			// conexión cerrada
+			printf("Se desconecto el planificador\n");
+		} else {
+			perror("ERROR: al recibir respuesta del planificador");
+		}
+		close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
+		close(fd_coordinador);
+		fclose(fp);
+		if (line)
+			free(line);
+		exit(1); //muero
+	}else{
+		if(permiso){
+			//Send resultado al planificador q ya no tengo mas lineas para leer
+			t_respuesta_para_planificador respuesta_planificador = {
+					.id_tipo_respuesta = 3, .id_esi = ID_ESI_OBTENIDO, .mensaje = ""};
+			strcpy(respuesta_planificador.mensaje, "TERMINE DE LEER TODO CAPO");
+			respuesta_planificador.mensaje[strlen(respuesta_planificador.mensaje)] =
+					'\0';
+			if (send(fd_planificador, &respuesta_planificador,
+					sizeof(t_respuesta_para_planificador), 0) == -1) {
+				printf("No se pudo enviar respuesta al planificador\n");
+				exit(1);
+			}
+		}
+
+		printf("TERMINE!!\n");
 	}
-	printf("TERMINE!!\n");
+
+
 
 	fclose(fp);
 	if (line)

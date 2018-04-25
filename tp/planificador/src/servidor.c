@@ -81,6 +81,18 @@ void intHandler(int dummy) {
 	}
 }
 
+void cargo_claves_iniciales(){
+	void cargo_en_list_esi_bloqueador(char* clave){
+		t_Esi * un_esi = malloc(sizeof(t_Esi));
+		//Esis de id = 0 son los que estan en claves bloqueadas INICIALES
+		un_esi->id = 0;
+		t_esiBloqueador* esiBLo = get_esi_bloqueador(un_esi,clave);
+		list_add(LIST_ESI_BLOQUEADOR,esiBLo);
+		printf("Se cargo la clave:%s bloqueada INICIALMENTE\n", clave);
+	}
+	string_iterate_lines(CLAVES_INICIALES_BLOQUEADAS,(void*)cargo_en_list_esi_bloqueador);
+}
+
 void crear_listas_globales(){
 	LIST_READY = create_list();
 	LIST_BLOCKED = create_list();
@@ -92,6 +104,9 @@ void crear_listas_globales(){
 void levantar_servidor_planificador() {
 	//cree mis listas globales
 	crear_listas_globales();
+
+	//cargo las claves bloqueadas iniciales
+	cargo_claves_iniciales();
 
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
@@ -112,7 +127,7 @@ void levantar_servidor_planificador() {
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 		printf("Error al abrir el socket de escucha\n");
 		free(ALGORITMO_PLANIFICACION);
-		free(CLAVES_INICIALES_BLOQUEADAS);
+		free_claves_iniciales();
 		//MUERE EL HILO
 		exit(1);
 	}
@@ -121,7 +136,7 @@ void levantar_servidor_planificador() {
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 		perror("address already in use");
 		free(ALGORITMO_PLANIFICACION);
-		free(CLAVES_INICIALES_BLOQUEADAS);
+		free_claves_iniciales();
 		exit(1);
 	}
 
@@ -135,7 +150,7 @@ void levantar_servidor_planificador() {
 			== -1) {
 		printf("Fallo el bind\n");
 		free(ALGORITMO_PLANIFICACION);
-		free(CLAVES_INICIALES_BLOQUEADAS);
+		free_claves_iniciales();
 		exit(1);
 	}
 
@@ -143,7 +158,7 @@ void levantar_servidor_planificador() {
 	//la aceptamos
 	if (listen(sockfd, BACKLOG) == -1) {
 		free(ALGORITMO_PLANIFICACION);
-		free(CLAVES_INICIALES_BLOQUEADAS);
+		free_claves_iniciales();
 		printf("Fallo el listen\n");
 		exit(1);
 	}
@@ -171,7 +186,7 @@ void levantar_servidor_planificador() {
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) { //se encarga de llenar en read_fds todos los fd cliente que cambiaron
 			perror("Error en select");
 			free(ALGORITMO_PLANIFICACION);
-			free(CLAVES_INICIALES_BLOQUEADAS);
+			free_claves_iniciales();
 			exit(1);
 		}
 		// explorar conexiones existentes en busca de datos que leer
@@ -264,6 +279,8 @@ void levantar_servidor_planificador() {
 			}
 		}
 	}
+	free(ALGORITMO_PLANIFICACION);
+	free_claves_iniciales();
 	close(sockfd);
 }
 

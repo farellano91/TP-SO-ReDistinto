@@ -6171,3 +6171,18 @@ Command-line arguments:  -os linux -ws gtk -arch x86 -product org.eclipse.epp.pa
 
 !ENTRY org.eclipse.launchbar.core 2 0 2018-04-25 13:02:13.723
 !MESSAGE Enablement expression is missing for config provider for org.eclipse.cdt.debug.core.coreBuildDescriptorType
+
+!ENTRY org.eclipse.cdt.dsf 4 10005 2018-04-25 17:11:17.496
+!MESSAGE Request for monitor: 'RequestMonitor (org.eclipse.cdt.dsf.concurrent.RequestMonitor@c16ecf): Status ERROR: org.eclipse.cdt.dsf.gdb code=10001 Given context: (gdb[16].proc[19070].threadGroup[i1],gdb[16].proc[19070].OSthread[4]).thread[4], is already running. null' resulted in an error.
+!SUBENTRY 1 org.eclipse.cdt.dsf.gdb 4 10001 2018-04-25 17:11:17.496
+!MESSAGE Given context: (gdb[16].proc[19070].threadGroup[i1],gdb[16].proc[19070].OSthread[4]).thread[4], is already running.
+
+!ENTRY org.eclipse.cdt.dsf 4 10005 2018-04-25 17:15:19.734
+!MESSAGE Request for monitor: 'RequestMonitor (org.eclipse.cdt.dsf.concurrent.RequestMonitor@431f8e): Status ERROR: org.eclipse.cdt.dsf.gdb code=10001 Given context: (gdb[19].proc[19410].threadGroup[i1],gdb[19].proc[19410].OSthread[4]).thread[4], is already running. null' resulted in an error.
+!SUBENTRY 1 org.eclipse.cdt.dsf.gdb 4 10001 2018-04-25 17:15:19.734
+!MESSAGE Given context: (gdb[19].proc[19410].threadGroup[i1],gdb[19].proc[19410].OSthread[4]).thread[4], is already running.
+
+!ENTRY org.eclipse.cdt.dsf 4 10005 2018-04-25 17:15:58.237
+!MESSAGE Request for monitor: 'RequestMonitor (org.eclipse.cdt.dsf.concurrent.RequestMonitor@1237a5d): Status ERROR: org.eclipse.cdt.dsf.gdb code=10001 Given context: (gdb[20].proc[19617].threadGroup[i1],gdb[20].proc[19617].OSthread[4]).thread[4], is already running. null' resulted in an error.
+!SUBENTRY 1 org.eclipse.cdt.dsf.gdb 4 10001 2018-04-25 17:15:58.237
+!MESSAGE Given context: (gdb[20].proc[19617].threadGroup[i1],gdb[20].proc[19617].OSthread[4]).thread[4], is already running.

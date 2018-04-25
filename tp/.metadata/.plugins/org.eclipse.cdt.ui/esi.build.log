@@ -1,5 +1,10 @@
-13:51:31 **** Incremental Build of configuration Debug for project esi ****
+17:23:55 **** Build of configuration Debug for project esi ****
 make all 
+Building file: ../src/archivo.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/archivo.d" -MT"src/archivo.o" -o "src/archivo.o" "../src/archivo.c"
+Finished building: ../src/archivo.c
+ 
 Building file: ../src/cliente.c
 Invoking: GCC C Compiler
 gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
@@ -21,5 +26,5 @@ gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_e
 Finished building target: esi
  
 
-13:51:31 Build Finished (took 526ms)
+17:23:57 Build Finished (took 1s.752ms)
 

@@ -136,7 +136,7 @@ void recibirInfoCoordinador() {
 			case 1:
 				puts("Recibi un GET!!!!!!!!!!!!!");
 				//Controlo si get es sobre un recurso tomado (osea dentro de LIST_ESI_BLOQUEADOR para un unico ESI PAG.10)
-				if(find_recurso_by_clave_id(clave,id_esi)){
+				if(find_recurso_by_clave(clave)){
 
 					//muevo de execute a block al ESI
 					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
@@ -194,10 +194,11 @@ void send_mensaje(int fdCoordinador,int tipo_respuesta){
 }
 
 
-bool find_recurso_by_clave_id(char* clave,int id_esi){
+//busco si el recurso se encuentra tomado
+bool find_recurso_by_clave(char* clave){
 
 	bool resultado = false;
-	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
+	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
 
 	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
 			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){

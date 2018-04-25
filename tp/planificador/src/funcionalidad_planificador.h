@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <commons/config.h>
+#include <commons/string.h>
 
 void desbloquea_flag();
 
@@ -35,7 +36,7 @@ char* ALGORITMO_PLANIFICACION;
 #define ALPHA 0.5
 int ESTIMACION_INICIAL;
 
-char* CLAVES_INICIALES_BLOQUEADAS;
+char** CLAVES_INICIALES_BLOQUEADAS;
 
 //se usa para hablar con el coordinador
 char* IP_CONFIG_COORDINADOR;
@@ -157,4 +158,5 @@ void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int id_esi);
 
 void free_recurso(int i);
 
+void free_claves_iniciales();
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

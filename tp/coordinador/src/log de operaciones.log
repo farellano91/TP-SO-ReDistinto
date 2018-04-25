@@ -35,3 +35,48 @@
 [INFO] 13:53:29:787 tp-redistinto/(12926:12939): ESI 2 GET jugador1
 [INFO] 13:53:34:787 tp-redistinto/(12926:12939): ESI 2 SET jugador2 messi
 [INFO] 13:53:39:788 tp-redistinto/(12926:12939): ESI 2 STORE jugador1
+[INFO] 15:51:35:28 tp-redistinto/(16280:16280): Empezamos.....
+[INFO] 16:40:24:49 tp-redistinto/(17908:17908): Empezamos.....
+[INFO] 16:40:59:380 tp-redistinto/(17908:17961): ESI 1 GET jugador1
+[INFO] 16:41:04:387 tp-redistinto/(17908:17961): ESI 1 STORE jugador1
+[INFO] 16:41:09:392 tp-redistinto/(17908:17961): ESI 1 GET materias:K3002
+[INFO] 16:42:41:152 tp-redistinto/(17908:18050): ESI 1 GET jugador1
+[INFO] 16:44:56:487 tp-redistinto/(17908:18050): ESI 1 STORE jugador1
+[INFO] 16:46:41:924 tp-redistinto/(17908:18274): ESI 1 GET jugador1
+[INFO] 16:48:26:594 tp-redistinto/(17908:18274): ESI 1 STORE jugador1
+[INFO] 16:49:59:266 tp-redistinto/(17908:18274): ESI 1 GET materias:K3002
+[INFO] 17:00:15:191 tp-redistinto/(17908:18843): ESI 1 GET jugador1
+[INFO] 17:00:20:192 tp-redistinto/(17908:18843): ESI 1 STORE jugador1
+[INFO] 17:00:25:193 tp-redistinto/(17908:18843): ESI 1 GET materias:K3002
+[INFO] 17:01:15:440 tp-redistinto/(17908:18854): ESI 2 GET jugador1
+[INFO] 17:01:20:441 tp-redistinto/(17908:18854): ESI 2 STORE jugador1
+[INFO] 17:01:25:442 tp-redistinto/(17908:18854): ESI 2 GET materias:K3002
+[INFO] 17:01:28:250 tp-redistinto/(17908:18859): ESI 3 GET jugador1
+[INFO] 17:01:33:260 tp-redistinto/(17908:18859): ESI 3 STORE jugador1
+[INFO] 17:01:38:261 tp-redistinto/(17908:18859): ESI 3 GET materias:K3002
+[INFO] 17:02:03:810 tp-redistinto/(17908:18869): ESI 1 GET jugador1
+[INFO] 17:02:08:811 tp-redistinto/(17908:18869): ESI 1 STORE jugador1
+[INFO] 17:02:13:813 tp-redistinto/(17908:18869): ESI 1 GET materias:K3002
+[INFO] 17:02:13:814 tp-redistinto/(17908:18871): ESI 2 GET jugador1
+[INFO] 17:02:18:820 tp-redistinto/(17908:18871): ESI 2 STORE jugador1
+[INFO] 17:02:23:826 tp-redistinto/(17908:18871): ESI 2 GET materias:K3002
+[INFO] 17:05:35:963 tp-redistinto/(18920:18920): Empezamos.....
+[INFO] 17:06:00:279 tp-redistinto/(18920:18961): ESI 1 GET jugador1
+[INFO] 17:06:05:279 tp-redistinto/(18920:18961): ESI 1 STORE jugador1
+[INFO] 17:06:10:282 tp-redistinto/(18920:18961): ESI 1 GET materias:K3002
+[INFO] 17:11:39:977 tp-redistinto/(19153:19153): Empezamos.....
+[INFO] 17:12:55:364 tp-redistinto/(19153:19314): ESI 1 GET jugador1
+[INFO] 17:14:51:474 tp-redistinto/(19153:19435): ESI 1 GET jugador1
+[INFO] 17:16:45:53 tp-redistinto/(19153:19743): ESI 1 GET jugador1
+[INFO] 17:16:50:55 tp-redistinto/(19153:19743): ESI 1 STORE jugador1
+[INFO] 17:17:46:438 tp-redistinto/(19153:19743): ESI 1 GET materias:K3002
+[INFO] 17:25:37:572 tp-redistinto/(19153:20248): ESI 1 GET jugador1
+[INFO] 17:25:42:573 tp-redistinto/(19153:20248): ESI 1 STORE jugador1
+[INFO] 17:25:47:574 tp-redistinto/(19153:20248): ESI 1 GET materias:K3002
+[INFO] 17:26:04:154 tp-redistinto/(19153:20257): ESI 2 GET jugador1
+[INFO] 17:26:09:155 tp-redistinto/(19153:20257): ESI 2 STORE jugador1
+[INFO] 17:26:14:156 tp-redistinto/(19153:20257): ESI 2 GET materias:K3002
+[INFO] 17:30:08:718 tp-redistinto/(19153:20344): ESI 1 GET jugador1
+[INFO] 17:30:18:380 tp-redistinto/(19153:20344): ESI 1 STORE jugador1
+[INFO] 17:30:26:274 tp-redistinto/(19153:20344): ESI 1 GET materias:K3002
+[INFO] 17:31:48:486 tp-redistinto/(19153:20380): ESI 2 GET jugador1
