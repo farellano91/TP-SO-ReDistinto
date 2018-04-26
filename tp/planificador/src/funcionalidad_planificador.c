@@ -226,6 +226,43 @@ void remove_esi_by_fd(int fd){
 
 
 }
+
+
+//Buscara al esi que hizo ctrl+c y lo manda a terminado ()
+void remove_esi_by_fd_finished(int fd){
+	bool _esElfd(t_Esi* un_esi) { return un_esi->fd == fd;}
+
+	if(list_find(LIST_READY, (void*)_esElfd) != NULL){
+		list_add(LIST_FINISHED,list_find(LIST_READY, (void*)_esElfd));
+		list_remove_by_condition(LIST_READY,(void*) _esElfd);
+	}
+
+	if(list_find(LIST_EXECUTE, (void*)_esElfd) != NULL){
+		list_add(LIST_FINISHED,list_find(LIST_EXECUTE, (void*)_esElfd));
+		list_remove_by_condition(LIST_EXECUTE,(void*) _esElfd);
+	}
+
+
+	bool _esElfdBlocked(t_nodoBloqueado* nodo_bloqueado) { return nodo_bloqueado->esi->fd == fd;}
+
+	if(list_find(LIST_BLOCKED, (void*)_esElfdBlocked) != NULL){
+		t_nodoBloqueado * nodoBuscado = list_find(LIST_BLOCKED, (void*)_esElfdBlocked);
+		list_add(LIST_FINISHED,nodoBuscado->esi);
+		list_remove_by_condition(LIST_BLOCKED,(void*) _esElfdBlocked);
+	}
+
+	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
+
+	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
+		t_esiBloqueador * esiBloqueador = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
+		list_add(LIST_FINISHED,esiBloqueador->esi);
+		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador);
+	}
+
+
+
+}
+
 //libero tooodos los get clave que tenia tomado el esi de fd
 void free_recurso(int fd){
 

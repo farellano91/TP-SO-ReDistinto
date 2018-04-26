@@ -1,1 +1,4 @@
+GET jugador2
+STORE jugador2
 GET jugador1
+STORE jugador1

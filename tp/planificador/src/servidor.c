@@ -86,6 +86,7 @@ void cargo_claves_iniciales(){
 		t_Esi * un_esi = malloc(sizeof(t_Esi));
 		//Esis de id = 0 son los que estan en claves bloqueadas INICIALES
 		un_esi->id = 0;
+		un_esi->fd = 0;
 		t_esiBloqueador* esiBLo = get_esi_bloqueador(un_esi,clave);
 		list_add(LIST_ESI_BLOQUEADOR,esiBLo);
 		printf("Se cargo la clave:%s bloqueada INICIALMENTE\n", clave);
@@ -233,7 +234,8 @@ void levantar_servidor_planificador() {
 						close(i); // si ya no conversare mas con el cliente, lo cierro
 						FD_CLR(i, &master); // eliminar del conjunto maestro
 						free_recurso(i); //liberamos los recursos que tenia ya que murio el esi
-						remove_esi_by_fd(i); //TODO:Lo borramos de todos lados, no lo usaremos mas!(ver si lo tenemos que dejar al menos en terminado o no)
+						//remove_esi_by_fd(i); //TODO:Lo borramos de todos lados, no lo usaremos mas!(ver si lo tenemos que dejar al menos en terminado o no)
+						remove_esi_by_fd_finished(i); //TODO: lo borramos de donde este y lo mandamos a TERMINADO
 						if(aplico_algoritmo_ultimo()){
 							continuar_comunicacion();
 						}

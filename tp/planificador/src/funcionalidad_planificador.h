@@ -141,6 +141,9 @@ bool aplico_algoritmo();
 //Remueve (y libera) cualquiere t_Esi de todas las lista
 void remove_esi_by_fd(int fd);
 
+//REmueve un esi de donde este y lo manda a finish (si estaba en una lo saca)
+void remove_esi_by_fd_finished(int fd);
+
 t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int fd_esi);
 
 void  continuar_comunicacion();

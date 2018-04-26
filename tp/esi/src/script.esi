@@ -1,3 +1,2 @@
 GET jugador1
-STORE jugador1
-	GET jugador2
+GET materias:K3002
