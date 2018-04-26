@@ -1,4 +1,3 @@
 GET jugador1
 STORE jugador1
-GET materias:K3002
-
+	GET jugador2

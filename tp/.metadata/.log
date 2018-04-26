@@ -7760,3 +7760,12 @@ org.eclipse.core.runtime.CoreException: Cannot determine URI for '/planificador/
 
 !ENTRY org.eclipse.cdt.core 1 0 2018-04-26 09:18:26.918
 !MESSAGE Indexed 'planificador' (5 sources, 111 headers) in 0,672 sec: 5.087 declarations; 6.114 references; 0 unresolved inclusions; 0 syntax errors; 0 unresolved names (0 %)
+
+!ENTRY org.eclipse.launchbar.core 2 0 2018-04-26 13:54:52.306
+!MESSAGE Enablement expression is missing for descriptor type org.eclipse.cdt.debug.core.coreBuildDescriptorType
+
+!ENTRY org.eclipse.launchbar.core 2 0 2018-04-26 13:54:52.307
+!MESSAGE Enablement expression is missing for config provider for org.eclipse.cdt.debug.core.coreBuildDescriptorType
+
+!ENTRY org.eclipse.launchbar.core 2 0 2018-04-26 13:54:52.307
+!MESSAGE Enablement expression is missing for config provider for org.eclipse.cdt.debug.core.coreBuildDescriptorType

@@ -1,9 +1,9 @@
-10:08:53 **** Incremental Build of configuration Debug for project planificador ****
+14:43:39 **** Incremental Build of configuration Debug for project planificador ****
 make all 
-Building file: ../src/cliente.c
+Building file: ../src/funcionalidad_planificador.c
 Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
-Finished building: ../src/cliente.c
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_planificador.d" -MT"src/funcionalidad_planificador.o" -o "src/funcionalidad_planificador.o" "../src/funcionalidad_planificador.c"
+Finished building: ../src/funcionalidad_planificador.c
  
 Building file: ../src/servidor.c
 Invoking: GCC C Compiler
@@ -25,3 +25,6 @@ Invoking: GCC C Linker
 gcc  -o "planificador"  ./src/cliente.o ./src/consola.o ./src/funcionalidad_planificador.o ./src/planificador.o ./src/servidor.o   -lcommons -lpthread -lreadline
 Finished building target: planificador
  
+14:43:43 **** Incremental Build of configuration Debug for project planificador ****
+make all 
+make: Nothing to be done for 'all'.

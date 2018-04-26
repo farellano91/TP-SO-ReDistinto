@@ -215,10 +215,7 @@ void levantar_servidor_planificador() {
 
 
 						atender_esi(idSocketCliente);
-//						//CREAMOS UN HILO PARA ATENDERLO (AQUI NO ES NECESARIO Q SEA UN HILO??)
-//						pthread_t punteroHiloSaludo;
-//						pthread_create(&punteroHiloSaludo, NULL,
-//								(void*) atender_esi, idSocketCliente);
+
 					}
 				} else {
 					//RECIBO DATOS DESDE ESI QUE PUEDEN SER RESPUESTA A UNA OPERACION O MENSAJE SALUDO
@@ -235,8 +232,11 @@ void levantar_servidor_planificador() {
 						}
 						close(i); // si ya no conversare mas con el cliente, lo cierro
 						FD_CLR(i, &master); // eliminar del conjunto maestro
-						remove_esi_by_fd(i); //Lo borramos de todos lados, no lo usaremos mas!
 						free_recurso(i); //liberamos los recursos que tenia ya que murio el esi
+						remove_esi_by_fd(i); //TODO:Lo borramos de todos lados, no lo usaremos mas!(ver si lo tenemos que dejar al menos en terminado o no)
+						if(aplico_algoritmo_ultimo()){
+							continuar_comunicacion();
+						}
 
 					}else{
 						if(respuesta.id_tipo_respuesta == 1){
@@ -282,3 +282,22 @@ void levantar_servidor_planificador() {
 	close(sockfd);
 }
 
+////paso de bloqueado a listo todos los esis que pedian esa clave
+//void move_all_esi_bloqueado_listo(char* clave){
+//
+//	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave)==0);}
+//	int cant_esis_mover = 0;
+//
+//	if(list_find(LIST_BLOCKED, (void*)_esElid) != NULL){
+//		cant_esis_mover = list_count_satisfying(LIST_BLOCKED, (void*)_esElid);
+//	}
+//	int contador = 0;
+//	while (contador < cant_esis_mover){
+//		t_nodoBloqueado* nodoBloqueado = list_find(LIST_BLOCKED,(void*) _esElid);
+//		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
+//		t_Esi* esi = nodoBloqueado->esi;
+//		list_add(LIST_READY,esi);
+//		contador++;
+//	}
+//
+//}

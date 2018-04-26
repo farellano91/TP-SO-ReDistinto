@@ -52,6 +52,8 @@ void get_parametros_config();
 //libera todos los parametros que tenga
 void free_parametros_config();
 
+//muevo todo los esis que establan bloqueados a listo segun la clave
+void move_all_esi_bloqueado_listo(char* clave);
 
 enum t_operationCode {
 	GET = 0, SET = 1, STORE = 2,

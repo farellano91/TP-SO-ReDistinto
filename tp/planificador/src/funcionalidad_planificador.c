@@ -47,6 +47,7 @@ t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int fd_esi){
 	esi->contadorReal = 0;
 	esi->tiempoEnListo = 0;
 	esi->cantSentenciasProcesadas = 0;
+	esi->status = 2;
 	esi->fd = fd_esi;  //lo necesito para luego saber a quien mandar el send
 	esi->id = respuesta.id_esi;
 
@@ -231,7 +232,7 @@ void free_recurso(int fd){
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
 	int cant_esis_borrar = 0;
 
-	if(list_find(LIST_BLOCKED, (void*)_esElfdEsiBloqueador) != NULL){
+	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
 		cant_esis_borrar = list_count_satisfying(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 	}
 	int contador = 0;
@@ -239,8 +240,31 @@ void free_recurso(int fd){
 
 		t_esiBloqueador * eb = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 		printf("Libero clave:%s de ESI ID:%d\n", eb->clave,eb->esi->id);
+		//paso de bloqueado a listo a todos los ESIs que esperaban esa clave
+		move_all_esi_bloqueado_listo(eb->clave);
 		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
 		contador++;
+	}
+
+}
+
+//paso de bloqueado a listo todos los esis que pedian esa clave
+void move_all_esi_bloqueado_listo(char* clave){
+
+	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave)==0);}
+	int cant_esis_mover = 0;
+
+	if(list_find(LIST_BLOCKED, (void*)_esElid) != NULL){
+		cant_esis_mover = list_count_satisfying(LIST_BLOCKED, (void*)_esElid);
+	}
+	int contador = 0;
+	while (contador < cant_esis_mover){
+		t_nodoBloqueado* nodoBloqueado = list_find(LIST_BLOCKED,(void*) _esElid);
+		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
+		t_Esi* esi = nodoBloqueado->esi;
+		list_add(LIST_READY,esi);
+		contador++;
+		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
 	}
 
 }
