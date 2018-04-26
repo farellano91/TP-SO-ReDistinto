@@ -5,8 +5,8 @@
 
 int main(void) {
 
-	cant_entrada = 0;
-	tamanio_entrada = 0;
+	CANT_ENTRADA = 0;
+	TAMANIO_ENTRADA = 0;
 	get_parametros_config();
 	//TODO: leer los archivos .txt creador a partir del dump
 	//TODO: crea/cargar mis estructuras administrativas
@@ -20,16 +20,16 @@ int main(void) {
 
 	// TODO:espero q el coordinador me de una tarea para hacer
     // recibo_sentencia(sockfd);
-    //envio_resultado(sockfd);
+    // envio_resultado(sockfd);
 
 	//while para q no termine
 	while(1){
 		/*nada*/
 	}
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
-	free(algoritmo_reemplazo);
-	free(punto_montaje);
-	free(nombre_instancia);
+	free(ALGORITMO_REEMPLAZO);
+	free(PUNTO_MONTAJE);
+	free(NOMBRE_INSTANCIA);
 	//
 
 

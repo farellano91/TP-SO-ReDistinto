@@ -14,12 +14,12 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 
-char* ip_config_coordinador;
-int puerto_config_coordinador;
-char* algoritmo_reemplazo;
-char* punto_montaje;
-char* nombre_instancia;
-int intervalo_dump;
+char* IP_CONFIG_COORDINADOR;
+int PUERTO_CONFIG_COORDINADOR;
+char* ALGORITMO_REEMPLAZO;
+char* PUNTO_MONTAJE;
+char* NOMBRE_INSTANCIA;
+int INTERVALO_DUMP;
 
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
@@ -34,12 +34,12 @@ void recibo_datos_entrada(int sockfd);
 void envio_datos(int sockfd);
 
 
-int tamanio_entrada;
+int TAMANIO_ENTRADA;
 
-int cant_entrada;
+int CANT_ENTRADA;
 
 //Para tener la tabla de entradas
-t_list* tabla_entrada;
+t_list* TABLA_ENTRADA;
 
 typedef struct {
 	int clave;

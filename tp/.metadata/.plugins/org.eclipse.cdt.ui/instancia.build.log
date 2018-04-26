@@ -1,6 +1,25 @@
-15:33:02 **** Incremental Build of configuration Debug for project instancia ****
+16:10:32 **** Incremental Build of configuration Debug for project instancia ****
 make all 
-make: Nothing to be done for 'all'.
+Building file: ../src/cliente.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
+Finished building: ../src/cliente.c
+ 
+Building file: ../src/funcionalidad_instancia.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_instancia.d" -MT"src/funcionalidad_instancia.o" -o "src/funcionalidad_instancia.o" "../src/funcionalidad_instancia.c"
+Finished building: ../src/funcionalidad_instancia.c
+ 
+Building file: ../src/instancia.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/instancia.d" -MT"src/instancia.o" -o "src/instancia.o" "../src/instancia.c"
+Finished building: ../src/instancia.c
+ 
+Building target: instancia
+Invoking: GCC C Linker
+gcc  -o "instancia"  ./src/cliente.o ./src/funcionalidad_instancia.o ./src/instancia.o   -lcommons
+Finished building target: instancia
+ 
 
-15:33:02 Build Finished (took 249ms)
+16:10:32 Build Finished (took 398ms)
 

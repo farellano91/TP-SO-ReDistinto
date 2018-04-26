@@ -60,8 +60,8 @@ int conectar_coodinador(){
     }
 
     their_addr.sin_family = AF_INET;    // Ordenación de bytes de la máquina
-    their_addr.sin_port = htons(puerto_config_coordinador);  // short, Ordenación de bytes de la red
-    their_addr.sin_addr.s_addr = inet_addr(ip_config_coordinador);//toma la ip directo
+    their_addr.sin_port = htons(PUERTO_CONFIG_COORDINADOR);  // short, Ordenación de bytes de la red
+    their_addr.sin_addr.s_addr = inet_addr(IP_CONFIG_COORDINADOR);//toma la ip directo
 
     memset( &(their_addr.sin_zero) , 0 , 8);  // poner a cero el resto de la estructura
 
@@ -72,6 +72,6 @@ int conectar_coodinador(){
         exit(1);
     }
 
-    free(ip_config_coordinador);
+    free(IP_CONFIG_COORDINADOR);
     return(sockfd);
 }
