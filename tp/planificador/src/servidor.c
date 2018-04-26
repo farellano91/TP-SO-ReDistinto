@@ -246,7 +246,6 @@ void levantar_servidor_planificador() {
 							agregar_en_Lista(LIST_READY,nuevo_esi);
 
 							if(aplico_algoritmo_primer_ingreso()){
-								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
 								continuar_comunicacion();
 							}
 						}
@@ -254,7 +253,6 @@ void levantar_servidor_planificador() {
 							//Respuesta de una operacion que le pedi
 							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
 							if(aplico_algoritmo()){
-								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
 								continuar_comunicacion();
 							}
 
@@ -268,7 +266,6 @@ void levantar_servidor_planificador() {
 							cambio_de_lista(LIST_EXECUTE,LIST_FINISHED,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
 							free_recurso(i);
 							if(aplico_algoritmo_ultimo()){
-								// SOLO EN EL CASO DE SJF CON DESALOJO , INTERRUMPO LA COMUNICACION
 								continuar_comunicacion();
 							}
 

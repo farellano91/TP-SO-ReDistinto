@@ -61,7 +61,7 @@ enum t_operationCode {
 typedef struct {
 	int id;
 	int fd;
-	int status; //1:bloqueado 2:ok
+	int status; //1:bloqueado 2:ok (este va a ser un flags que me servira para saber cuando tengo que mandar a bloqueado un esi cuando tenga su respuesta)
 	int contadorInicial;
 	int contadorReal;
 	int tiempoEnListo;
@@ -69,15 +69,8 @@ typedef struct {
 
 } t_Esi;
 
-//Ojo: no olvidar reservar memoria cuando creemos un t_instruccion*
-//typedef struct {
-//	enum t_operationCode operation;
-//	char clave[40];
-//	char value[100];
-//
-//} t_instruccion;
 
-//Ojo: no olvidar reservar memoria cuando creemos un t_nodoBloqueado*
+
 typedef struct {
 	t_Esi* esi;
 	char* clave;
@@ -95,6 +88,7 @@ typedef struct {
 /*ESI envia al planificador una respuesta al saludo o a la instruccion que hizo
  * id_tipo_respuesta = 1 respuesta al saludo, lo cual solo lleva de datos el id_esi y el mensaje
  * id_tipo_respuesta = 2 respuesta una instruccion realizad, lo cual trae todo lleno
+ * id_tipo_respuesta = 3 respuesta de que ya no tiene nada mas que leer y termino feliz
  * */
 typedef struct Respuesta_para_planificador{
 	int id_tipo_respuesta;
@@ -127,9 +121,6 @@ double  get_time_SJF(t_Esi* esi);
 // si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. VER
 double getT_time_HRRN(t_Esi* esi);
 
-// Inserto en la lista Finalizadas y lista de Listos.
-
-// Inserto en la lista de bloqueas, pero en base al nodo block.
 
 bool ordenar_por_SJFt(t_Esi * esi_menor, t_Esi * esi);
 

@@ -78,14 +78,16 @@ bool aplico_algoritmo(){
 			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
 		} else {
+			//controlo si tiene el flag de bloqueado para mandarlo a la list_block
 			if(bloqueado_flag()){
-				desbloquea_flag();
-				//copio exec ->  bloqueado esto lo hice, ahora solo lo saco de exec
+				desbloquea_flag(); //limpio el flag
+				//Solo lo saco de EXEC (cuando supe que era bloqueado puse flag = 1 y copie de exec ->  bloqueado)
 				list_remove(LIST_EXECUTE, 0);
 				//toma el primero de listo -> exec y lo saca de listo
 				list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 				list_remove(LIST_READY, 0);
 			}else{
+				//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
 				if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
 					//exc -> listo
 					list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
