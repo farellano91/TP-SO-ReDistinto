@@ -1,24 +1,9 @@
-22:37:44 **** Build of configuration Debug for project esi ****
+09:59:57 **** Build of configuration Debug for project esi ****
 make all 
-Building file: ../src/archivo.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/archivo.d" -MT"src/archivo.d" -o "src/archivo.o" "../src/archivo.c"
-Finished building: ../src/archivo.c
- 
-Building file: ../src/cliente.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.d" -o "src/cliente.o" "../src/cliente.c"
-Finished building: ../src/cliente.c
- 
 Building file: ../src/esi.c
 Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/esi.d" -MT"src/esi.d" -o "src/esi.o" "../src/esi.c"
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/esi.d" -MT"src/esi.o" -o "src/esi.o" "../src/esi.c"
 Finished building: ../src/esi.c
- 
-Building file: ../src/funcionalidad_esi.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_esi.d" -MT"src/funcionalidad_esi.d" -o "src/funcionalidad_esi.o" "../src/funcionalidad_esi.c"
-Finished building: ../src/funcionalidad_esi.c
  
 Building target: esi
 Invoking: GCC C Linker
@@ -26,5 +11,5 @@ gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_e
 Finished building target: esi
  
 
-22:37:44 Build Finished (took 322ms)
+09:59:58 Build Finished (took 414ms)
 

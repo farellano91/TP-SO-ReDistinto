@@ -1,0 +1,7 @@
+[INFO] 10:02:10:975 tp-redistinto/(23182:23182): Empezamos.....
+[INFO] 10:02:22:596 tp-redistinto/(23182:23189): ESI 1 GET jugador1
+[INFO] 10:02:27:597 tp-redistinto/(23182:23189): ESI 1 STORE jugador1
+[INFO] 10:02:32:608 tp-redistinto/(23182:23189): ESI 1 GET materias:K3002
+[INFO] 10:02:32:608 tp-redistinto/(23182:23191): ESI 2 GET jugador1
+[INFO] 10:02:37:620 tp-redistinto/(23182:23191): ESI 2 STORE jugador1
+[INFO] 10:02:42:621 tp-redistinto/(23182:23191): ESI 2 GET materias:K3002

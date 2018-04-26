@@ -143,7 +143,7 @@ void recibirInfoCoordinador() {
 					esi_buscado->status=1;
 					printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d\n",id_esi);
 
-					//envio mensaje de que se bloqueo ese ESI
+					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
 					send_mensaje(fdCoordinador,3);
 				}else{
 					//registro la clave y continua (cargo en lis_esi_bloqueador)

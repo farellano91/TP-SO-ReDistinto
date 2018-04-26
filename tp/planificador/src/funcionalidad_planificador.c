@@ -55,9 +55,12 @@ t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int fd_esi){
 
 bool aplico_algoritmo_ultimo(){
 	//si entro aca no estoy en exc, estoy en finish
+	//Aca no actualizamos ningun contador ya que el ESI solo nos esta diciendo q no tiene nada para leer, asi que no deberia considerarse como
+	//que esi hice una sentencia
 	if (!PLANIFICADOR_EN_PAUSA) {
 		bool sContinuarComunicacion = true;
 		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+			ordeno_listas();
 			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
 		}
@@ -71,35 +74,49 @@ bool aplico_algoritmo_ultimo(){
 }
 
 bool aplico_algoritmo(){
+	//Aca estoy si recibi una respuesta de alguna tarea pedida al ESI (TAREAS QUE PUEDE SER REALIZADAS OK o BLOCKEADO al ESI)
 	if (!PLANIFICADOR_EN_PAUSA) {
 		bool sContinuarComunicacion = true;
+
 		//Pregunto si tengo alguno en EXECUTE (si esta vacio entra el primero de ready)
-		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
-			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
-			list_remove(LIST_READY, 0);
-		} else {
+//		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+//			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+//			list_remove(LIST_READY, 0);
+//		} else {
+
+
 			//controlo si tiene el flag de bloqueado para mandarlo a la list_block
-			if(bloqueado_flag()){
+			if(bloqueado_flag() ==  1){
+				//Caso donde ESI se bloqueo al hacer lo que le pedi
 				desbloquea_flag(); //limpio el flag
-				//Solo lo saco de EXEC (cuando supe que era bloqueado puse flag = 1 y copie de exec ->  bloqueado)
+				//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)
 				list_remove(LIST_EXECUTE, 0);
+				//TODO:ACTUALIZO CONTADORES
+				ordeno_listas();
 				//toma el primero de listo -> exec y lo saca de listo
 				list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 				list_remove(LIST_READY, 0);
 			}else{
+				//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
 				//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
 				if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
 					//exc -> listo
 					list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
 					list_remove(LIST_EXECUTE, 0);
+					//TODO:ACTUALIZO CONTADORES
 					//ordeno lista
 					order_list(LIST_READY, (void*) ordenar_por_SJFt);
 					//el primero de listo va a exec
 					list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 					list_remove(LIST_READY, 0);
+				}else{
+					//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
+					//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
+					//no hace falta ordenar las lista ya q estas se ordenaran cuando se bloquee el ESI o cuando TERMINE) y
+					//TODO:ACTUALIZO CONTADORES
 				}
 			}
-		}
+//		}
 		return sContinuarComunicacion;
 	}
 	return false;
@@ -115,23 +132,29 @@ bool bloqueado_flag(){
 	return (un_esi->status == 1);
 }
 
+void ordeno_listas(){
+	if (strcmp(ALGORITMO_PLANIFICACION, "SJF") == 0) {
+		order_list(LIST_READY, (void*) ordenar_por_SJFt);
+	}
+	// Ordena igual que SJFD pero desaloja el ESI que actualmente este procesando.
+	if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
+		order_list(LIST_READY, (void*) ordenar_por_SJFt);
+
+	}
+	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0) {
+		order_list(LIST_READY, (void*) ordenar_por_HRRN);
+	}
+}
+
 bool aplico_algoritmo_primer_ingreso(){
-//1.- Ordena la lista LIST_READY (VG)
+	//Aca ingreso un ESI nuevo, no le pedi que hiciera nada aun, asi que contadores no deberia actualizar
+	//solo ordeno la lista en base a lo que tengo hasta ahora
 	if (!PLANIFICADOR_EN_PAUSA) {
 		bool sContinuarComunicacion = true;
-		if (strcmp(ALGORITMO_PLANIFICACION, "SJF") == 0) {
-			order_list(LIST_READY, (void*) ordenar_por_SJFt);
-		}
-		// Ordena igual que SJFD pero desaloja el ESI que actualmente este procesando.
-		if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
-			order_list(LIST_READY, (void*) ordenar_por_SJFt);
 
-		}
-		if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0) {
-			order_list(LIST_READY, (void*) ordenar_por_HRRN);
-		}
+		ordeno_listas();
 
-		//Pregunto si tengo alguno en EXECUTE (si esta vacio entro)
+		//Pregunto si tengo alguno en LIST_EXECUTE (si esta vacio entro ya que significa q soy el unico)
 		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
 			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);

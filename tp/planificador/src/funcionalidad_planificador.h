@@ -150,4 +150,6 @@ void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int id_esi);
 void free_recurso(int i);
 
 void free_claves_iniciales();
+
+void ordeno_listas();
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

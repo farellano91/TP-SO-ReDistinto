@@ -241,10 +241,10 @@ void levantar_servidor_planificador() {
 					}else{
 						if(respuesta.id_tipo_respuesta == 1){
 							//Respuesta al primer saludo (todo nuevo)
-							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
+//							printf("ESI id: %d envio saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
 							agregar_en_Lista(LIST_READY,nuevo_esi);
-
+							printf("ESI id: %d mando saludo: %s y se agrego a LISTA de READY\n",respuesta.id_esi,respuesta.mensaje);
 							if(aplico_algoritmo_primer_ingreso()){
 								continuar_comunicacion();
 							}
@@ -258,6 +258,7 @@ void levantar_servidor_planificador() {
 
 						}
 
+						//TODO:posiblemente si un ESI es ABORTADO pueda entrar por aca, analizar el caso
 						if(respuesta.id_tipo_respuesta == 3){
 							//Respuesta de que termino de leer las lineas
 							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
