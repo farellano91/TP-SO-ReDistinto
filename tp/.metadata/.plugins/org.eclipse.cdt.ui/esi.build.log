@@ -1,6 +1,15 @@
-15:33:01 **** Incremental Build of configuration Debug for project esi ****
+15:44:43 **** Incremental Build of configuration Debug for project esi ****
 make all 
-make: Nothing to be done for 'all'.
+Building file: ../src/esi.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/esi.d" -MT"src/esi.o" -o "src/esi.o" "../src/esi.c"
+Finished building: ../src/esi.c
+ 
+Building target: esi
+Invoking: GCC C Linker
+gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o   -lcommons -lparsi
+Finished building target: esi
+ 
 
-15:33:02 Build Finished (took 360ms)
+15:44:43 Build Finished (took 276ms)
 

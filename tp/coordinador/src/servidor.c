@@ -196,16 +196,29 @@ void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi){
 }
 
 int recibo_resultado_planificador(int resultado_linea){
-	//TODO:Aca recibo la respuesta del planificador 1:falle , 2:ok , 3: ok pero te bloqueaste
+	//TODO:Aca recibo la respuesta del planificador 1:falle , 2:ok , 3: ok pero te bloqueaste, 4: murio el planificador
 	int32_t resultado_planificador = 0;
 	int numbytes = 0;
-	if ((numbytes = recv(FD_PLANIFICADOR, &resultado_planificador, sizeof(int32_t), 0)) == -1) {
-		printf("No se pudo recibir respuesta del planificador\n");
-		//MUERO
-		exit(1);
+	if ((numbytes = recv(FD_PLANIFICADOR, &resultado_planificador, sizeof(int32_t), 0)) <= 0) {
+		if(numbytes < 0){
+			printf("ERROR: al tratar de recibir respuesta del planificador\n");
+		}else{
+			//TODO: aca debo liberar el WAIT
+			printf("El planificador se desconecto!\n");
+		}
+		FD_PLANIFICADOR = -1;
+		pthread_cond_signal(&CONDICION_LIBERO_PLANIFICADOR); //Libero ahora si al planificador
+		close(FD_PLANIFICADOR);
+
+		//Uso 1 para decir q el planificador murio, osea falle tambien
+		resultado_planificador = 1;
+
+	}else{
+		printf("Respuesta del planificador recibida\n");
+
 	}
-	printf("Respuesta del planificador recibida\n");
 	return resultado_planificador;
+
 }
 
 void envio_tarea_instancia(int32_t id_operacion, char** clave_valor_recibido, int32_t id_esi){
@@ -232,10 +245,14 @@ void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t 
 	memcpy(bufferEnvio + (sizeof(int32_t)*3),clave_recibida,sizeof(char)*len_clave);
 
 	if (send(FD_PLANIFICADOR,bufferEnvio,(sizeof(int32_t)*3) + sizeof(char)*len_clave, 0) == -1) {
-		printf("No se pudo enviar la info\n");
+		printf("No se pudo enviar la info al planificador\n");
+		free(clave_recibida);
+		free(bufferEnvio);
 		exit(1);
+	}else{
+		printf("Se envio la tarea con clave: %s ID de ESI:%d al PLANIFICADOR correctamente\n",clave_recibida,id_esi);
 	}
-	printf("Se envio la tarea con clave: %s ID de ESI:%d al PLANIFICADOR correctamente\n",clave_recibida,id_esi);
+
 	free(clave_recibida);
 	free(bufferEnvio);
 }
@@ -291,10 +308,11 @@ void atender_cliente(void* idSocketCliente) {
 		break;
 	case 2:
 		//PLANIFICADOR (me guardo el fd)
+		//aca esta
 		FD_PLANIFICADOR = fdCliente;
-		while (1) {
-			//- No corto la comunicacion con el planificador -
-		}
+		pthread_cond_wait(&CONDICION_LIBERO_PLANIFICADOR, &mutex); //lo detengo aca hasta q no lo usea mas
+//		exit(1); //mato al coordinador
+
 		break;
 	case 3:
 		//INSTANCIA
@@ -407,5 +425,7 @@ void levantar_servidor_coordinador() {
 	free_parametros_config();
 	log_destroy(logger);
 	close(sockfd);
+	pthread_mutex_destroy(&mutex);
+	pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
 }
 

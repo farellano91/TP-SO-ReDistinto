@@ -1,37 +1,12 @@
-16:31:27 **** Incremental Build of configuration Debug for project planificador ****
+15:44:43 **** Incremental Build of configuration Debug for project esi ****
 make all 
-Building file: ../src/consola.c
+Building file: ../src/esi.c
 Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/consola.d" -MT"src/consola.o" -o "src/consola.o" "../src/consola.c"
-Finished building: ../src/consola.c
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/esi.d" -MT"src/esi.o" -o "src/esi.o" "../src/esi.c"
+Finished building: ../src/esi.c
  
-Building file: ../src/funcionalidad_planificador.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_planificador.d" -MT"src/funcionalidad_planificador.o" -o "src/funcionalidad_planificador.o" "../src/funcionalidad_planificador.c"
-Finished building: ../src/funcionalidad_planificador.c
- 
-Building file: ../src/planificador.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/planificador.d" -MT"src/planificador.o" -o "src/planificador.o" "../src/planificador.c"
-Finished building: ../src/planificador.c
- 
-Building file: ../src/servidor.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/servidor.d" -MT"src/servidor.o" -o "src/servidor.o" "../src/servidor.c"
-../src/servidor.c: In function ‘levantar_servidor_planificador’:
-../src/servidor.c:201:41: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
-        (struct sockaddr *) &their_addr, &sin_size))
-                                         ^
-In file included from /usr/include/netinet/in.h:23:0,
-                 from ../src/servidor.h:11,
-                 from ../src/servidor.c:1:
-/usr/include/i386-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * restrict {aka unsigned int * restrict}’ but argument is of type ‘int *’
- extern int accept (int __fd, __SOCKADDR_ARG __addr,
-            ^
-Finished building: ../src/servidor.c
- 
-Building target: planificador
+Building target: esi
 Invoking: GCC C Linker
-gcc  -o "planificador"  ./src/cliente.o ./src/consola.o ./src/funcionalidad_planificador.o ./src/planificador.o ./src/servidor.o   -lcommons -lpthread -lreadline
-Finished building target: planificador
+gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o   -lcommons -lparsi
+Finished building target: esi
  

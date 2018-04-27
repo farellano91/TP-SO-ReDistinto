@@ -16,6 +16,7 @@
 int main(void) {
 	get_parametros_config();
 	configure_logger();
+	inicializo_semaforos();
 	levantar_servidor_coordinador();
 	return EXIT_SUCCESS;
 }

@@ -25,6 +25,9 @@
 
 pthread_mutex_t mutex;
 
+pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
+
+
 t_log * logger;
 
 int puerto_escucha_conexion;
@@ -57,5 +60,6 @@ t_Instancia* creo_instancia(int fd_instancia);
 
 void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva);
 
+void inicializo_semaforos();
 
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

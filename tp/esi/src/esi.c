@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 	ssize_t read;
 
 	fp = fopen(argv[1], "r");
-	//fp = fopen("script.esi", "r"); PARA DEBUGGER POR ECLIPSE
+	//fp = fopen("script.esi", "r");
 	if (fp == NULL) {
 		perror("Error al abrir el archivo: ");
 		close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
@@ -89,7 +89,6 @@ int main(int argc, char** argv) {
 								&longitud_clave, sizeof(int32_t));
 						memcpy(bufferEnvio_get + sizeof(int32_t) * 3,
 								parsed.argumentos.GET.clave, longitud_clave);
-
 						if (send(fd_coordinador, bufferEnvio_get,
 								(sizeof(int32_t) * 3) + longitud_clave, 0)
 								== -1) {

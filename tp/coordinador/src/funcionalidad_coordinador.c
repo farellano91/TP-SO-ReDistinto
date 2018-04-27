@@ -39,6 +39,11 @@ void configure_logger() {
 
 }
 
+void inicializo_semaforos(){
+	 pthread_mutex_init(&mutex, NULL);
+	 pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
+
+}
 
 t_list* create_list(){
 	t_list * Lready = list_create();
