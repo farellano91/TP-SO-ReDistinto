@@ -2,3 +2,7 @@ GET jugador2
 STORE jugador2
 GET jugador1
 STORE jugador1
+GET jugador3
+STORE jugador3
+GET jugador5
+STORE jugador5

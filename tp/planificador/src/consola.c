@@ -109,11 +109,18 @@ char * stripwhite (char *string){
 
 int com_pausa (char *arg){
 	puts("Comando pausa!!");
+	pthread_mutex_lock(&MUTEX);
+	PLANIFICADOR_EN_PAUSA = true;
+	pthread_mutex_unlock(&MUTEX);
 	return (0);
 }
 
 int com_continuar (char *arg){
 	puts("Comando continuar!!");
+	pthread_mutex_lock(&MUTEX);
+	PLANIFICADOR_EN_PAUSA = false;
+	pthread_mutex_unlock(&MUTEX);
+	pthread_cond_signal(&CONDICION_PAUSA_PLANIFICADOR);
 	return (0);
 }
 

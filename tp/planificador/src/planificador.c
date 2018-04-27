@@ -9,6 +9,7 @@ int main(void) {
 
 	get_parametros_config();
 	PLANIFICADOR_EN_PAUSA = false;
+	inicializo_semaforos();
 	//PARA CONVERSAR CON EL COORDINADOR
 	pthread_t punteroHiloInfoCoordinador;
 	pthread_create(&punteroHiloInfoCoordinador, NULL,(void*) recibirInfoCoordinador, NULL);

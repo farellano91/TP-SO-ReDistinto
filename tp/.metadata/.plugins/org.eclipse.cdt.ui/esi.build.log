@@ -1,30 +1,7 @@
-16:06:40 **** Build of configuration Debug for project esi ****
-make all 
-Building file: ../src/archivo.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/archivo.d" -MT"src/archivo.o" -o "src/archivo.o" "../src/archivo.c"
-Finished building: ../src/archivo.c
- 
-Building file: ../src/cliente.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/cliente.d" -MT"src/cliente.o" -o "src/cliente.o" "../src/cliente.c"
-Finished building: ../src/cliente.c
- 
-Building file: ../src/esi.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/esi.d" -MT"src/esi.o" -o "src/esi.o" "../src/esi.c"
-Finished building: ../src/esi.c
- 
-Building file: ../src/funcionalidad_esi.c
-Invoking: GCC C Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/funcionalidad_esi.d" -MT"src/funcionalidad_esi.o" -o "src/funcionalidad_esi.o" "../src/funcionalidad_esi.c"
-Finished building: ../src/funcionalidad_esi.c
- 
-Building target: esi
-Invoking: GCC C Linker
-gcc  -o "esi"  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o   -lcommons -lparsi
-Finished building target: esi
+18:31:16 **** Clean-only build of configuration Debug for project esi ****
+make clean 
+rm -rf  ./src/archivo.o ./src/cliente.o ./src/esi.o ./src/funcionalidad_esi.o  ./src/archivo.d ./src/cliente.d ./src/esi.d ./src/funcionalidad_esi.d  esi
  
 
-16:06:41 Build Finished (took 452ms)
+18:31:16 Build Finished (took 222ms)
 

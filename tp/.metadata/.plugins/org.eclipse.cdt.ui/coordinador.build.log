@@ -1,4 +1,4 @@
-16:06:40 **** Build of configuration Debug for project coordinador ****
+18:31:19 **** Build of configuration Debug for project coordinador ****
 make all 
 Building file: ../src/coordinador.c
 Invoking: GCC C Compiler
@@ -31,5 +31,5 @@ gcc  -o "coordinador"  ./src/coordinador.o ./src/funcionalidad_coordinador.o ./s
 Finished building target: coordinador
  
 
-16:06:40 Build Finished (took 397ms)
+18:31:19 Build Finished (took 508ms)
 

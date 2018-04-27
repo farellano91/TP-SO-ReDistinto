@@ -195,7 +195,7 @@ void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi){
 	printf("Envie resultado al ESI de ID:%d!!!\n",id_esi);
 }
 
-int recibo_resultado_planificador(int resultado_linea){
+int recibo_resultado_planificador(){
 	//TODO:Aca recibo la respuesta del planificador 1:falle , 2:ok , 3: ok pero te bloqueaste, 4: murio el planificador
 	int32_t resultado_planificador = 0;
 	int numbytes = 0;

@@ -25,6 +25,7 @@
 #include <commons/config.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include "funcionalidad_planificador.h"
 
 void levantar_consola();
 

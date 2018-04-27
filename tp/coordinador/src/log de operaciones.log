@@ -100,3 +100,43 @@
 [INFO] 15:04:36:38 tp-redistinto/(7984:7995): ESI 1 GET jugador1
 [INFO] 15:35:42:846 tp-redistinto/(9012:9012): Empezamos.....
 [INFO] 15:37:33:881 tp-redistinto/(9168:9168): Empezamos.....
+[INFO] 17:14:12:271 tp-redistinto/(13169:13169): Empezamos.....
+[INFO] 17:46:51:414 tp-redistinto/(15095:15095): Empezamos.....
+[INFO] 18:15:40:505 tp-redistinto/(16508:16508): Empezamos.....
+[INFO] 18:19:41:620 tp-redistinto/(16648:16648): Empezamos.....
+[INFO] 18:19:57:556 tp-redistinto/(16648:16661): ESI 1 GET jugador1
+[INFO] 18:20:02:557 tp-redistinto/(16648:16661): ESI 1 GET materias:K3002
+[INFO] 18:20:29:897 tp-redistinto/(16648:16663): ESI 2 GET jugador1
+[INFO] 18:20:34:899 tp-redistinto/(16648:16663): ESI 2 GET materias:K3002
+[INFO] 18:22:23:270 tp-redistinto/(16648:16731): ESI 1 GET jugador2
+[INFO] 18:22:28:272 tp-redistinto/(16648:16731): ESI 1 STORE jugador2
+[INFO] 18:22:33:274 tp-redistinto/(16648:16731): ESI 1 GET jugador1
+[INFO] 18:22:57:157 tp-redistinto/(16648:16731): ESI 1 STORE jugador1
+[INFO] 18:23:02:159 tp-redistinto/(16648:16731): ESI 1 GET jugador3
+[INFO] 18:23:07:161 tp-redistinto/(16648:16731): ESI 1 STORE jugador3
+[INFO] 18:23:12:162 tp-redistinto/(16648:16731): ESI 1 GET jugador5
+[INFO] 18:23:17:165 tp-redistinto/(16648:16731): ESI 1 STORE jugador5
+[INFO] 18:27:35:519 tp-redistinto/(16648:17467): ESI 2 GET jugador2
+[INFO] 18:27:40:519 tp-redistinto/(16648:17467): ESI 2 STORE jugador2
+[INFO] 18:27:45:526 tp-redistinto/(16648:17467): ESI 2 GET jugador1
+[INFO] 18:27:50:536 tp-redistinto/(16648:17467): ESI 2 STORE jugador1
+[INFO] 18:27:55:539 tp-redistinto/(16648:17467): ESI 2 GET jugador3
+[INFO] 18:28:00:541 tp-redistinto/(16648:17467): ESI 2 STORE jugador3
+[INFO] 18:28:05:541 tp-redistinto/(16648:17467): ESI 2 GET jugador5
+[INFO] 18:28:10:543 tp-redistinto/(16648:17467): ESI 2 STORE jugador5
+[INFO] 18:28:28:743 tp-redistinto/(16648:17478): ESI 3 GET jugador2
+[INFO] 18:28:33:744 tp-redistinto/(16648:17478): ESI 3 STORE jugador2
+[INFO] 18:28:38:747 tp-redistinto/(16648:17478): ESI 3 GET jugador1
+[INFO] 18:28:43:750 tp-redistinto/(16648:17478): ESI 3 STORE jugador1
+[INFO] 18:28:48:753 tp-redistinto/(16648:17478): ESI 3 GET jugador3
+[INFO] 18:28:53:755 tp-redistinto/(16648:17478): ESI 3 STORE jugador3
+[INFO] 18:28:58:758 tp-redistinto/(16648:17478): ESI 3 GET jugador5
+[INFO] 18:29:03:761 tp-redistinto/(16648:17478): ESI 3 STORE jugador5
+[INFO] 18:31:42:159 tp-redistinto/(16648:17640): ESI 4 GET jugador2
+[INFO] 18:31:47:160 tp-redistinto/(16648:17640): ESI 4 STORE jugador2
+[INFO] 18:31:52:163 tp-redistinto/(16648:17640): ESI 4 GET jugador1
+[INFO] 18:31:57:167 tp-redistinto/(16648:17640): ESI 4 STORE jugador1
+[INFO] 18:32:02:169 tp-redistinto/(16648:17640): ESI 4 GET jugador3
+[INFO] 18:32:07:170 tp-redistinto/(16648:17640): ESI 4 STORE jugador3
+[INFO] 18:32:12:171 tp-redistinto/(16648:17640): ESI 4 GET jugador5
+[INFO] 18:32:17:174 tp-redistinto/(16648:17640): ESI 4 STORE jugador5

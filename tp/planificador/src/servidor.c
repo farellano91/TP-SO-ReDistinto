@@ -5,32 +5,6 @@ void sigchld_handler(int s) {
 		;
 }
 
-//int recibir_resultado(int fdCliente) {
-//	int resultado = 0;
-//	void* bufferRecibido = malloc(sizeof(char) * 29);
-//	char * mensajeSaludoRecibido = malloc(sizeof(char) * 29);
-//	int numbytes = 0;
-//	if ((numbytes = recv(fdCliente, bufferRecibido, 29, 0)) <= 0) {
-//		if (numbytes == 0) {
-//			//si el cliente se fue
-//			printf("Se fue: socket %d, chau gato!!!\n", fdCliente);
-//			close(fdCliente); // si ya no conversare mas con el cliente, lo cierro
-//
-//		}
-//
-//	} else {
-//		memcpy(mensajeSaludoRecibido, bufferRecibido, 29);
-//		printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
-//	}
-//
-//	if (strstr(mensajeSaludoRecibido, "ESI") != NULL) {
-//		resultado = 1;
-//	}
-//	free(bufferRecibido);
-//	free(mensajeSaludoRecibido);
-//	return resultado;
-//}
-
 
 /*PROTOCOLO para envio saludo al ESI
  * ESI <-> PLANIFICADOR
@@ -103,6 +77,7 @@ void crear_listas_globales(){
 
 }
 void levantar_servidor_planificador() {
+
 	//cree mis listas globales
 	crear_listas_globales();
 
@@ -180,6 +155,7 @@ void levantar_servidor_planificador() {
 	FD_SET(sockfd, &master);
 	// seguir la pista del descriptor de fichero mayor
 	fdmax = sockfd; // por ahora es éste
+
 	// bucle principal
 	while (1) {
 

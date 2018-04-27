@@ -2,20 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="continuar_comunicacion" key="selection"/>
+		<item value="CONDICION_PAUSA_PLANIFICADOR" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="continuar_comunicacion"/>
-			<item value="free_claves_iniciales"/>
-			<item value="aplico_algoritmo_primer_ingreso"/>
-			<item value="aplico_algoritmo_ultimo"/>
-			<item value="get_clave_valor"/>
-			<item value="envio_tarea_instancia"/>
-			<item value="loggeo_info"/>
-			<item value="logeo_info"/>
+			<item value="CONDICION_PAUSA_PLANIFICADOR"/>
+			<item value="resultado"/>
+			<item value="void inicializo_semaforos()"/>
+			<item value="intHandler"/>
+			<item value="recibo_lineas"/>
+			<item value="envio_tarea_planificador"/>
+			<item value="Se desconecto el planificador"/>
+			<item value="envio_resultado_esi"/>
 		</list>
 		<list key="replacehistory">
 			<item value="id_esi"/>
@@ -27,7 +27,7 @@
 		<item value="293" key="DIALOG_WIDTH"/>
 		<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
 		<item value="438" key="DIALOG_HEIGHT"/>
-		<item value="104" key="DIALOG_Y_ORIGIN"/>
-		<item value="903" key="DIALOG_X_ORIGIN"/>
+		<item value="227" key="DIALOG_Y_ORIGIN"/>
+		<item value="864" key="DIALOG_X_ORIGIN"/>
 	</section>
 </section>

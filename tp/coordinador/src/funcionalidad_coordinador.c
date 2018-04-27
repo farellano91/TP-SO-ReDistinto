@@ -40,8 +40,8 @@ void configure_logger() {
 }
 
 void inicializo_semaforos(){
-	 pthread_mutex_init(&MUTEX, NULL);
-	 pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
+	pthread_mutex_init(&MUTEX,NULL);
+	pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
 
 }
 

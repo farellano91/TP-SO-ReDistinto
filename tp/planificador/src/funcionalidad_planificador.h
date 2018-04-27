@@ -21,6 +21,10 @@
 #include <arpa/inet.h>
 #include <commons/config.h>
 #include <commons/string.h>
+#include <pthread.h>
+
+pthread_mutex_t MUTEX;
+pthread_cond_t CONDICION_PAUSA_PLANIFICADOR;
 
 void desbloquea_flag();
 
@@ -157,4 +161,7 @@ void free_recurso(int i);
 void free_claves_iniciales();
 
 void ordeno_listas();
+
+void inicializo_semaforos();
+
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

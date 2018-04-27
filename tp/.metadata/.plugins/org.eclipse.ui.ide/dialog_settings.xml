@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
-	<section name="org.eclipse.ui.dialogs.FilteredResourcesSelectionDialog">
-		<item value="false" key="ShowDerived"/>
-		<item value="true" key="ShowStatusLine"/>
-		<item value="false" key="FilterByLocation"/>
-		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;workingSet workingSetName=&quot;&quot;/&gt;" key="WorkingSet"/>
-		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;History&gt;&#x0A;&lt;historyRootNode&gt;&#x0A;&lt;infoNode path=&quot;/esi/src/cliente.h&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/coordinador/src/servidor.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/planificador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/coordinador/src/coordinador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/esi/src/esi.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/cliente.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/servidor.h&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;/historyRootNode&gt;&#x0A;&lt;/History&gt;" key="History"/>
-		<section name="DialogBoundsSettings">
-			<item value="600" key="DIALOG_WIDTH"/>
-			<item value="0" key="DIALOG_Y_ORIGIN"/>
-			<item value="381" key="DIALOG_X_ORIGIN"/>
-			<item value="500" key="DIALOG_HEIGHT"/>
-			<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
-		</section>
+	<section name="CleanDialogSettings">
+		<item value="565" key="DIALOG_WIDTH"/>
+		<item value="false" key="TOGGLE_SELECTED"/>
+		<item value="414" key="DIALOG_HEIGHT"/>
+		<item value="67" key="DIALOG_Y_ORIGIN"/>
+		<item value="395" key="DIALOG_X_ORIGIN"/>
 	</section>
 	<section name="ExternalProjectImportWizard">
-		<item value="false" key="WizardProjectsImportPage.STORE_ARCHIVE_SELECTED"/>
-		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
 		<item value="false" key="WizardProjectsImportPage.STORE_NESTED_PROJECTS"/>
+		<item value="false" key="WizardProjectsImportPage.STORE_COPY_PROJECT_ID"/>
+		<item value="false" key="WizardProjectsImportPage.STORE_ARCHIVE_SELECTED"/>
 		<list key="WizardProjectsImportPage.STORE_DIRECTORIES">
 			<item value="/home/utnso/workspace/tp-2018-1c-Real-Mandril/tp"/>
 			<item value="/home/utnso/tp-2018-1c-Real-Mandril/tp/coordinador"/>
@@ -26,11 +19,18 @@
 			<item value=""/>
 		</list>
 	</section>
-	<section name="CleanDialogSettings">
-		<item value="565" key="DIALOG_WIDTH"/>
-		<item value="67" key="DIALOG_Y_ORIGIN"/>
-		<item value="395" key="DIALOG_X_ORIGIN"/>
-		<item value="414" key="DIALOG_HEIGHT"/>
-		<item value="false" key="TOGGLE_SELECTED"/>
+	<section name="org.eclipse.ui.dialogs.FilteredResourcesSelectionDialog">
+		<item value="false" key="FilterByLocation"/>
+		<item value="true" key="ShowStatusLine"/>
+		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;workingSet workingSetName=&quot;&quot;/&gt;" key="WorkingSet"/>
+		<item value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#x0A;&lt;History&gt;&#x0A;&lt;historyRootNode&gt;&#x0A;&lt;infoNode path=&quot;/esi/src/cliente.h&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/coordinador/src/servidor.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/planificador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/coordinador/src/coordinador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/esi/src/esi.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/cliente.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/servidor.h&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/funcionalidad_planificador.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;infoNode path=&quot;/planificador/src/servidor.c&quot; type=&quot;1&quot;/&gt;&#x0A;&lt;/historyRootNode&gt;&#x0A;&lt;/History&gt;" key="History"/>
+		<item value="false" key="ShowDerived"/>
+		<section name="DialogBoundsSettings">
+			<item value="600" key="DIALOG_WIDTH"/>
+			<item value="1|Ubuntu|11.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+			<item value="500" key="DIALOG_HEIGHT"/>
+			<item value="0" key="DIALOG_Y_ORIGIN"/>
+			<item value="381" key="DIALOG_X_ORIGIN"/>
+		</section>
 	</section>
 </section>
