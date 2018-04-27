@@ -283,7 +283,7 @@ void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* 
 		default:
 			break;
 	}
-	log_info(logger,registro);
+	log_info(LOGGER,registro);
 	free(registro);
 }
 
@@ -310,7 +310,7 @@ void atender_cliente(void* idSocketCliente) {
 		//PLANIFICADOR (me guardo el fd)
 		//aca esta
 		FD_PLANIFICADOR = fdCliente;
-		pthread_cond_wait(&CONDICION_LIBERO_PLANIFICADOR, &mutex); //lo detengo aca hasta q no lo usea mas
+		pthread_cond_wait(&CONDICION_LIBERO_PLANIFICADOR, &MUTEX); //lo detengo aca hasta q no lo usea mas
 //		exit(1); //mato al coordinador
 
 		break;
@@ -335,7 +335,7 @@ void intHandler(int dummy) {
 	if (dummy != 0) {
 		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
 		free_parametros_config();
-		log_destroy(logger);
+		log_destroy(LOGGER);
 		exit(dummy);
 
 	}
@@ -372,7 +372,7 @@ void levantar_servidor_coordinador() {
 	}
 
 	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
-	my_addr.sin_port = htons(puerto_escucha_conexion);    // short, Ordenación de bytes de la red
+	my_addr.sin_port = htons(PUERTO_ESCUCHA_CONEXION);    // short, Ordenación de bytes de la red
 	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
 	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
@@ -423,9 +423,9 @@ void levantar_servidor_coordinador() {
 
 	}
 	free_parametros_config();
-	log_destroy(logger);
+	log_destroy(LOGGER);
 	close(sockfd);
-	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&MUTEX);
 	pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
 }
 

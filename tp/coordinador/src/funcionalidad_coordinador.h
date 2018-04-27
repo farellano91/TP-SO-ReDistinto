@@ -23,17 +23,17 @@
 #include <commons/collections/list.h>
 #include <pthread.h>
 
-pthread_mutex_t mutex;
+pthread_mutex_t MUTEX;
 
 pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
 
-t_log * logger;
+t_log * LOGGER;
 
-int puerto_escucha_conexion;
-char* algoritmo_distribucion;
-int32_t cantidad_entradas;
-int32_t tamanio_entrada;
+int PUERTO_ESCUCHA_CONEXION;
+char* ALGORITMO_DISTRIBUCION;
+int32_t CANTIDAD_ENTRADAS;
+int32_t TAMANIO_ENTRADA;
 int RETARDO;
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos

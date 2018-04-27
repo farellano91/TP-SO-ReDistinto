@@ -1,4 +1,4 @@
-12:38:58 **** Incremental Build of configuration Debug for project planificador ****
+16:06:42 **** Build of configuration Debug for project planificador ****
 make all 
 Building file: ../src/cliente.c
 Invoking: GCC C Compiler
@@ -41,5 +41,5 @@ gcc  -o "planificador"  ./src/cliente.o ./src/consola.o ./src/funcionalidad_plan
 Finished building target: planificador
  
 
-12:38:59 Build Finished (took 1s.7ms)
+16:06:42 Build Finished (took 660ms)
 
