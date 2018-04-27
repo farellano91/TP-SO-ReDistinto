@@ -26,6 +26,9 @@ int main(void) {
 	pthread_join(punteroHiloConsola, NULL);
 	pthread_join(punteroHiloServidor, NULL);
 
+	pthread_mutex_destroy(&MUTEX);
+	pthread_cond_destroy(&CONDICION_PAUSA_PLANIFICADOR);
+
 	return EXIT_SUCCESS;
 }
 
