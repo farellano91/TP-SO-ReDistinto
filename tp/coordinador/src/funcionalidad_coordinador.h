@@ -62,4 +62,6 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva);
 
 void inicializo_semaforos();
 
+void aplicarAlgoritmoDisctribucion(char *);
+
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

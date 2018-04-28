@@ -4,6 +4,7 @@
  *  Created on: 18 abr. 2018
  *      Author: utnso
  */
+
 #include "funcionalidad_coordinador.h"
 
 void get_parametros_config(){
@@ -98,4 +99,47 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 	list_add(list,instancia_nueva); //esto lo encola al final
 	printf("Se agrego la instancia de nombre:%s a la lista\n",instancia_nueva->nombre_instancia);
 	pthread_mutex_unlock(&MUTEX);
+}
+
+void aplicarAlgoritmoDisctribucion(char * algoritmo){
+
+	#define INVALID_ALGORITMO_DISTRIBUCION -1
+	#define EL 4
+	#define LSU 5
+	#define KE 6
+
+	typedef struct { char *key; int val; } t_symstruct;
+
+	static t_symstruct buscarTabla[] = {
+		{ "EL", EL }, { "LSU", LSU }, { "KE", KE }
+	};
+
+	#define NKEYS (sizeof(buscarTabla)/sizeof(t_symstruct))
+
+	int keyfromstring(char *key)
+	{
+		int i;
+		for (i=0; i < NKEYS; i++) {
+			t_symstruct *sym = buscarTabla + i*sizeof(t_symstruct);
+			if (strcmp(sym->key, key) == 0)
+				return sym->val;
+		}
+		return INVALID_ALGORITMO_DISTRIBUCION;
+	}
+
+	switch (keyfromstring(algoritmo)) {
+		case EL:
+			printf("INFO: Algoritmo EL\n");
+			break;
+		case LSU:
+			printf("INFO: Algoritmo LSU\n");
+			break;
+		case KE:
+			printf("INFO: Algoritmo KE\n");
+			break;
+		case INVALID_ALGORITMO_DISTRIBUCION:
+			printf("Error: ALGORITMO_DISTRIBUCION invalido\n");
+			exit(1);
+
+	}
 }

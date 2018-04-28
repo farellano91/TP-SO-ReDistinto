@@ -1,5 +1,6 @@
 #include "servidor.h"
 
+
 void sigchld_handler(int s) {
 	while (wait(NULL) > 0)
 		;
@@ -105,7 +106,7 @@ void recibo_lineas(int fd_esi) {
 						////TODO:
 						//1.- aplicar algoritmo de distribucion para decidir q instancia va
 						//(usando una cola de instancias o cola de struct Instancia ;))
-
+						aplicarAlgoritmoDisctribucion(ALGORITMO_DISTRIBUCION);
 						 /*ORDENO LA COLA PARA TOMAR EL PRIMERO EN LA SIGUIENTE FUNCION */
 						//2.- enviar la peticion a la instancia elegida
 						envio_tarea_instancia(2,get_clave_valor(fd_esi),id_esi);
