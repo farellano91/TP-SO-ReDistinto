@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
 					}
 
 				}
-				destruir_operacion(parsed);
+
 
 				//recv resultado de la sentencia q le mande al coordinador!!!!
 				if ((numbytes = recv(fd_coordinador, &resultado_coordinador,
@@ -197,7 +197,7 @@ int main(int argc, char** argv) {
 
 					t_respuesta_para_planificador respuesta_planificador = {
 							.id_tipo_respuesta = 2, .id_esi = ID_ESI_OBTENIDO,
-							.mensaje = ""};
+							.mensaje = "", .clave=""};
 					switch (resultado_coordinador) {
 					case 1: //recibi respuesta q coordinador no lo pudo hacer
 						strcpy(respuesta_planificador.mensaje, "MAL");
@@ -213,6 +213,11 @@ int main(int argc, char** argv) {
 						strcpy(respuesta_planificador.mensaje, "ME BLOQUEARON");
 						respuesta_planificador.mensaje[strlen(
 								respuesta_planificador.mensaje)] = '\0';
+
+						//si me bloquearon es por un GET, entonces mando mi clave
+						strcpy(respuesta_planificador.clave,parsed.argumentos.GET.clave);
+						respuesta_planificador.clave[strlen(
+								respuesta_planificador.clave)] = '\0';
 						break;
 					}
 
@@ -225,6 +230,7 @@ int main(int argc, char** argv) {
 					printf("Respuesta enviado al planificador correctamente\n");
 
 				}
+				destruir_operacion(parsed);
 			}
 
 		}
@@ -255,6 +261,7 @@ int main(int argc, char** argv) {
 			strcpy(respuesta_planificador.mensaje, "TERMINE DE LEER TODO CAPO");
 			respuesta_planificador.mensaje[strlen(respuesta_planificador.mensaje)] =
 					'\0';
+
 			if (send(fd_planificador, &respuesta_planificador,
 					sizeof(t_respuesta_para_planificador), 0) == -1) {
 				printf("No se pudo enviar respuesta al planificador\n");

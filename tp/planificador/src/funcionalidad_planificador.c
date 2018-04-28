@@ -79,7 +79,7 @@ bool aplico_algoritmo_ultimo(){
 
 }
 
-bool aplico_algoritmo(){
+bool aplico_algoritmo(char clave[40]){
 	//Aca estoy si recibi una respuesta de alguna tarea pedida al ESI (TAREAS QUE PUEDE SER REALIZADAS OK o BLOCKEADO al ESI)
 
 	pthread_mutex_lock(&MUTEX);//sirve para delimitar mi RC como atomica ya que usamos la misma variable entre hilos
@@ -99,6 +99,19 @@ bool aplico_algoritmo(){
 
 		//controlo si tiene el flag de bloqueado para mandarlo a la list_block
 		if(bloqueado_flag() ==  1){
+
+			//saco de EXECUTE a BLOQUEADO
+			t_Esi* esi= list_get(LIST_EXECUTE, 0);
+			char* clave_block = malloc(sizeof(char)*40);
+			strcpy(clave_block,clave);
+			clave_block[strlen(clave_block)] = '\0';
+			t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
+			list_add(LIST_BLOCKED,esi_bloqueado);
+
+			printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s\n",esi->id,clave_block);
+			free(clave_block);
+
+
 			//Caso donde ESI se bloqueo al hacer lo que le pedi
 			desbloquea_flag(); //limpio el flag
 			//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)

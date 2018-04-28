@@ -198,7 +198,7 @@ void levantar_servidor_planificador() {
 					//RECIBO DATOS DESDE ESI QUE PUEDEN SER RESPUESTA A UNA OPERACION O MENSAJE SALUDO
 					int numbytes = 0;
 					t_respuesta_para_planificador respuesta = {.id_tipo_respuesta = 0, .id_esi = 0,
-									.mensaje = ""};
+									.mensaje = "" , .clave=""};
 
 					if ((numbytes = recv(i, &respuesta, sizeof(respuesta), 0)) <= 0) {
 						if (numbytes == 0) {
@@ -230,7 +230,7 @@ void levantar_servidor_planificador() {
 						if(respuesta.id_tipo_respuesta == 2){
 							//Respuesta de una operacion que le pedi
 							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
-							if(aplico_algoritmo()){
+							if(aplico_algoritmo(respuesta.clave)){
 								continuar_comunicacion();
 							}
 

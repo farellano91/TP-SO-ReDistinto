@@ -137,11 +137,8 @@ void recibirInfoCoordinador() {
 					//muevo de execute a block al ESI
 					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
 					t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
-//					list_remove_by_condition(LIST_EXECUTE,(void*) _esElid);
-					t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_buscado,clave);
-					list_add(LIST_BLOCKED,esi_bloqueado);
 					esi_buscado->status=1;
-					printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d\n",id_esi);
+					printf("Marco como bloqueado al ESI ID:%d\n",id_esi);
 
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
 					send_mensaje(fdCoordinador,3);

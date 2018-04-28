@@ -140,3 +140,9 @@
 [INFO] 18:32:07:170 tp-redistinto/(16648:17640): ESI 4 STORE jugador3
 [INFO] 18:32:12:171 tp-redistinto/(16648:17640): ESI 4 GET jugador5
 [INFO] 18:32:17:174 tp-redistinto/(16648:17640): ESI 4 STORE jugador5
+[INFO] 17:47:51:689 tp-redistinto/(2282:2282): Empezamos.....
+[INFO] 18:23:33:195 tp-redistinto/(2979:2979): Empezamos.....
+[INFO] 18:23:51:168 tp-redistinto/(2979:3019): ESI 1 GET jugador1
+[INFO] 18:23:56:170 tp-redistinto/(2979:3019): ESI 1 GET materias:K3002
+[INFO] 18:25:48:44 tp-redistinto/(2979:3082): ESI 1 GET jugador1
+[INFO] 18:25:53:75 tp-redistinto/(2979:3082): ESI 1 GET materias:K3002

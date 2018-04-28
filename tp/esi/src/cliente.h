@@ -29,6 +29,7 @@ typedef struct Respuesta_para_planificador{
 	int id_tipo_respuesta;
 	int id_esi;
 	char mensaje[100];
+	char clave[40];
 } __attribute__((packed)) t_respuesta_para_planificador;
 
 #endif
