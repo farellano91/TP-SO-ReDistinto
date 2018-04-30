@@ -24,7 +24,8 @@ int main(void) {
 
 	//while para q no termine
 	while(1){
-		/*nada*/
+		int resultado = recibo_sentencia(sockfd);
+		envio_resultado_al_coordinador(sockfd,resultado);
 	}
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
 	free(ALGORITMO_REEMPLAZO);

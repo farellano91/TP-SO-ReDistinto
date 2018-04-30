@@ -39,6 +39,51 @@ void free_parametros_config(){
 	free(NOMBRE_INSTANCIA);
 }
 
+void envio_resultado_al_coordinador(sockfd,resultado){
+
+	if(send(sockfd, &resultado, sizeof(int32_t), 0) == -1) {
+		printf("No se puede enviar el resultado al coordinador\n");
+		exit(1);
+	}
+	printf("Envie mi resultado correctamente\n");
+}
+
+//recibe la linea, la procesa ... y retorna un valor
+int recibo_sentencia(int fd_coordinador){
+	int long_clave = 0;
+	int long_valor = 0;
+	int numbytes = 0;
+	if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir le tamaño de la clave\n");
+		exit(1);
+	}
+	char* clave_recibida = malloc(sizeof(char)*long_clave);
+	if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) == -1) {
+		printf("No se pudo recibir la clave\n");
+		exit(1);
+	}
+	if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir le tamaño del valor\n");
+		exit(1);
+	}
+	char* valor_recibido = malloc(sizeof(char)*long_valor);
+	if ((numbytes = recv(fd_coordinador, valor_recibido, long_clave, 0)) == -1) {
+		printf("No se pudo recibir el valor\n");
+		exit(1);
+	}
+	printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
+
+	/*PROCESO.....*/
+	//proceso_operacion(clave_recibida,valor_recibido);
+
+	free(clave_recibida);
+	free(valor_recibido);
+
+	//1: falla 2: OK
+	return 2;
+}
+
+
 void recibo_datos_entrada(int fd_coordinador){
 	void* buffer = malloc(sizeof(int32_t)*2);
 	int numbytes = 0;
@@ -56,7 +101,6 @@ void recibo_datos_entrada(int fd_coordinador){
 
 //esto para q el coordinador puedo crear su t_instancia
 void envio_datos(int fd_coordinador){
-
 	//revisar
 	int32_t longitud_mensaje = strlen(NOMBRE_INSTANCIA) + 1;
 	void* bufferEnvio = malloc(sizeof(int32_t)+ sizeof(char)*longitud_mensaje);
