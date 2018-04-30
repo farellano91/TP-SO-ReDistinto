@@ -33,23 +33,28 @@ void desbloquea_flag();
 bool bloqueado_flag();
 
 //se usa durante la comunicacion con los esis
-int PUERTO_ESCUCHA;
+int32_t PUERTO_ESCUCHA;
 
 char* ALGORITMO_PLANIFICACION;
 //double ALPHA;
-#define ALPHA 0.5
-int ESTIMACION_INICIAL;
+double ALPHA;
+int32_t ESTIMACION_INICIAL;
 
 char** CLAVES_INICIALES_BLOQUEADAS;
 
 //se usa para hablar con el coordinador
 char* IP_CONFIG_COORDINADOR;
 
-int PUERTO_CONFIG_COORDINADOR;
+int32_t PUERTO_CONFIG_COORDINADOR;
 
 //este flag es para el caso de que la consola me deje en pausa
 bool PLANIFICADOR_EN_PAUSA;
 
+void ActualizarIndicesEnLista();
+
+void ActualizarIndices();
+
+void IncrementarLinealeer();
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
 
@@ -57,7 +62,7 @@ void get_parametros_config();
 void free_parametros_config();
 
 //muevo todo los esis que establan bloqueados a listo segun la clave
-void move_all_esi_bloqueado_listo(char* clave);
+void move_esi_from_bloqueado_to_listo(char* clave);
 
 enum t_operationCode {
 	GET = 0, SET = 1, STORE = 2,
@@ -65,14 +70,13 @@ enum t_operationCode {
 
 // revisar los tipos si son correctos la info y si van aca .
 typedef struct {
-	int id;
-	int fd;
-	int status; //1:bloqueado 2:ok (este va a ser un flags que me servira para saber cuando tengo que mandar a bloqueado un esi cuando tenga su respuesta)
-	int contadorInicial;
-	int contadorReal;
-	int tiempoEnListo;
-	int cantSentenciasProcesadas;
-	int lineaALeer; //cada vez q le pido a un esi q haga algo, le estoy mandando un numero de linea a leer
+	int32_t id;
+	int32_t fd;
+	int32_t status; //1:bloqueado 2:ok (este va a ser un flags que me servira para saber cuando tengo que mandar a bloqueado un esi cuando tenga su respuesta)
+	int32_t estimacionRafagaAnterior;
+	int32_t tiempoEnListo;
+	int32_t cantSentenciasProcesadas;
+	int32_t lineaALeer; //cada vez q le pido a un esi q haga algo, le estoy mandando un numero de linea a leer
 
 } t_Esi;
 
@@ -98,8 +102,8 @@ typedef struct {
  * id_tipo_respuesta = 3 respuesta de que ya no tiene nada mas que leer y termino feliz
  * */
 typedef struct Respuesta_para_planificador{
-	int id_tipo_respuesta;
-	int id_esi; //1 o 2
+	int32_t id_tipo_respuesta;
+	int32_t id_esi; //1 o 2
 	char mensaje[100];
 	char clave[40];
 } __attribute__((packed)) t_respuesta_para_planificador;
@@ -145,22 +149,22 @@ bool aplico_algoritmo_primer_ingreso();
 bool aplico_algoritmo();
 
 //Remueve (y libera) cualquiere t_Esi de todas las lista
-void remove_esi_by_fd(int fd);
+void remove_esi_by_fd(int32_t fd);
 
 //REmueve un esi de donde este y lo manda a finish (si estaba en una lo saca)
-void remove_esi_by_fd_finished(int fd);
+void remove_esi_by_fd_finished(int32_t fd);
 
-t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int fd_esi);
+t_Esi* creo_esi(t_respuesta_para_planificador respuesta , int32_t fd_esi);
 
 void  continuar_comunicacion();
 
 void order_list(t_list* lista, void * funcion);
 
-void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int id_esi);
+void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int32_t id_esi);
 
-void cambio_ejecutando_a_finalizado(int id_esi);
+void cambio_ejecutando_a_finalizado(int32_t id_esi);
 
-void free_recurso(int i);
+void free_recurso(int32_t i);
 
 void free_claves_iniciales();
 
