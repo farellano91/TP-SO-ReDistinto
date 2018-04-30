@@ -22,11 +22,15 @@
 #include <commons/log.h>
 #include <commons/collections/list.h>
 #include <pthread.h>
+#include <commons/string.h>
 
 pthread_mutex_t MUTEX;
 
 pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
+
+//Para planificador
+int FD_PLANIFICADOR;
 
 t_log * LOGGER;
 
@@ -36,6 +40,14 @@ int32_t CANTIDAD_ENTRADAS;
 int32_t TAMANIO_ENTRADA;
 int RETARDO;
 
+typedef struct {
+	int fd;
+	char* nombre_instancia;
+	int tamanio_libre;
+} t_Instancia;
+
+void envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia, int32_t id_esi);
+
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
 
@@ -43,12 +55,6 @@ void get_parametros_config();
 void free_parametros_config();
 
 void configure_logger();
-
-typedef struct {
-	int fd;
-	char* nombre_instancia;
-	int tamanio_libre;
-} t_Instancia;
 
 t_list* LIST_INSTANCIAS;
 
@@ -63,5 +69,10 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva);
 void inicializo_semaforos();
 
 void aplicarAlgoritmoDisctribucion(char *);
+
+
+void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi);
+
+void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* valor_recibida);
 
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

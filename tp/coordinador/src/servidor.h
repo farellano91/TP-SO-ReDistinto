@@ -21,7 +21,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <pthread.h>
-#include <commons/string.h>
 #include <commons/config.h>
 #include "funcionalidad_coordinador.h"
 
@@ -29,8 +28,6 @@
 
 #define MYIP "127.0.0.1"
 
-//Para planificador
-int FD_PLANIFICADOR;
 
 typedef struct InfoCoordinador{
 	int id; //operacion GET=1 SET=2 STORE=3
@@ -46,9 +43,6 @@ void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi);
 
 int recibo_resultado_planificador();
 
-void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi);
-
-void envio_tarea_instancia(int32_t id_operacion, char** clave_valor_recibido , int32_t id_esi);
 
 void levantar_servidor_coordinador();
 
@@ -61,7 +55,7 @@ void atender_cliente(void* idSocketCliente);
 //Para ESI
 void recibo_lineas(int fdCliente);
 
-void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* valor_recibida);
+
 
 #endif
 
