@@ -163,7 +163,7 @@ void recibirInfoCoordinador() {
 				libero_recurso_by_clave_id(clave,id_esi);
 
 				//paso de bloqueado a listo todos los ESIs que querian esa clave
-				move_all_esi_bloqueado_listo(clave);
+				move_esi_from_bloqueado_to_listo(clave);
 
 				//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
 				send_mensaje(fdCoordinador,2);
