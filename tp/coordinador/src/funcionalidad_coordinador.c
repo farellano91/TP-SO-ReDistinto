@@ -6,7 +6,6 @@
  */
 
 #include "funcionalidad_coordinador.h"
-
 void get_parametros_config(){
 
 	t_config* config = config_create("config.cfg");
@@ -128,7 +127,18 @@ void aplicarAlgoritmoDisctribucion(char * algoritmo){
 	}
 
 	switch (keyfromstring(algoritmo)) {
+		t_Instancia* instancia ;
+		int index;
 		case EL:
+			index = 0;
+			if(index==list_size(LIST_INSTANCIAS)){
+				index = 0;
+			}else{
+				index ++;
+			}
+			instancia = list_get(LIST_INSTANCIAS,index);
+			//TODO:Implementar t_id_esi;
+			envio_tarea_instancia(2,get_clave_valor(instancia->fd),2);
 			printf("INFO: Algoritmo EL\n");
 			break;
 		case LSU:
@@ -142,4 +152,6 @@ void aplicarAlgoritmoDisctribucion(char * algoritmo){
 			exit(1);
 
 	}
+
+
 }
