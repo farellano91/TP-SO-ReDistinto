@@ -49,5 +49,6 @@ typedef struct {
 
 int recibo_sentencia(int fd_coordinador);
 
-void envio_resultado_al_coordinador(sockfd,resultado);
+void envio_resultado_al_coordinador(int sockfd,int resultado);
+
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

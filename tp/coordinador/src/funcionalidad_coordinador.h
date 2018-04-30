@@ -46,7 +46,7 @@ typedef struct {
 	int tamanio_libre;
 } t_Instancia;
 
-int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia, int32_t id_esi);
+int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia, int32_t id_esi,char** clave_valor);
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
@@ -68,7 +68,7 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva);
 
 void inicializo_semaforos();
 
-int aplicarAlgoritmoDisctribucion(char *);
+int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado);
 
 void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi);
 
