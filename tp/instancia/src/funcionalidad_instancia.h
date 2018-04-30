@@ -47,4 +47,7 @@ typedef struct {
 	int tamanio_variable;
 } t_fila_tabla_entrada;
 
+int recibo_sentencia(int fd_coordinador);
+
+void envio_resultado_al_coordinador(sockfd,resultado);
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */
