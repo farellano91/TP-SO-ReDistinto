@@ -72,6 +72,7 @@ typedef struct {
 	int contadorReal;
 	int tiempoEnListo;
 	int cantSentenciasProcesadas;
+	int lineaALeer; //cada vez q le pido a un esi q haga algo, le estoy mandando un numero de linea a leer
 
 } t_Esi;
 
@@ -156,6 +157,8 @@ void  continuar_comunicacion();
 void order_list(t_list* lista, void * funcion);
 
 void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int id_esi);
+
+void cambio_ejecutando_a_finalizado(int id_esi);
 
 void free_recurso(int i);
 

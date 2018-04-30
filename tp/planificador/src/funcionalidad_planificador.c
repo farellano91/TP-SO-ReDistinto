@@ -46,6 +46,7 @@ t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int fd_esi){
 	esi->contadorInicial = 0;
 	esi->contadorReal = 0;
 	esi->tiempoEnListo = 0;
+	esi->lineaALeer = 0;
 	esi->cantSentenciasProcesadas = 0;
 	esi->status = 2;
 	esi->fd = fd_esi;  //lo necesito para luego saber a quien mandar el send
@@ -68,7 +69,8 @@ bool aplico_algoritmo_ultimo(){
 	bool sContinuarComunicacion = true;
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
 		ordeno_listas();
-		list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+		t_Esi* unEsiListo = list_get(LIST_READY, 0);
+		list_add(LIST_EXECUTE, unEsiListo);
 		list_remove(LIST_READY, 0);
 	}
 	//pregunto si hay alguien al menos
@@ -132,12 +134,14 @@ bool aplico_algoritmo(char clave[40]){
 				//ordeno lista
 				order_list(LIST_READY, (void*) ordenar_por_SJFt);
 				//el primero de listo va a exec
-				list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 				list_remove(LIST_READY, 0);
 			}else{
 				//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
 				//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
-				//no hace falta ordenar las lista ya q estas se ordenaran cuando se bloquee el ESI o cuando TERMINE) y
+				//no hace falta ordenar las lista ya q estas se ordenaran cuando se bloquee el ESI o cuando TERMINE)
+				t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
+				esiEjecutando->lineaALeer++;
 				//TODO:ACTUALIZO CONTADORES
 			}
 		}
@@ -186,7 +190,7 @@ bool aplico_algoritmo_primer_ingreso(){
 
 	//Pregunto si tengo alguno en LIST_EXECUTE (si esta vacio entro ya que significa q soy el unico)
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
-		list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+		list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 		list_remove(LIST_READY, 0);
 	} else {
 		sContinuarComunicacion = false;
@@ -202,15 +206,15 @@ bool aplico_algoritmo_primer_ingreso(){
  * */
 void continuar_comunicacion(){
 
-	int32_t flags_continuar = 1;
+
 	t_Esi * primer_esi = list_get(LIST_EXECUTE,0);
 	if(primer_esi == NULL){
 		list_remove(LIST_EXECUTE, 0);
 	}else{
-		if (send(primer_esi->fd, &flags_continuar, sizeof(int32_t), 0) == -1) {
+		if (send(primer_esi->fd, &(primer_esi->lineaALeer), sizeof(int32_t), 0) == -1) {
 			printf("Error al tratar de enviar el permiso a ESI\n");
 		}else{
-			printf("Envie permiso de ejecucion al ESI de ID: %d\n", primer_esi->id);
+			printf("Envie permiso de ejecucion linea: %d al ESI de ID: %d\n",primer_esi->lineaALeer, primer_esi->id);
 		}
 	}
 
@@ -262,7 +266,12 @@ void remove_esi_by_fd_finished(int fd){
 	bool _esElfd(t_Esi* un_esi) { return un_esi->fd == fd;}
 
 	if(list_find(LIST_READY, (void*)_esElfd) != NULL){
-		list_add(LIST_FINISHED,list_find(LIST_READY, (void*)_esElfd));
+		t_Esi* esi_terminado = list_find(LIST_READY, (void*)_esElfd);
+		//le resto uno ya que al ingresar a listo se le sumo uno y
+		//ahora estaba ejecutando pero no hizo nada, termino de una pork no tenia nada mas para ejecutar, entonces le restamos eso asi
+		//queda bien guardado en la lisa de finalizado
+		esi_terminado->lineaALeer--;
+		list_add(LIST_FINISHED,esi_terminado);
 		list_remove_by_condition(LIST_READY,(void*) _esElfd);
 	}
 
@@ -330,7 +339,7 @@ void move_all_esi_bloqueado_listo(char* clave){
 		list_add(LIST_READY,esi);
 		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
 	}else{
-		printf("No ningun ESI para desbloquear por la clave: %s\n",clave);
+		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
 	}
 
 //	int contador = 0;
@@ -420,7 +429,8 @@ void agregar_en_bloqueados(t_Esi *esi, char* clave){
 
 //Tanto para lista de listos como para la de finalizados.
 void agregar_en_Lista(t_list* lista, t_Esi *esi){
-		list_add( lista ,esi);
+	esi->lineaALeer++;
+	list_add( lista ,esi);
 }
 //TODO: criterio de ordenamiento SJF con DESALOJO
 
@@ -434,6 +444,14 @@ void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int id_esi){
 	agregar_en_Lista(list_hasta,esi_buscado);
 }
 
+void cambio_ejecutando_a_finalizado(int id_esi){
+
+	bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
+	t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
+
+	list_remove_by_condition(LIST_EXECUTE,(void*) _esElid);
+	agregar_en_Lista(LIST_FINISHED,esi_buscado);
+}
 
 void inicializo_semaforos(){
 	pthread_mutex_init(&MUTEX,NULL);

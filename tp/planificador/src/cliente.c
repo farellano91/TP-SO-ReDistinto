@@ -211,8 +211,10 @@ void libero_recurso_by_clave_id(char* clave,int id_esi){
 		//Solo lo saco de la lista
 		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*)_esElidClave);
 		printf("Libero la clave:%s que tenia tomado el ESI ID:%d\n",clave,id_esi);
+	}else{
+		printf("No hay clave para liberar del ESI ID:%d\n",id_esi);
 	}
-	printf("No hay clave para liberar del ESI ID:%d\n",id_esi);
+
 }
 
 

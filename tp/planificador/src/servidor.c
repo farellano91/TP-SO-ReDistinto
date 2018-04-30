@@ -242,7 +242,7 @@ void levantar_servidor_planificador() {
 							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
-							cambio_de_lista(LIST_EXECUTE,LIST_FINISHED,respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
+							cambio_ejecutando_a_finalizado(respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
 							free_recurso(i);
 							if(aplico_algoritmo_ultimo()){
 								continuar_comunicacion();
