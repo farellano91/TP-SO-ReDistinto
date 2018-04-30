@@ -94,6 +94,8 @@ void recibo_lineas(int fd_esi) {
 					break;
 				}
 			} else {
+				int leng_clave = 0;
+												int leng_valor = 0;
 				switch (operacion) {
 					case 1:
 						//recibi un GET  q tiene LONG + CLAVE
@@ -102,11 +104,43 @@ void recibo_lineas(int fd_esi) {
 						break;
 					case 2:
 						//recibi un SET  q tiene [LONG + CLAVE + LONG + VALOR]
+						leng_clave = 0;
+						leng_valor = 0;
+						int numbytes = 0;
+						if ((numbytes = recv(fd_esi, &leng_clave, sizeof(int32_t), 0)) == -1) {
+							printf("No se pudo recibir el tamaño de la clave\n");
+							//MUERO
+							exit(1);
+						}
+						char* clave = malloc(sizeof(char) * leng_clave);
+						if ((numbytes = recv(fd_esi, clave, sizeof(char) * leng_clave, 0))
+								== -1) {
+							printf("No se pudo recibir la clave\n");
+							//MUERO
+							exit(1);
+						}
 
+						if ((numbytes = recv(fd_esi, &leng_valor, sizeof(int32_t), 0)) == -1) {
+							printf("No se pudo recibir el tamaño del valor\n");
+							//MUERO
+							exit(1);
+						}
+						char* valor = malloc(sizeof(char) * leng_valor);
+						if ((numbytes = recv(fd_esi, valor, sizeof(char) * leng_valor, 0))
+								== -1) {
+							printf("No se pudo recibir la valor\n");
+							//MUERO
+							exit(1);
+						}
+						printf("Recibi clave: %s valor: %s correctamente\n", clave, valor);
+
+						char ** resultado = malloc(sizeof(char*) * 2);
+						resultado[0] = clave;
+						resultado[1] = valor;
 						////TODO:
 						//1.- aplicar algoritmo de distribucion para decidir q instancia va
 						//(usando una cola de instancias o cola de struct Instancia ;))
-						resultado_linea = aplicarAlgoritmoDisctribucion(ALGORITMO_DISTRIBUCION);
+						resultado_linea = aplicarAlgoritmoDisctribucion(ALGORITMO_DISTRIBUCION,resultado);
 						 /*ORDENO LA COLA PARA TOMAR EL PRIMERO EN LA SIGUIENTE FUNCION */
 						//2.- enviar la peticion a la instancia elegida
 						//envio_tarea_instancia(2,get_clave_valor(fd_esi),id_esi);
@@ -223,6 +257,9 @@ void atender_cliente(void* idSocketCliente) {
 		t_Instancia* instancia_nueva = creo_instancia(fdCliente);
 		//3:Encolo la INSTANCIA
 		agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
+		while(1){
+			//
+		}
 		break;
 
 	}

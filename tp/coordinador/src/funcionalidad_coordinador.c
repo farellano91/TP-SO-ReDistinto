@@ -101,57 +101,33 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 }
 
 // retorna -> 1: si esta mal ; 2: si esta bien
-int aplicarAlgoritmoDisctribucion(char * algoritmo){
-
-	#define INVALID_ALGORITMO_DISTRIBUCION -1
-	#define EL 4
-	#define LSU 5
-	#define KE 6
-
-	typedef struct { char *key; int val; } t_symstruct;
-
-	static t_symstruct buscarTabla[] = {
-		{ "EL", EL }, { "LSU", LSU }, { "KE", KE }
-	};
-
-	#define NKEYS (sizeof(buscarTabla)/sizeof(t_symstruct))
-
-	int keyfromstring(char *key)
-	{
-		int i;
-		for (i=0; i < NKEYS; i++) {
-			t_symstruct *sym = buscarTabla + i*sizeof(t_symstruct);
-			if (strcmp(sym->key, key) == 0)
-				return sym->val;
-		}
-		return INVALID_ALGORITMO_DISTRIBUCION;
-	}
-
-	switch (keyfromstring(algoritmo)) {
-
-		int index;
-		case EL:
+int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
+	t_Instancia* inst;
+	int index;
+	if (strstr(algoritmo, "EL") != NULL) {
+		index = 0;
+		if(index==list_size(LIST_INSTANCIAS)){
 			index = 0;
-			if(index==list_size(LIST_INSTANCIAS)){
-				index = 0;
-			}else{
-				index ++;
-			}
+			inst = list_get(LIST_INSTANCIAS,index);
+		}else{
 			printf("INFO: Algoritmo EL\n");
-			return envio_tarea_instancia(2,list_get(LIST_INSTANCIAS,index),2);
-			break;
-		case LSU:
-			printf("INFO: Algoritmo LSU\n");
-			break;
-		case KE:
-			printf("INFO: Algoritmo KE\n");
-			break;
-		case INVALID_ALGORITMO_DISTRIBUCION:
-			printf("Error: ALGORITMO_DISTRIBUCION invalido\n");
-			exit(1);
+			inst = list_get(LIST_INSTANCIAS,index);
+			index ++;
+		}
 
+		return envio_tarea_instancia(2,inst,2,resultado);
 	}
+	if (strstr(algoritmo, "LSU") != NULL) {
+		printf("INFO: Algoritmo LSU\n");
+	}
+	if (strstr(algoritmo, "INS") != NULL) {
+		printf("INFO: Algoritmo KE\n");
+	}
+
+
+	return 1;
 }
+
 char ** get_clave_valor(int fd_esi) {
 
 		int leng_clave = 0;
@@ -192,13 +168,12 @@ char ** get_clave_valor(int fd_esi) {
 	}
 
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
-			int32_t id_esi) {
+			int32_t id_esi,char** clave_valor_recibido) {
 		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
-		char ** clave_valor_recibido = get_clave_valor(instancia->fd);
 		loggeo_info(id_operacion, id_esi, clave_valor_recibido[0],
 				clave_valor_recibido[1]);
 
-		int32_t claveInstacia = strlen(clave_valor_recibido[0] + 1); // Tomo el CLAVE de la sentencia SET q me llega de la instacia
+		int32_t claveInstacia = strlen(clave_valor_recibido[0]) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
 		int32_t valorInstacia = strlen(clave_valor_recibido[1]) + 1; // Tomo la VALOR  de la sentencia SET q me llega de la instacia
 
 		void* bufferEnvio = malloc(
@@ -206,7 +181,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
 		memcpy(bufferEnvio, &claveInstacia, sizeof(int32_t));
 		memcpy(bufferEnvio + sizeof(int32_t), &clave_valor_recibido[0],
 				claveInstacia);
-		memcpy(bufferEnvio + (sizeof(int32_t)) + claveInstacia, &valorInstacia,
+		memcpy(bufferEnvio + sizeof(int32_t) + claveInstacia, &valorInstacia,
 				sizeof(int32_t));
 		memcpy(bufferEnvio + (sizeof(int32_t) * 2) + valorInstacia,
 				clave_valor_recibido[1], valorInstacia);

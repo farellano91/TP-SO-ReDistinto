@@ -50,22 +50,25 @@ void envio_resultado_al_coordinador(sockfd,resultado){
 
 //recibe la linea, la procesa ... y retorna un valor
 int recibo_sentencia(int fd_coordinador){
-	int long_clave = 0;
-	int long_valor = 0;
-	int numbytes = 0;
+	int32_t long_clave = 0;
+	int32_t long_valor = 0;
+	int32_t numbytes = 0;
 	if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir le tamaño de la clave\n");
 		exit(1);
 	}
+	printf("Recibi tamaño de clave %d\n",long_clave);
 	char* clave_recibida = malloc(sizeof(char)*long_clave);
 	if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) == -1) {
 		printf("No se pudo recibir la clave\n");
 		exit(1);
 	}
+	printf("Recibi clave %s\n",clave_recibida);
 	if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir le tamaño del valor\n");
 		exit(1);
 	}
+	printf("Recibi tamaño de valor %d\n",long_valor);
 	char* valor_recibido = malloc(sizeof(char)*long_valor);
 	if ((numbytes = recv(fd_coordinador, valor_recibido, long_clave, 0)) == -1) {
 		printf("No se pudo recibir el valor\n");
