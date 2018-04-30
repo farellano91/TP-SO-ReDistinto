@@ -100,7 +100,8 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 	pthread_mutex_unlock(&MUTEX);
 }
 
-void aplicarAlgoritmoDisctribucion(char * algoritmo){
+// retorna -> 1: si esta mal ; 2: si esta bien
+int aplicarAlgoritmoDisctribucion(char * algoritmo){
 
 	#define INVALID_ALGORITMO_DISTRIBUCION -1
 	#define EL 4
@@ -126,9 +127,6 @@ void aplicarAlgoritmoDisctribucion(char * algoritmo){
 		return INVALID_ALGORITMO_DISTRIBUCION;
 	}
 
-	t_Instancia* instancia ;
-
-
 	switch (keyfromstring(algoritmo)) {
 
 		int index;
@@ -139,10 +137,8 @@ void aplicarAlgoritmoDisctribucion(char * algoritmo){
 			}else{
 				index ++;
 			}
-			instancia = list_get(LIST_INSTANCIAS,index);
-			//TODO:Implementar t_id_esi;
-			envio_tarea_instancia(2,instancia,2);
 			printf("INFO: Algoritmo EL\n");
+			return envio_tarea_instancia(2,list_get(LIST_INSTANCIAS,index),2);
 			break;
 		case LSU:
 			printf("INFO: Algoritmo LSU\n");
@@ -195,7 +191,7 @@ char ** get_clave_valor(int fd_esi) {
 		return resultado;
 	}
 
-void envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
+int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
 			int32_t id_esi) {
 		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
 		char ** clave_valor_recibido = get_clave_valor(instancia->fd);
@@ -229,6 +225,8 @@ void envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
 		free(clave_valor_recibido[0]);
 		free(clave_valor_recibido[1]);
 		free(clave_valor_recibido);
+
+		return reciboRespuestaInstancia(instancia);
 	}
 
 void loggeo_info(int32_t id_operacion, int32_t id_esi, char* clave_recibida,
@@ -293,5 +291,24 @@ void envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
 		free(clave_recibida);
 		free(bufferEnvio);
 	}
+
+int reciboRespuestaInstancia(t_Instancia * instancia){
+
+	int32_t respuestaInstacia = 0;
+	int32_t numbytes = 0;
+
+	if ((numbytes = recv(instancia->fd, &respuestaInstacia, sizeof(int32_t), 0)) <= 0) {
+		if (numbytes == 0) {
+		// conexión cerrada
+			printf("Se fue el INSTANCIA: %s\n",instancia->nombre_instancia);
+			return 1;
+		} else {
+			perror("ERROR: al recibir respuesta de la INSTANCIA");
+			return 1;
+		}
+	}
+	printf("Respuesta EXITOSA de la instancia: %s\n", instancia->nombre_instancia);
+	return 2;
+}
 
 
