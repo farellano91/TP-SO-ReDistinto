@@ -102,26 +102,28 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
 // retorna -> 1: si esta mal ; 2: si esta bien
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
+	//TODO: revisar algoritmo porque solo toma SIEMPRE a la primera INSTANCIA,posiblemente "index" tenga q ser VG para persistir
 	t_Instancia* inst;
 	int index;
 	if (strstr(algoritmo, "EL") != NULL) {
 		index = 0;
-		if(index==list_size(LIST_INSTANCIAS)){
+		if(index == list_size(LIST_INSTANCIAS)){
 			index = 0;
 			inst = list_get(LIST_INSTANCIAS,index);
 		}else{
-			printf("INFO: Algoritmo EL\n");
+			printf("Aplico Algoritmo EL\n");
 			inst = list_get(LIST_INSTANCIAS,index);
 			index ++;
 		}
-
 		return envio_tarea_instancia(2,inst,2,resultado);
 	}
 	if (strstr(algoritmo, "LSU") != NULL) {
 		printf("INFO: Algoritmo LSU\n");
+		//return envio_tarea_instancia(2,inst,2,resultado);
 	}
 	if (strstr(algoritmo, "INS") != NULL) {
 		printf("INFO: Algoritmo KE\n");
+		//return envio_tarea_instancia(2,inst,2,resultado);
 	}
 
 
@@ -170,21 +172,16 @@ char ** get_clave_valor(int fd_esi) {
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
 			int32_t id_esi,char** clave_valor_recibido) {
 		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
-		loggeo_info(id_operacion, id_esi, clave_valor_recibido[0],
-				clave_valor_recibido[1]);
+		loggeo_info(id_operacion, id_esi, clave_valor_recibido[0],clave_valor_recibido[1]);
 
 		int32_t claveInstacia = strlen(clave_valor_recibido[0]) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
 		int32_t valorInstacia = strlen(clave_valor_recibido[1]) + 1; // Tomo la VALOR  de la sentencia SET q me llega de la instacia
 
-		void* bufferEnvio = malloc(
-				sizeof(int32_t) * 2 + valorInstacia + claveInstacia);
+		void* bufferEnvio = malloc(sizeof(int32_t) * 2 + valorInstacia + claveInstacia);
 		memcpy(bufferEnvio, &claveInstacia, sizeof(int32_t));
-		memcpy(bufferEnvio + sizeof(int32_t), &clave_valor_recibido[0],
-				claveInstacia);
-		memcpy(bufferEnvio + sizeof(int32_t) + claveInstacia, &valorInstacia,
-				sizeof(int32_t));
-		memcpy(bufferEnvio + (sizeof(int32_t) * 2) + valorInstacia,
-				clave_valor_recibido[1], valorInstacia);
+		memcpy(bufferEnvio + sizeof(int32_t),clave_valor_recibido[0],claveInstacia);
+		memcpy(bufferEnvio + sizeof(int32_t) + claveInstacia, &valorInstacia,sizeof(int32_t));
+		memcpy(bufferEnvio + (sizeof(int32_t) * 2) + claveInstacia,clave_valor_recibido[1], valorInstacia);
 
 		if (send(instancia->fd, bufferEnvio,
 				sizeof(int32_t) * 2 + valorInstacia + claveInstacia, 0) == -1) {
@@ -192,9 +189,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
 			free(bufferEnvio);
 			exit(1);
 		} else {
-			printf(
-					"Se envio un SET con CLAVE: %s y VALOR: %s a la INSTANCIA correctamente\n",
-					clave_valor_recibido[0], clave_valor_recibido[1]);
+			printf("Se envio SET clave: %s valor: %s a la INSTANCIA correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1]);
 		}
 
 		free(clave_valor_recibido[0]);
@@ -271,7 +266,7 @@ int reciboRespuestaInstancia(t_Instancia * instancia){
 
 	int32_t respuestaInstacia = 0;
 	int32_t numbytes = 0;
-
+	//1:falle 2:ok
 	if ((numbytes = recv(instancia->fd, &respuestaInstacia, sizeof(int32_t), 0)) <= 0) {
 		if (numbytes == 0) {
 		// conexión cerrada
@@ -282,8 +277,8 @@ int reciboRespuestaInstancia(t_Instancia * instancia){
 			return 1;
 		}
 	}
-	printf("Respuesta EXITOSA de la instancia: %s\n", instancia->nombre_instancia);
-	return 2;
+	printf("Recibimos respuesta de Instancia: %s\n", instancia->nombre_instancia);
+	return respuestaInstacia;
 }
 
 
