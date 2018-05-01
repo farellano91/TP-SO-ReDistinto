@@ -130,6 +130,67 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 	pthread_mutex_unlock(&MUTEX);
 }
 
+int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
+
+	#define INVALID_ALGORITMO_DISTRIBUCION -1
+	#define EL 4
+	#define LSU 5
+	#define KE 6
+
+	typedef struct { char *key; int val; } t_symstruct;
+
+	static t_symstruct buscarTabla[] = {
+		{ "EL", EL }, { "LSU", LSU }, { "KE", KE }
+	};
+
+	#define NKEYS (sizeof(buscarTabla)/sizeof(t_symstruct))
+
+	int keyfromstring(char *key)
+	{
+		int i;
+		for (i=0; i < NKEYS; i++) {
+			t_symstruct *sym = buscarTabla + i*sizeof(t_symstruct);
+			if (strcmp(sym->key, key) == 0)
+				return sym->val;
+		}
+		return INVALID_ALGORITMO_DISTRIBUCION;
+	}
+
+	t_Instancia* instancia;
+
+	switch (keyfromstring(algoritmo)) {
+
+		int index;
+		case EL:
+
+			index = 0;
+			if(index == list_size(LIST_INSTANCIAS)){
+				index = 0;
+				instancia = list_get(LIST_INSTANCIAS,index);
+			}else{
+				printf("Aplico Algoritmo EL\n");
+				instancia = list_get(LIST_INSTANCIAS,index);
+				index ++;
+			}
+			return envio_tarea_instancia(2,instancia,2,resultado);
+			break;
+
+		case LSU:
+			printf("INFO: Algoritmo LSU\n");
+			break;
+		case KE:
+			printf("INFO: Algoritmo KE\n");
+			break;
+		case INVALID_ALGORITMO_DISTRIBUCION:
+			printf("Error: ALGORITMO_DISTRIBUCION invalido\n");
+			exit(1);
+
+	}
+	return 1;
+
+}
+
+/*
 // retorna -> 1: si esta mal ; 2: si esta bien
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 	//TODO: revisar algoritmo porque solo toma SIEMPRE a la primera INSTANCIA,posiblemente "index" tenga q ser VG para persistir
@@ -159,7 +220,7 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 
 	return 1;
 }
-
+*/
 char ** get_clave_valor(int fd_esi) {
 
 		int leng_clave = 0;
