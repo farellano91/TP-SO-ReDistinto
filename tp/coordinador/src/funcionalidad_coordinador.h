@@ -76,4 +76,8 @@ void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* 
 
 int reciboRespuestaInstancia(t_Instancia * instancia);
 
+bool controlo_existencia(t_Instancia * instanciaNueva);
+
+void send_mensaje_rechazo(t_Instancia * instancia_nueva);
+
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

@@ -21,6 +21,9 @@ int main(void) {
 	//Envio mis datos
 	envio_datos(sockfd);
 
+	//recibo mensaje de si me pudieron agregar a la lista  o no
+	recibo_mensaje_aceptacion(sockfd);
+
 	while(1){
 		int resultado = recibo_sentencia(sockfd);
 		envio_resultado_al_coordinador(sockfd,resultado);

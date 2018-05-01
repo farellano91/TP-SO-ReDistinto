@@ -213,13 +213,21 @@ void atender_cliente(void* idSocketCliente) {
 		envio_datos_entrada(fdCliente);
 		//2:Recibo datos para crear la instancia
 		t_Instancia* instancia_nueva = creo_instancia(fdCliente);
-		//3:Encolo la INSTANCIA
-		agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
-		while(1){
-			//
-		}
-		break;
 
+		//return true si ya existe
+		if(controlo_existencia(instancia_nueva)){
+			//envio mensaje de rechazo porque ya tenemos una instancia con ese nombre ISSUE#1050
+			send_mensaje_rechazo(instancia_nueva);
+			free(instancia_nueva);
+			break; //para salir del case y cerrar la comunicacion
+		}else{
+			//3:Encolo la INSTANCIA
+			agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
+			while(1){
+				//recibo desconexion
+			}
+			break;
+		}
 	}
 	//FIN
 	close(fdCliente);

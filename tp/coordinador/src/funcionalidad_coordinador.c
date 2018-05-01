@@ -77,25 +77,46 @@ t_Instancia* creo_instancia(int fd_instancia){
 		printf("No se pudo recibir el tamaño del nombre de la instancia\n");
 		pthread_exit(NULL);
 	}
-	char* mensajeSaludoRecibido = malloc(sizeof(char) * longitud);
-	if ((numbytes = recv(fd_instancia, mensajeSaludoRecibido, longitud, 0)) == -1) {
+	char* nombreInstancia = malloc(sizeof(char) * longitud);
+	if ((numbytes = recv(fd_instancia, nombreInstancia, longitud, 0)) == -1) {
 		printf("No se pudo recibir mensaje saludo\n");
 		pthread_exit(NULL);
 	}
-	strcpy(instancia_nueva->nombre_instancia,mensajeSaludoRecibido);
+	strcpy(instancia_nueva->nombre_instancia,nombreInstancia);
 
 	instancia_nueva->nombre_instancia[strlen(instancia_nueva->nombre_instancia)]='\0';
 	instancia_nueva->tamanio_libre = TAMANIO_ENTRADA * CANTIDAD_ENTRADAS;
 
-	free(mensajeSaludoRecibido);
+	free(nombreInstancia);
 	printf("Se creo la instancia de nombre:%s\n",instancia_nueva->nombre_instancia);
 	return (instancia_nueva);
+}
+
+bool controlo_existencia(t_Instancia * instanciaNueva){
+	pthread_mutex_lock(&MUTEX);
+	bool _existInstancia(t_Instancia* una_instancia) { return strcmp(una_instancia->nombre_instancia,instanciaNueva->nombre_instancia)== 0;}
+	if(list_find(LIST_INSTANCIAS, (void*)_existInstancia) != NULL){
+		pthread_mutex_unlock(&MUTEX);
+		return true;
+	}
+	pthread_mutex_unlock(&MUTEX);
+	return false;
+}
+
+void send_mensaje_rechazo(t_Instancia * instancia_nueva){
+	int32_t rechazo = 1;
+	if (send(instancia_nueva->fd, &rechazo,sizeof(int32_t), 0) == -1) {
+		printf("No se pudo enviar rechazo a la INSTANCIA\n");
+	} else {
+		printf("Se envio rechazo de NOMBRE existente para la INSTANCIA: %s\n",
+				instancia_nueva->nombre_instancia);
+	}
 }
 
 void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
 	pthread_mutex_lock(&MUTEX);
-	list_add(list,instancia_nueva); //esto lo encola al final
+	list_add(list,instancia_nueva);
 	printf("Se agrego la instancia de nombre:%s a la lista\n",instancia_nueva->nombre_instancia);
 	pthread_mutex_unlock(&MUTEX);
 }

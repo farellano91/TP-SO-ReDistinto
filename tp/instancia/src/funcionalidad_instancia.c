@@ -38,7 +38,6 @@ void get_parametros_config(){
 	config_destroy(config);
 }
 
-
 void free_parametros_config(){
 
 	free(IP_CONFIG_COORDINADOR);
@@ -64,27 +63,47 @@ void envio_resultado_al_coordinador(sockfd,resultado){
 	printf("Envie mi resultado correctamente\n");
 }
 
+
+void recibo_mensaje_aceptacion(int fd_coordinador){
+	int numbytes = 0;
+	int32_t resultado_aceptacion = 0;
+	if ((numbytes = recv(fd_coordinador, &resultado_aceptacion, sizeof(int32_t), 0)) <= 0) {
+		if(numbytes == 0){
+			printf("Se desconecto el coordinador\n");
+		}else{
+			printf("No se pudo recibir el resultado de la acpetacion\n");
+		}
+		free_algo_punt_nom();
+		exit(1);
+	}
+	if(resultado_aceptacion == 1){
+		//me rechazaron por nombre repetido
+		printf("Me rechazaron por nombre repetido\n");
+		free_algo_punt_nom();
+		exit(1);
+	}
+}
 //recibe la linea, la procesa ... y retorna un valor
 int recibo_sentencia(int fd_coordinador){
 	int32_t long_clave = 0;
 	int32_t long_valor = 0;
 	int32_t numbytes = 0;
 
-	if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) == -1) {
+	if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
 		printf("No se pudo recibir le tamaño de la clave\n");
 		free_algo_punt_nom();
 		exit(1);
 	}
 
 	char* clave_recibida = malloc(sizeof(char)*long_clave);
-	if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) == -1) {
+	if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
 		printf("No se pudo recibir la clave\n");
 		free(clave_recibida);
 		free_algo_punt_nom();
 		exit(1);
 	}
 
-	if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) == -1) {
+	if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) <= 0) {
 		printf("No se pudo recibir le tamaño del valor\n");
 		free_algo_punt_nom();
 		free(clave_recibida);

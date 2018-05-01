@@ -56,4 +56,6 @@ int recibo_sentencia(int fd_coordinador);
 
 void envio_resultado_al_coordinador(int sockfd,int resultado);
 
+void recibo_mensaje_aceptacion(int fd_coordinador);
+
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */
