@@ -12,6 +12,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <commons/config.h>
+#include <sys/wait.h>
+#include <signal.h>
 #include <commons/collections/list.h>
 
 char* IP_CONFIG_COORDINADOR;
@@ -21,6 +23,9 @@ char* PUNTO_MONTAJE;
 char* NOMBRE_INSTANCIA;
 int INTERVALO_DUMP;
 
+void intHandler(int dummy);
+
+void free_algo_punt_nom();
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();

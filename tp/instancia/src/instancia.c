@@ -5,6 +5,9 @@
 
 int main(void) {
 
+	//En caso de una interrupcion va por aca
+	signal(SIGINT, intHandler);
+
 	CANT_ENTRADA = 0;
 	TAMANIO_ENTRADA = 0;
 	get_parametros_config();
@@ -18,21 +21,11 @@ int main(void) {
 	//Envio mis datos
 	envio_datos(sockfd);
 
-	// TODO:espero q el coordinador me de una tarea para hacer
-    // recibo_sentencia(sockfd);
-    // envio_resultado(sockfd);
-
-	//while para q no termine
 	while(1){
 		int resultado = recibo_sentencia(sockfd);
 		envio_resultado_al_coordinador(sockfd,resultado);
 	}
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
-	free(ALGORITMO_REEMPLAZO);
-	free(PUNTO_MONTAJE);
-	free(NOMBRE_INSTANCIA);
-	//
-
-
+	free_algo_punt_nom();
 	return EXIT_SUCCESS;
 }

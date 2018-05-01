@@ -1,11 +1,19 @@
 
 #include "funcionalidad_instancia.h"
 
+void intHandler(int dummy) {
+	if (dummy != 0) {
+		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		exit(dummy);
+
+	}
+}
+
 void get_parametros_config(){
 	t_config* config = config_create("config.cfg");
 	if (!config) {
 		printf("No encuentro el archivo config\n");
-
+		config_destroy(config);
 		//MUERO
 		exit(1);
 	}
@@ -23,9 +31,9 @@ void get_parametros_config(){
 	PUNTO_MONTAJE = malloc(sizeof(char) * 100);
 	strcpy(PUNTO_MONTAJE,config_get_string_value(config, "PUNTO_MONTAJE"));
 
-
 	NOMBRE_INSTANCIA = malloc(sizeof(char) * 100);
 	strcpy(NOMBRE_INSTANCIA,config_get_string_value(config, "NOMBRE_INSTANCIA"));
+
 
 	config_destroy(config);
 }
@@ -39,10 +47,18 @@ void free_parametros_config(){
 	free(NOMBRE_INSTANCIA);
 }
 
+void free_algo_punt_nom(){
+
+	free(ALGORITMO_REEMPLAZO);
+	free(PUNTO_MONTAJE);
+	free(NOMBRE_INSTANCIA);
+}
+
 void envio_resultado_al_coordinador(sockfd,resultado){
 
 	if(send(sockfd, &resultado, sizeof(int32_t), 0) == -1) {
 		printf("No se puede enviar el resultado al coordinador\n");
+		free_algo_punt_nom();
 		exit(1);
 	}
 	printf("Envie mi resultado correctamente\n");
@@ -56,23 +72,35 @@ int recibo_sentencia(int fd_coordinador){
 
 	if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir le tamaño de la clave\n");
+		free_algo_punt_nom();
 		exit(1);
 	}
 
 	char* clave_recibida = malloc(sizeof(char)*long_clave);
 	if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) == -1) {
 		printf("No se pudo recibir la clave\n");
+		free(clave_recibida);
+		free_algo_punt_nom();
 		exit(1);
 	}
 
 	if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir le tamaño del valor\n");
+		free_algo_punt_nom();
+		free(clave_recibida);
 		exit(1);
 	}
 
 	char* valor_recibido = malloc(sizeof(char)*long_valor);
-	if ((numbytes = recv(fd_coordinador, valor_recibido, long_clave, 0)) == -1) {
-		printf("No se pudo recibir el valor\n");
+	if ((numbytes = recv(fd_coordinador, valor_recibido, long_clave, 0)) <= 0) {
+		if(numbytes == 0){
+			printf("Se desconecto el coordinador\n");
+		}else{
+			printf("No se pudo recibir el valor del la operacion\n");
+		}
+		free(valor_recibido);
+		free(clave_recibida);
+		free_algo_punt_nom();
 		exit(1);
 	}
 	printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
@@ -89,18 +117,19 @@ int recibo_sentencia(int fd_coordinador){
 
 
 void recibo_datos_entrada(int fd_coordinador){
-	void* buffer = malloc(sizeof(int32_t)*2);
 	int numbytes = 0;
 	if ((numbytes = recv(fd_coordinador, &TAMANIO_ENTRADA, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir el tamaño de la entrada\n");
+		free_algo_punt_nom();
 		exit(1);
 	}
 	if ((numbytes = recv(fd_coordinador, &CANT_ENTRADA, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir la cantidad de entradas\n");
+		free_algo_punt_nom();
 		exit(1);
 	}
-	printf("Recibi los datos de las entradas correctamente\n");
-	free(buffer);
+	printf("Recibi tamaño de entrada: %d y cantidad de entrada: %d correctamente\n",TAMANIO_ENTRADA,CANT_ENTRADA);
+
 }
 
 //esto para q el coordinador puedo crear su t_instancia
@@ -113,6 +142,8 @@ void envio_datos(int fd_coordinador){
 
 	if (send(fd_coordinador, bufferEnvio,sizeof(int32_t)+ sizeof(char)*longitud_mensaje, 0) == -1) {
 		printf("No pude enviar mis datos al coordinador\n");
+		free(bufferEnvio);
+		free_algo_punt_nom();
 		exit(1);
 	}
 	printf("Envie mi nombre correctamente\n");

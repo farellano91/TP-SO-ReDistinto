@@ -7,19 +7,22 @@ void saludo_inicial_coordinador(int sockfd){
 	int32_t longitud = 0;
 	if ((numbytes = recv(sockfd, &longitud, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir la longitud del saludo del coordinador\n");
+		free_algo_punt_nom();
 		//MUERO
 		exit(1);
 	}
 	char* mensajeSaludoRecibido = malloc(sizeof(char) * longitud);
 	if ((numbytes = recv(sockfd, mensajeSaludoRecibido, longitud, 0)) == -1) {
 		printf("No se pudo recibir saludo\n");
+		free_algo_punt_nom();
+		free(mensajeSaludoRecibido);
 		//MUERO
 		exit(1);
 	}
 
 	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
 
-
+	free(mensajeSaludoRecibido);
 	//Envio saludo
 	char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
 	strcpy(mensajeSaludoEnviado, "Hola, soy la INSTANCIA");
@@ -32,8 +35,10 @@ void saludo_inicial_coordinador(int sockfd){
 	memcpy(bufferEnvio + sizeof(int32_t),mensajeSaludoEnviado,longitud_mensaje);
 
 	if (send(sockfd, bufferEnvio,sizeof(int32_t)+ sizeof(char)*longitud_mensaje, 0) == -1) {
-		perror("recv");
 		printf("No se pudo enviar saludo\n");
+		free_algo_punt_nom();
+		free(bufferEnvio);
+		free(mensajeSaludoEnviado);
 		exit(1);
 	}
 	printf("Saludo enviado correctamente\n");
@@ -41,7 +46,7 @@ void saludo_inicial_coordinador(int sockfd){
 	free(bufferEnvio);
 	free(mensajeSaludoEnviado);
 
-	free(mensajeSaludoRecibido);
+
 
 }
 
@@ -72,6 +77,6 @@ int conectar_coodinador(){
         exit(1);
     }
 
-    free(IP_CONFIG_COORDINADOR);
+    free(IP_CONFIG_COORDINADOR); //por ahora solo libero la ip (que es lo que ya use)
     return(sockfd);
 }
