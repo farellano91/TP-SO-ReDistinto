@@ -82,6 +82,8 @@ void recibo_mensaje_aceptacion(int fd_coordinador){
 		free_algo_punt_nom();
 		exit(1);
 	}
+	printf("Me aaceptaron :)\n");
+
 }
 //recibe la linea, la procesa ... y retorna un valor
 int recibo_sentencia(int fd_coordinador){

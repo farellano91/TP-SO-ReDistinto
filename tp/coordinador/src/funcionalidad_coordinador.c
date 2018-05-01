@@ -115,6 +115,15 @@ void send_mensaje_rechazo(t_Instancia * instancia_nueva){
 
 void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
+	//Aviso a la instancia q si lo pude agregar sin problema
+	int32_t ok = 2; //instancia entiende q 1 es rechazo, cualquier otro valor es OK
+	if (send(instancia_nueva->fd, &ok,sizeof(int32_t), 0) == -1) {
+		printf("No se pudo enviar aceptacion a la INSTANCIA\n");
+	} else {
+		printf("Se envio aceptacion la INSTANCIA: %s\n",
+				instancia_nueva->nombre_instancia);
+	}
+
 	pthread_mutex_lock(&MUTEX);
 	list_add(list,instancia_nueva);
 	printf("Se agrego la instancia de nombre:%s a la lista\n",instancia_nueva->nombre_instancia);
