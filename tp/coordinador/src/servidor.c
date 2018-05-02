@@ -187,24 +187,19 @@ void atender_cliente(void* idSocketCliente) {
 	int fdCliente = ((int *) idSocketCliente)[0];
 
 	enviar_saludo(fdCliente);
-	int tipo_cliente = recibir_saludo(fdCliente);
-
+	enum t_tipo_cliente tipo_cliente = recibir_saludo(fdCliente);
+	int numero = tipo_cliente;
 	switch (tipo_cliente) {
 
-	case 1:
-		//ESI
+	case ESI:
 		recibo_lineas(fdCliente);
 		break;
-	case 2:
-		//PLANIFICADOR (me guardo el fd)
-		//aca esta
+	case PLANIFICADOR:
 		FD_PLANIFICADOR = fdCliente;
 		pthread_cond_wait(&CONDICION_LIBERO_PLANIFICADOR, &MUTEX); //lo detengo aca hasta q no lo usea mas
 //		exit(1); //mato al coordinador
-
 		break;
-	case 3:
-		//INSTANCIA
+	case INSTANCIA:
 		//1:Envio datos de entrada
 		envio_datos_entrada(fdCliente);
 		//2:Recibo datos para crear la instancia

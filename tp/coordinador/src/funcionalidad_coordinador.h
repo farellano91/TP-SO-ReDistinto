@@ -88,4 +88,8 @@ bool controlo_existencia(t_Instancia * instanciaNueva);
 
 void send_mensaje_rechazo(t_Instancia * instancia_nueva);
 
+enum t_tipo_cliente {
+	ESI = 1, PLANIFICADOR = 2, INSTANCIA = 3,
+};
+
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */
