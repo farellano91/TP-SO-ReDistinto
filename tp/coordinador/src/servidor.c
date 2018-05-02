@@ -162,22 +162,18 @@ int recibo_resultado_planificador(){
 			printf("El planificador se desconecto!\n");
 		}
 		FD_PLANIFICADOR = -1;
-		pthread_cond_signal(&CONDICION_LIBERO_PLANIFICADOR); //Libero ahora si al planificador
 		close(FD_PLANIFICADOR);
-
 		//Uso 1 para decir q el planificador murio, osea falle tambien
 		resultado_planificador = 1;
-
+		pthread_cond_signal(&CONDICION_LIBERO_PLANIFICADOR); //Libero ahora si al planificador
 	}else{
 		printf("Respuesta del planificador recibida\n");
 
 	}
+
 	return resultado_planificador;
 
 }
-
-
-
 
 
 /*PROTOCOLO:
@@ -218,13 +214,19 @@ void atender_cliente(void* idSocketCliente) {
 		if(controlo_existencia(instancia_nueva)){
 			//envio mensaje de rechazo porque ya tenemos una instancia con ese nombre ISSUE#1050
 			send_mensaje_rechazo(instancia_nueva);
-			free(instancia_nueva);
+			free_instancia(instancia_nueva);
 			break; //para salir del case y cerrar la comunicacion
 		}else{
 			//3:Encolo la INSTANCIA
 			agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
 			while(1){
-				//recibo desconexion
+				int resp = reciboRespuestaInstancia(fdCliente);
+				if(resp == -1){
+					//se desconecto la instancia
+					break;
+				}
+				RESULTADO_INSTANCIA_VG = resp;
+				pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
 			}
 			break;
 		}
@@ -240,11 +242,17 @@ void intHandler(int dummy) {
 		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
 		free_parametros_config();
 		log_destroy(LOGGER);
+		pthread_mutex_destroy(&MUTEX);
+		pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
+		pthread_cond_destroy(&CONDICION_RECV_INSTANCIA);
 		exit(dummy);
 
 	}
 }
 void levantar_servidor_coordinador() {
+
+	RESULTADO_INSTANCIA_VG = -1;
+
 	FD_PLANIFICADOR = -1;
 
 	//creo mi lista de instancia
@@ -331,6 +339,7 @@ void levantar_servidor_coordinador() {
 	close(sockfd);
 	pthread_mutex_destroy(&MUTEX);
 	pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
+	pthread_cond_destroy(&CONDICION_RECV_INSTANCIA);
 }
 
 

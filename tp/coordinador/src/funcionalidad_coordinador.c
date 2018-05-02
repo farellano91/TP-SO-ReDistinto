@@ -42,7 +42,7 @@ void configure_logger() {
 void inicializo_semaforos(){
 	pthread_mutex_init(&MUTEX,NULL);
 	pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
-
+	pthread_cond_init(&CONDICION_RECV_INSTANCIA, NULL);
 }
 
 t_list* create_list(){
@@ -93,13 +93,11 @@ t_Instancia* creo_instancia(int fd_instancia){
 }
 
 bool controlo_existencia(t_Instancia * instanciaNueva){
-	pthread_mutex_lock(&MUTEX);
+
 	bool _existInstancia(t_Instancia* una_instancia) { return strcmp(una_instancia->nombre_instancia,instanciaNueva->nombre_instancia)== 0;}
 	if(list_find(LIST_INSTANCIAS, (void*)_existInstancia) != NULL){
-		pthread_mutex_unlock(&MUTEX);
 		return true;
 	}
-	pthread_mutex_unlock(&MUTEX);
 	return false;
 }
 
@@ -124,12 +122,12 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 				instancia_nueva->nombre_instancia);
 	}
 
-	pthread_mutex_lock(&MUTEX);
 	list_add(list,instancia_nueva);
 	printf("Se agrego la instancia de nombre:%s a la lista\n",instancia_nueva->nombre_instancia);
-	pthread_mutex_unlock(&MUTEX);
+
 }
 
+/*
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 
 	#define INVALID_ALGORITMO_DISTRIBUCION -1
@@ -189,8 +187,9 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 	return 1;
 
 }
+*/
 
-/*
+
 // retorna -> 1: si esta mal ; 2: si esta bien
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 	//TODO: revisar algoritmo porque solo toma SIEMPRE a la primera INSTANCIA,posiblemente "index" tenga q ser VG para persistir
@@ -200,13 +199,16 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 		index = 0;
 		if(index == list_size(LIST_INSTANCIAS)){
 			index = 0;
-			inst = list_get(LIST_INSTANCIAS,index);
+			inst = list_get(LIST_INSTANCIAS,index);//ojo q list_get si no encuentra nada retorna NULL
 		}else{
 			printf("Aplico Algoritmo EL\n");
 			inst = list_get(LIST_INSTANCIAS,index);
 			index ++;
 		}
-		return envio_tarea_instancia(2,inst,2,resultado);
+		if(inst != NULL){//pregunto si efectivamente hay algo
+			return envio_tarea_instancia(2,inst,2,resultado);
+		}
+		printf("No hay instancias en la lista, voy a fallar\n");
 	}
 	if (strstr(algoritmo, "LSU") != NULL) {
 		printf("INFO: Algoritmo LSU\n");
@@ -220,7 +222,8 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 
 	return 1;
 }
-*/
+
+
 char ** get_clave_valor(int fd_esi) {
 
 		int leng_clave = 0;
@@ -278,7 +281,8 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
 				sizeof(int32_t) * 2 + valorInstacia + claveInstacia, 0) == -1) {
 			printf("No se pudo enviar la info a la INSTANCIA\n");
 			free(bufferEnvio);
-			exit(1);
+			RESULTADO_INSTANCIA_VG = 1; //para q esi sepa que falle
+			return RESULTADO_INSTANCIA_VG;
 		} else {
 			printf("Se envio SET clave: %s valor: %s a la INSTANCIA correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1]);
 		}
@@ -287,7 +291,8 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
 		free(clave_valor_recibido[1]);
 		free(clave_valor_recibido);
 
-		return reciboRespuestaInstancia(instancia);
+		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
+		return RESULTADO_INSTANCIA_VG;
 	}
 
 void loggeo_info(int32_t id_operacion, int32_t id_esi, char* clave_recibida,
@@ -353,23 +358,42 @@ void envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
 		free(bufferEnvio);
 	}
 
-int reciboRespuestaInstancia(t_Instancia * instancia){
+//-1: se desconto (y no me importa el resultado) 1: fallo (osea lo hizo pero fallo,puede ser porq la clave ya no exisita en el storage) 2: ok
+int reciboRespuestaInstancia(int fd_instancia){
 
 	int32_t respuestaInstacia = 0;
 	int32_t numbytes = 0;
 	//1:falle 2:ok
-	if ((numbytes = recv(instancia->fd, &respuestaInstacia, sizeof(int32_t), 0)) <= 0) {
+	if ((numbytes = recv(fd_instancia, &respuestaInstacia, sizeof(int32_t), 0)) <= 0) {
 		if (numbytes == 0) {
 		// conexión cerrada
-			printf("Se fue el INSTANCIA: %s\n",instancia->nombre_instancia);
-			return 1;
+			printf("Se fue el INSTANCIA FD: %d, nos despedimos del hilo\n",fd_instancia);
+
 		} else {
 			perror("ERROR: al recibir respuesta de la INSTANCIA");
-			return 1;
+
 		}
+		//Si se desconecto limpio la list_instancia
+		remove_instancia(fd_instancia);
+
+		return -1;
 	}
-	printf("Recibimos respuesta de Instancia: %s\n", instancia->nombre_instancia);
+	printf("Recibimos respuesta de Instancia FD: %d NUMERO: %d\n", fd_instancia, respuestaInstacia);
 	return respuestaInstacia;
 }
 
+void free_instancia(t_Instancia * instancia){
+	free(instancia->nombre_instancia);
+	free(instancia);
+}
+
+
+void remove_instancia(int fd_instancia){
+	bool _esInstanciaFd(t_Instancia* instancia) { return instancia->fd == fd_instancia;}
+	t_Instancia* unInstancia = list_find(LIST_INSTANCIAS,(void*)_esInstanciaFd);
+	if(unInstancia != NULL){
+		printf("Sacamos a la INSTANCIA: %s de la lista\n", unInstancia->nombre_instancia);
+		list_remove_and_destroy_by_condition(LIST_INSTANCIAS,(void*) _esInstanciaFd,(void*) free_instancia);
+	}
+}
 

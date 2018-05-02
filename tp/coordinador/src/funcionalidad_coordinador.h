@@ -28,6 +28,10 @@ pthread_mutex_t MUTEX;
 
 pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
+pthread_cond_t CONDICION_RECV_INSTANCIA;
+
+//Para manejar el valor de resultado de la instancia
+int RESULTADO_INSTANCIA_VG;
 
 //Para planificador
 int FD_PLANIFICADOR;
@@ -74,7 +78,11 @@ void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t 
 
 void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* valor_recibida);
 
-int reciboRespuestaInstancia(t_Instancia * instancia);
+int reciboRespuestaInstancia(int fd_instancia);
+
+void free_instancia(t_Instancia * instancia);
+
+void remove_instancia(int fd_instancia);
 
 bool controlo_existencia(t_Instancia * instanciaNueva);
 

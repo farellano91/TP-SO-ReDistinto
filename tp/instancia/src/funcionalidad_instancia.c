@@ -53,7 +53,7 @@ void free_algo_punt_nom(){
 	free(NOMBRE_INSTANCIA);
 }
 
-void envio_resultado_al_coordinador(sockfd,resultado){
+void envio_resultado_al_coordinador(int sockfd,int resultado){
 
 	if(send(sockfd, &resultado, sizeof(int32_t), 0) == -1) {
 		printf("No se puede enviar el resultado al coordinador\n");
