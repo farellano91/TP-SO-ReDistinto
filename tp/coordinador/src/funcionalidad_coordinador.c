@@ -34,7 +34,7 @@ void free_parametros_config(){
 }
 
 void configure_logger() {
-  LOGGER = log_create("log de operaciones.log","tp-redistinto",1,LOG_LEVEL_INFO);
+  LOGGER = log_create("log de operaciones.log","tp-redistinto",0,LOG_LEVEL_INFO);
   log_info(LOGGER, "Empezamos.....");
 
 }
@@ -208,9 +208,10 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 		if(inst != NULL){//pregunto si efectivamente hay algo
 			return envio_tarea_instancia(2,inst,2,resultado);
 		}
-		printf("No hay instancias en la lista, voy a fallar\n");
+		printf("No hay instancias conectadas\n");
 	}
 	if (strstr(algoritmo, "LSU") != NULL) {
+		//TODO: busco de mi lista de instancias, la que tenga numero de memoria libre mas grande
 		printf("INFO: Algoritmo LSU\n");
 		//return envio_tarea_instancia(2,inst,2,resultado);
 	}
@@ -220,7 +221,7 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 	}
 
 
-	return 1;
+	return FALLO_OPERACION_INSTANCIA;
 }
 
 
@@ -263,73 +264,123 @@ char ** get_clave_valor(int fd_esi) {
 		return resultado;
 	}
 
-int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,
-			int32_t id_esi,char** clave_valor_recibido) {
-		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
-		loggeo_info(id_operacion, id_esi, clave_valor_recibido[0],clave_valor_recibido[1]);
+int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Instancia* instancia){
 
+	int32_t len_clave = strlen(clave) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
+
+	void* bufferEnvio = malloc(sizeof(int32_t) * 2 + len_clave);
+	memcpy(bufferEnvio, &id_operacion, sizeof(int32_t));
+	memcpy(bufferEnvio+sizeof(int32_t), &len_clave, sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t)*2,clave,len_clave);
+
+	if (send(instancia->fd, bufferEnvio,sizeof(int32_t) * 2 + len_clave, 0) == -1) {
+		printf("No se pudo enviar la info a la INSTANCIA\n");
+		free(bufferEnvio);
+		RESULTADO_INSTANCIA_VG = FALLO_DESCONEXION_INSTANCIA; //para q esi sepa que falle
+		return RESULTADO_INSTANCIA_VG;
+	} else {
+		printf("Se envio STORE clave: %s a la INSTANCIA correctamente\n",clave);
+	}
+	free(bufferEnvio);
+
+	pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
+
+	return RESULTADO_INSTANCIA_VG;
+}
+
+int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t id_esi,char** clave_valor_recibido) {
+		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
 		int32_t claveInstacia = strlen(clave_valor_recibido[0]) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
 		int32_t valorInstacia = strlen(clave_valor_recibido[1]) + 1; // Tomo la VALOR  de la sentencia SET q me llega de la instacia
 
-		void* bufferEnvio = malloc(sizeof(int32_t) * 2 + valorInstacia + claveInstacia);
-		memcpy(bufferEnvio, &claveInstacia, sizeof(int32_t));
-		memcpy(bufferEnvio + sizeof(int32_t),clave_valor_recibido[0],claveInstacia);
-		memcpy(bufferEnvio + sizeof(int32_t) + claveInstacia, &valorInstacia,sizeof(int32_t));
-		memcpy(bufferEnvio + (sizeof(int32_t) * 2) + claveInstacia,clave_valor_recibido[1], valorInstacia);
+		void* bufferEnvio = malloc(sizeof(int32_t) * 3 + valorInstacia + claveInstacia);
+		memcpy(bufferEnvio, &id_operacion, sizeof(int32_t));
+		memcpy(bufferEnvio+sizeof(int32_t), &claveInstacia, sizeof(int32_t));
+		memcpy(bufferEnvio + sizeof(int32_t)*2,clave_valor_recibido[0],claveInstacia);
+		memcpy(bufferEnvio + sizeof(int32_t)*2 + claveInstacia, &valorInstacia,sizeof(int32_t));
+		memcpy(bufferEnvio + (sizeof(int32_t) * 3) + claveInstacia,clave_valor_recibido[1], valorInstacia);
 
 		if (send(instancia->fd, bufferEnvio,
-				sizeof(int32_t) * 2 + valorInstacia + claveInstacia, 0) == -1) {
+				sizeof(int32_t) * 3 + valorInstacia + claveInstacia, 0) == -1) {
 			printf("No se pudo enviar la info a la INSTANCIA\n");
 			free(bufferEnvio);
-			RESULTADO_INSTANCIA_VG = 1; //para q esi sepa que falle
+			RESULTADO_INSTANCIA_VG = FALLO_OPERACION_INSTANCIA; //para q esi sepa que falle
 			return RESULTADO_INSTANCIA_VG;
 		} else {
 			printf("Se envio SET clave: %s valor: %s a la INSTANCIA correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1]);
 		}
 
+		free(bufferEnvio);
+		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
+
+		if(RESULTADO_INSTANCIA_VG == OK_SET_INSTANCIA){
+			//TODO: como hizo correctamente la operacion set, aca va
+			//codigo para actualizar el espacio de memoria disponible de una instancia
+			//buscandola en mi lista de registro instancia
+		}
+
 		free(clave_valor_recibido[0]);
 		free(clave_valor_recibido[1]);
 		free(clave_valor_recibido);
-
-		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
 		return RESULTADO_INSTANCIA_VG;
-	}
+}
+void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
+	char* registro = malloc(sizeof(char) * 500);
+	strcpy(registro, "ESI ");
+	strcat(registro, string_itoa(id_esi));
+	strcat(registro, " ");
+	strcat(registro, operacion);
+	strcat(registro, "  => ");
+	switch (resultado_linea) {
+	case ABORTA_ESI:
+		strcat(registro, "ABORTA");
+		break;
+	case OK_ESI:
+		strcat(registro, "OK");
+		break;
+	case BLOQUEADO_ESI:
+		strcat(registro, "OK pero BLOQUEADO");
+		break;
 
-void loggeo_info(int32_t id_operacion, int32_t id_esi, char* clave_recibida,
-			char* valor_recibida) {
-		char* registro = malloc(sizeof(char) * 500);
-		strcpy(registro, "ESI ");
-		strcat(registro, string_itoa(id_esi));
-		switch (id_operacion) {
-		case 1:
-			//GET q tiene CLAVE
-			strcat(registro, " GET ");
-			strcat(registro, clave_recibida);
-			break;
-		case 2:
-			//SET  q tiene CLAVE VALOR
-			strcat(registro, " SET ");
-			strcat(registro, clave_recibida);
-			strcat(registro, " ");
-			strcat(registro, valor_recibida);
-			break;
-		case 3:
-			//STORE q tiene CLAVE
-			strcat(registro, " STORE ");
-			strcat(registro, clave_recibida);
-			break;
-
-		default:
-			break;
-		}
-		log_info(LOGGER, registro);
-		free(registro);
+	default:
+		strcat(registro, " - ");
+		break;
 	}
+	log_info(LOGGER, registro);
+	free(registro);
+}
+
+void loggeo_info(int32_t id_operacion, int32_t id_esi, char* clave_recibida,char* valor_recibida) {
+	char* registro = malloc(sizeof(char) * 500);
+	strcpy(registro, "ESI ");
+	strcat(registro, string_itoa(id_esi));
+	switch (id_operacion) {
+	case GET:
+		strcat(registro, " GET ");
+		strcat(registro, clave_recibida);
+		break;
+	case SET:
+		strcat(registro, " SET ");
+		strcat(registro, clave_recibida);
+		strcat(registro, " ");
+		strcat(registro, valor_recibida);
+		break;
+	case STORE:
+		strcat(registro, " STORE ");
+		strcat(registro, clave_recibida);
+		break;
+
+	default:
+		strcat(registro, " - ");
+		break;
+	}
+	log_info(LOGGER, registro);
+	free(registro);
+}
 
 void envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
 			int32_t id_esi) {
 
-		loggeo_info(id_operacion, id_esi, clave_recibida, "");
 		int32_t len_clave = strlen(clave_recibida) + 1;
 
 		//envio: ID_OPERACION,ID_ESI,LENG_CLAVE,CLAVE
@@ -349,21 +400,16 @@ void envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
 			free(bufferEnvio);
 			exit(1);
 		} else {
-			printf(
-					"Se envio la tarea con clave: %s ID de ESI:%d al PLANIFICADOR correctamente\n",
-					clave_recibida, id_esi);
+			printf("Se envio la tarea con clave: %s ID de ESI:%d al PLANIFICADOR correctamente\n",clave_recibida, id_esi);
 		}
 
-		free(clave_recibida);
 		free(bufferEnvio);
 	}
 
-//-1: se desconto (y no me importa el resultado) 1: fallo (osea lo hizo pero fallo,puede ser porq la clave ya no exisita en el storage) 2: ok
-int reciboRespuestaInstancia(int fd_instancia){
 
+int reciboRespuestaInstancia(int fd_instancia){
 	int32_t respuestaInstacia = 0;
 	int32_t numbytes = 0;
-	//1:falle 2:ok
 	if ((numbytes = recv(fd_instancia, &respuestaInstacia, sizeof(int32_t), 0)) <= 0) {
 		if (numbytes == 0) {
 		// conexión cerrada
@@ -373,12 +419,11 @@ int reciboRespuestaInstancia(int fd_instancia){
 			perror("ERROR: al recibir respuesta de la INSTANCIA");
 
 		}
-		//Si se desconecto limpio la list_instancia
-		remove_instancia(fd_instancia);
+		respuestaInstacia = FALLO_DESCONEXION_INSTANCIA;
+	}else{
+		printf("Recibimos respuesta de Instancia FD: %d\n", fd_instancia);
 
-		return -1;
 	}
-	printf("Recibimos respuesta de Instancia FD: %d NUMERO: %d\n", fd_instancia, respuestaInstacia);
 	return respuestaInstacia;
 }
 

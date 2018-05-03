@@ -210,23 +210,23 @@ int main(int argc, char** argv) {
 						close(fd_coordinador);
 						exit(1); //muero
 					} else {
-
+						printf("Recibi respuesta del coordinador\n");
 						t_respuesta_para_planificador respuesta_planificador = {
 								.id_tipo_respuesta = 2, .id_esi =
 										ID_ESI_OBTENIDO, .mensaje = "", .clave =
 										"" };
 						switch (resultado_coordinador) {
-						case 1: //recibi respuesta q coordinador no lo pudo hacer
-							strcpy(respuesta_planificador.mensaje, "MAL");
+						case ABORTA: //recibi respuesta q coordinador no lo pudo hacer
+							strcpy(respuesta_planificador.mensaje, "ABORTO!");
 							respuesta_planificador.mensaje[strlen(
 									respuesta_planificador.mensaje)] = '\0';
 							break;
-						case 2: //recibi respuesta q coordinador lo hizo bien
+						case OK: //recibi respuesta q coordinador lo hizo bien
 							strcpy(respuesta_planificador.mensaje, "OK");
 							respuesta_planificador.mensaje[strlen(
 									respuesta_planificador.mensaje)] = '\0';
 							break;
-						case 3: //recibi respuesta q coordinador trato pero esta bloqueado
+						case OK_BLOQUEADO: //recibi respuesta q coordinador trato pero esta bloqueado
 							strcpy(respuesta_planificador.mensaje,
 									"ME BLOQUEARON");
 							respuesta_planificador.mensaje[strlen(

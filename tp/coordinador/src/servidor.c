@@ -95,28 +95,65 @@ void recibo_lineas(int fd_esi) {
 				}
 			} else {
 				char**clave_valor;
+				char* clave;
+				int resultado_instancia = 0;
+				int resultado_planificador = 0;
 				switch (operacion) {
-					case 1:
-						//recibi un GET  q tiene LONG + CLAVE
-						envio_tarea_planificador(1,get_clave_recibida(fd_esi),id_esi);
+					case GET:
+						clave = get_clave_recibida(fd_esi);
+						loggeo_info(1, id_esi, clave, "");
+
+						//TODO: ANALIZAR EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, sino aborta al esi resultado_linea = ABORTA_ESI
+						envio_tarea_planificador(1,clave,id_esi);
 						resultado_linea = recibo_resultado_planificador();
+
+						//loggeo respuesta
+						loggeo_respuesta("GET",id_esi,resultado_linea);
+						free(clave);
 						break;
-					case 2:
-						//recibi un SET  q tiene [LONG + CLAVE + LONG + VALOR]
+					case SET:
 						clave_valor = get_clave_valor(fd_esi); //noc porque si metemos get_clave_valor dentro de aplicoA.. no recibe los valores posta
-						resultado_linea = aplicarAlgoritmoDisctribucion(ALGORITMO_DISTRIBUCION,clave_valor);
+						loggeo_info(2, id_esi, clave_valor[0],clave_valor[1]);
+
+						//TODO: Busco en tabla, si no esta aplico algoritmo, si esta, uso esa instancia defrente
+						resultado_linea = aplicarAlgoritmoDisctribucion(ALGORITMO_DISTRIBUCION,clave_valor);//free(clave_valor) esta aca adentro
+
+						loggeo_respuesta("SET",id_esi,resultado_linea);
 						break;
-					case 3:
-						//recibi un STORE  q tiene LONG + CLAVE
-						envio_tarea_planificador(3,get_clave_recibida(fd_esi),id_esi);
-						resultado_linea = recibo_resultado_planificador();
+					case STORE:
+						clave = get_clave_recibida(fd_esi);
+						loggeo_info(3, id_esi, clave,"");
+
+						//TODO: ANALIZAR EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, sino aborta al esi resultado_linea = ABORTA_ESI
+						//por ahora le doy la primera instancia que encuentro pero eso tiene q cambiar
+						if(list_get(LIST_INSTANCIAS,0) != NULL){
+							resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,list_get(LIST_INSTANCIAS,0));
+						}else{
+							printf("No hay instancias para usar\n");
+							resultado_instancia = FALLO_DESCONEXION_INSTANCIA;
+						}
+						//
+
+						envio_tarea_planificador(3,clave,id_esi);
+						resultado_planificador = recibo_resultado_planificador();
+
+						//tanto la operacion del lado de instancia como del planificador no debe fallar para dar el OK
+						if((resultado_instancia != FALLO_DESCONEXION_INSTANCIA)&& (resultado_planificador != FALLO_PLANIFICADOR)
+								&& (resultado_instancia != FALLO_OPERACION_INSTANCIA)){
+							resultado_linea = resultado_planificador; //Si nadie fallo uso el numero del planificador
+						}else{
+							resultado_linea = FALLO_OPERACION_INSTANCIA; //Tambien puede ser FALLO_PLANIFICADOR, lo importante es mandar n°1
+						}
+						free(clave);
+						//loggeo respuesta
+						loggeo_respuesta("STORE",id_esi,resultado_linea);
 						break;
 
 					default:
 						break;
 				}
 
-
+				//al margen de lo q devuelva el planif o instna, el : resultado_linea solo es 1,2,3
 				envio_resultado_esi(fd_esi,resultado_linea,id_esi);
 			}
 		}
@@ -151,7 +188,6 @@ void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi){
 }
 
 int recibo_resultado_planificador(){
-	//TODO:Aca recibo la respuesta del planificador 1:falle , 2:ok , 3: ok pero te bloqueaste, 4: murio el planificador
 	int32_t resultado_planificador = 0;
 	int numbytes = 0;
 	if ((numbytes = recv(FD_PLANIFICADOR, &resultado_planificador, sizeof(int32_t), 0)) <= 0) {
@@ -162,9 +198,9 @@ int recibo_resultado_planificador(){
 			printf("El planificador se desconecto!\n");
 		}
 		FD_PLANIFICADOR = -1;
-		close(FD_PLANIFICADOR);
-		//Uso 1 para decir q el planificador murio, osea falle tambien
-		resultado_planificador = 1;
+
+		//ABORTA ESI
+		resultado_planificador = FALLO_PLANIFICADOR;
 		pthread_cond_signal(&CONDICION_LIBERO_PLANIFICADOR); //Libero ahora si al planificador
 	}else{
 		printf("Respuesta del planificador recibida\n");
@@ -187,8 +223,7 @@ void atender_cliente(void* idSocketCliente) {
 	int fdCliente = ((int *) idSocketCliente)[0];
 
 	enviar_saludo(fdCliente);
-	enum t_tipo_cliente tipo_cliente = recibir_saludo(fdCliente);
-	int numero = tipo_cliente;
+	int tipo_cliente = recibir_saludo(fdCliente);
 	switch (tipo_cliente) {
 
 	case ESI:
@@ -215,12 +250,13 @@ void atender_cliente(void* idSocketCliente) {
 			//3:Encolo la INSTANCIA
 			agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
 			while(1){
-				int resp = reciboRespuestaInstancia(fdCliente);
-				if(resp == -1){
-					//se desconecto la instancia
-					break;
+				int32_t respuesta = reciboRespuestaInstancia(fdCliente);
+				if(respuesta == FALLO_DESCONEXION_INSTANCIA){ //es necesario tener el if aca para los casos de desconexion de instancias agenas no me afecte
+					remove_instancia(fdCliente);//Si se desconecto limpio la list_instancia
+					break; //para salir del while y que se vaya
 				}
-				RESULTADO_INSTANCIA_VG = resp;
+
+				RESULTADO_INSTANCIA_VG = respuesta;
 				pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
 			}
 			break;
@@ -252,6 +288,9 @@ void levantar_servidor_coordinador() {
 
 	//creo mi lista de instancia
 	LIST_INSTANCIAS = create_list();
+
+	//creo mi tabla registro instancias
+	LIST_REGISTRO_INSTANCIAS = create_list();
 
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
@@ -324,9 +363,6 @@ void levantar_servidor_coordinador() {
 		pthread_t punteroHilo;
 		pthread_create(&punteroHilo, NULL, (void*) atender_cliente,
 				idSocketCliente);
-
-		//espero a q termine el hilo (para evitar quilombo por ahora)
-		//pthread_join(punteroHilo, NULL);
 
 	}
 	free_parametros_config();

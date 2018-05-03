@@ -30,4 +30,9 @@ void free_parametros_config();
 
 int32_t ID_ESI_OBTENIDO;
 
+enum t_respuesta_de_coordinador {
+	ABORTA = 1, //esto me mandaria a terminado
+	OK = 2,
+	OK_BLOQUEADO = 3,
+};
 #endif /* FUNCIONALIDAD_ESI_H_ */

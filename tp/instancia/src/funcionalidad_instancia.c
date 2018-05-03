@@ -82,58 +82,90 @@ void recibo_mensaje_aceptacion(int fd_coordinador){
 		free_algo_punt_nom();
 		exit(1);
 	}
-	printf("Me aaceptaron :)\n");
+	printf("Me aceptaron y encolaron en la lista de instancias :)\n");
 
 }
 //recibe la linea, la procesa ... y retorna un valor
 int recibo_sentencia(int fd_coordinador){
 	int32_t long_clave = 0;
 	int32_t long_valor = 0;
+	int32_t tipo_operacion = 0;
 	int32_t numbytes = 0;
+	int respuesta = 0;
 
-	if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
-		printf("No se pudo recibir le tamaño de la clave\n");
-		free_algo_punt_nom();
-		exit(1);
+	if ((numbytes = recv(fd_coordinador, &tipo_operacion, sizeof(int32_t), 0)) <= 0) {
+			printf("Coordinador desconectado\n");
+			free_algo_punt_nom();
+			exit(1);
 	}
-
-	char* clave_recibida = malloc(sizeof(char)*long_clave);
-	if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
-		printf("No se pudo recibir la clave\n");
-		free(clave_recibida);
-		free_algo_punt_nom();
-		exit(1);
-	}
-
-	if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) <= 0) {
-		printf("No se pudo recibir le tamaño del valor\n");
-		free_algo_punt_nom();
-		free(clave_recibida);
-		exit(1);
-	}
-
-	char* valor_recibido = malloc(sizeof(char)*long_valor);
-	if ((numbytes = recv(fd_coordinador, valor_recibido, long_clave, 0)) <= 0) {
-		if(numbytes == 0){
-			printf("Se desconecto el coordinador\n");
-		}else{
-			printf("No se pudo recibir el valor del la operacion\n");
-		}
-		free(valor_recibido);
-		free(clave_recibida);
-		free_algo_punt_nom();
-		exit(1);
-	}
-	printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
 
 	/*PROCESO.....*/
-	//proceso_operacion(clave_recibida,valor_recibido);
+	if(tipo_operacion == SET){ //SET CLAVE VALOR
+		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
+			printf("No se pudo recibir le tamaño de la clave\n");
+			free_algo_punt_nom();
+			exit(1);
+		}
 
-	free(clave_recibida);
-	free(valor_recibido);
+		char* clave_recibida = malloc(sizeof(char)*long_clave);
+		if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
+			printf("No se pudo recibir la clave\n");
+			free(clave_recibida);
+			free_algo_punt_nom();
+			exit(1);
+		}
 
-	//1: falla 2: OK
-	return 2;
+		if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) <= 0) {
+			printf("No se pudo recibir le tamaño del valor\n");
+			free_algo_punt_nom();
+			free(clave_recibida);
+			exit(1);
+		}
+
+		char* valor_recibido = malloc(sizeof(char)*long_valor);
+		if ((numbytes = recv(fd_coordinador, valor_recibido, long_clave, 0)) <= 0) {
+			if(numbytes == 0){
+				printf("Se desconecto el coordinador\n");
+			}else{
+				printf("No se pudo recibir el valor del la operacion\n");
+			}
+			free(valor_recibido);
+			free(clave_recibida);
+			free_algo_punt_nom();
+			exit(1);
+		}
+
+		printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
+		//TODO:-----> proceso_operacion(tipo_operacion,clave_recibida,valor_recibido);
+
+		//por ahora hardcodeamos que la operacion salio bien
+		respuesta = OK_SET_INSTANCIA;
+		free(clave_recibida);
+		free(valor_recibido);
+	}
+	if(tipo_operacion == STORE){ //STORE CLAVE
+		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
+			printf("No se pudo recibir le tamaño de la clave\n");
+			free_algo_punt_nom();
+			exit(1);
+		}
+
+		char* clave_recibida = malloc(sizeof(char)*long_clave);
+		if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
+			printf("No se pudo recibir la clave\n");
+			free(clave_recibida);
+			free_algo_punt_nom();
+			exit(1);
+		}
+		printf("Recibi para hacer STORE clave: %s\n",clave_recibida);
+		//TODO:-----> proceso_operacion(tipo_operacion,clave_recibida,valor_recibido);
+
+		//por ahora hardcodeamos que la operacion salio bien
+		respuesta = OK_STORE_INSTANCIA;
+		free(clave_recibida);
+	}
+
+	return respuesta;
 }
 
 

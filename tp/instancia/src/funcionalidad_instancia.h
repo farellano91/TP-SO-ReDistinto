@@ -58,4 +58,16 @@ void envio_resultado_al_coordinador(int sockfd,int resultado);
 
 void recibo_mensaje_aceptacion(int fd_coordinador);
 
+enum t_respuesta_al_coordinador {
+	FALLO_OPERACION_INSTANCIA = 1, //fallo al hacer algo
+	OK_SET_INSTANCIA = 2,
+	OK_STORE_INSTANCIA = 3,
+};
+
+enum t_operacion {
+	SET = 2,
+	STORE = 3,
+};
+
+
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

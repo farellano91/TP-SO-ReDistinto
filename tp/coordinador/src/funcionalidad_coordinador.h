@@ -50,7 +50,15 @@ typedef struct {
 	int tamanio_libre;
 } t_Instancia;
 
+//esto me sirve para armar mi tabla <nombre instancia,tamaño libre,clave>
+typedef struct {
+	t_Instancia* instancia;
+	char* clave;
+} t_registro_instancia;
+
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia, int32_t id_esi,char** clave_valor);
+
+int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Instancia *instancia);
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
@@ -61,6 +69,8 @@ void free_parametros_config();
 void configure_logger();
 
 t_list* LIST_INSTANCIAS;
+
+t_list* LIST_REGISTRO_INSTANCIAS;
 
 t_list* create_list();
 
@@ -78,6 +88,8 @@ void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t 
 
 void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* valor_recibida);
 
+void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea);
+
 int reciboRespuestaInstancia(int fd_instancia);
 
 void free_instancia(t_Instancia * instancia);
@@ -92,4 +104,28 @@ enum t_tipo_cliente {
 	ESI = 1, PLANIFICADOR = 2, INSTANCIA = 3,
 };
 
+enum t_respuesta_de_instancia {
+	FALLO_DESCONEXION_INSTANCIA = -1, //fallo solo por desconexion de instancia  AMBOS FALLO DERIVAN EN SER 1 PARA ABORAR AL ESI
+	FALLO_OPERACION_INSTANCIA = 1, //fallo al hacer algo
+	OK_SET_INSTANCIA = 2,         //AMBOS OK DERIVAN EN SER 2 PARA AVISAR OK AL ESI
+	OK_STORE_INSTANCIA = 3,
+};
+
+enum t_respuesta_de_planificador {
+	FALLO_PLANIFICADOR = 1, //no deberia evaluarse el caso
+	OK_PLANIFICADOR = 2,
+	OK_BLOQUEADO_PLANIFICADOR = 3,
+};
+
+enum t_respuesta_al_esi {
+	ABORTA_ESI = 1,
+	OK_ESI = 2,
+	BLOQUEADO_ESI = 3,
+};
+
+enum t_operacion {
+	GET = 1, //GET CLAVE
+	SET = 2, //SET CLAVE VALOR
+	STORE = 3, //STORE CLAVE
+};
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */
