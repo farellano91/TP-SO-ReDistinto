@@ -278,13 +278,10 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 		free(bufferEnvio);
 		RESULTADO_INSTANCIA_VG = FALLO_DESCONEXION_INSTANCIA; //para q esi sepa que falle
 		return RESULTADO_INSTANCIA_VG;
-	} else {
-		printf("Se envio STORE clave: %s a la INSTANCIA correctamente\n",clave);
 	}
-	free(bufferEnvio);
-
+	printf("Se envio STORE clave: %s a la INSTANCIA correctamente\n",clave);
 	pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
-
+	free(bufferEnvio);
 	return RESULTADO_INSTANCIA_VG;
 }
 
@@ -306,11 +303,8 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t 
 			free(bufferEnvio);
 			RESULTADO_INSTANCIA_VG = FALLO_OPERACION_INSTANCIA; //para q esi sepa que falle
 			return RESULTADO_INSTANCIA_VG;
-		} else {
-			printf("Se envio SET clave: %s valor: %s a la INSTANCIA correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1]);
 		}
-
-		free(bufferEnvio);
+		printf("Se envio SET clave: %s valor: %s a la INSTANCIA correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1]);
 		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
 
 		if(RESULTADO_INSTANCIA_VG == OK_SET_INSTANCIA){
@@ -318,7 +312,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t 
 			//codigo para actualizar el espacio de memoria disponible de una instancia
 			//buscandola en mi lista de registro instancia
 		}
-
+		free(bufferEnvio);
 		free(clave_valor_recibido[0]);
 		free(clave_valor_recibido[1]);
 		free(clave_valor_recibido);

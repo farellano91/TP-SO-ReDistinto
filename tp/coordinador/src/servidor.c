@@ -255,7 +255,6 @@ void atender_cliente(void* idSocketCliente) {
 					remove_instancia(fdCliente);//Si se desconecto limpio la list_instancia
 					break; //para salir del while y que se vaya
 				}
-
 				RESULTADO_INSTANCIA_VG = respuesta;
 				pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
 			}
