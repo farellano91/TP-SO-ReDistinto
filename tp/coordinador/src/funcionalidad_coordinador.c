@@ -280,7 +280,17 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 		return RESULTADO_INSTANCIA_VG;
 	}
 	printf("Se envio STORE clave: %s a la INSTANCIA correctamente\n",clave);
-	pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
+
+	//espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+	struct timespec ts;
+	struct timeval tp;
+	ts.tv_sec  = tp.tv_sec;
+	ts.tv_nsec = tp.tv_usec * 1000;
+	ts.tv_sec += 10;
+	pthread_cond_timedwait(&CONDICION_RECV_INSTANCIA,&MUTEX,&ts);
+	//
+
+	//pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
 	free(bufferEnvio);
 	return RESULTADO_INSTANCIA_VG;
 }
@@ -305,7 +315,17 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t 
 			return RESULTADO_INSTANCIA_VG;
 		}
 		printf("Se envio SET clave: %s valor: %s a la INSTANCIA correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1]);
-		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
+
+		//espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+		struct timespec ts;
+		struct timeval tp;
+		ts.tv_sec  = tp.tv_sec;
+		ts.tv_nsec = tp.tv_usec * 1000;
+		ts.tv_sec += 10;
+		pthread_cond_timedwait(&CONDICION_RECV_INSTANCIA,&MUTEX,&ts);
+		//
+
+		//pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
 
 		if(RESULTADO_INSTANCIA_VG == OK_SET_INSTANCIA){
 			//TODO: como hizo correctamente la operacion set, aca va
