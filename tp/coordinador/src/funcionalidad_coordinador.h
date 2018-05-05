@@ -44,6 +44,10 @@ int32_t CANTIDAD_ENTRADAS;
 int32_t TAMANIO_ENTRADA;
 int RETARDO;
 
+//Variables del COODINADOR
+int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
+//en variables del COORINADOR
+
 typedef struct {
 	int fd;
 	char* nombre_instancia;

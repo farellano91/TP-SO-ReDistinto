@@ -6,6 +6,9 @@
  */
 
 #include "funcionalidad_coordinador.h"
+
+
+
 void get_parametros_config(){
 
 	t_config* config = config_create("config.cfg");
@@ -193,20 +196,19 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 // retorna -> 1: si esta mal ; 2: si esta bien
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 	//TODO: revisar algoritmo porque solo toma SIEMPRE a la primera INSTANCIA,posiblemente "index" tenga q ser VG para persistir
-	t_Instancia* inst;
-	int index;
+	t_Instancia* instancia;
 	if (strstr(algoritmo, "EL") != NULL) {
-		index = 0;
-		if(index == list_size(LIST_INSTANCIAS)){
-			index = 0;
-			inst = list_get(LIST_INSTANCIAS,index);//ojo q list_get si no encuentra nada retorna NULL
+		INDEX = 0;
+		if(INDEX == list_size(LIST_INSTANCIAS)){
+			INDEX = 0;
+			instancia = list_get(LIST_INSTANCIAS,INDEX);//ojo q list_get si no encuentra nada retorna NULL
 		}else{
 			printf("Aplico Algoritmo EL\n");
-			inst = list_get(LIST_INSTANCIAS,index);
-			index ++;
+			instancia = list_get(LIST_INSTANCIAS,INDEX);
+			INDEX ++;
 		}
-		if(inst != NULL){//pregunto si efectivamente hay algo
-			return envio_tarea_instancia(2,inst,2,resultado);
+		if(instancia != NULL){//pregunto si efectivamente hay algo
+			return envio_tarea_instancia(2,instancia,2,resultado);
 		}
 		printf("No hay instancias conectadas\n");
 	}
