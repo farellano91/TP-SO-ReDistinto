@@ -195,22 +195,9 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 
 // retorna -> 1: si esta mal ; 2: si esta bien
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
-	//TODO: revisar algoritmo porque solo toma SIEMPRE a la primera INSTANCIA,posiblemente "index" tenga q ser VG para persistir
-	t_Instancia* instancia;
+
 	if (strstr(algoritmo, "EL") != NULL) {
-		INDEX = 0;
-		if(INDEX == list_size(LIST_INSTANCIAS)){
-			INDEX = 0;
-			instancia = list_get(LIST_INSTANCIAS,INDEX);//ojo q list_get si no encuentra nada retorna NULL
-		}else{
-			printf("Aplico Algoritmo EL\n");
-			instancia = list_get(LIST_INSTANCIAS,INDEX);
-			INDEX ++;
-		}
-		if(instancia != NULL){//pregunto si efectivamente hay algo
-			return envio_tarea_instancia(2,instancia,2,resultado);
-		}
-		printf("No hay instancias conectadas\n");
+		return equitativeLoad(resultado);
 	}
 	if (strstr(algoritmo, "LSU") != NULL) {
 		//TODO: busco de mi lista de instancias, la que tenga numero de memoria libre mas grande
@@ -456,5 +443,22 @@ void remove_instancia(int fd_instancia){
 		printf("Sacamos a la INSTANCIA: %s de la lista\n", unInstancia->nombre_instancia);
 		list_remove_and_destroy_by_condition(LIST_INSTANCIAS,(void*) _esInstanciaFd,(void*) free_instancia);
 	}
+}
+
+int equitativeLoad(char** resultado){
+	t_Instancia* instancia;
+	if(INDEX == list_size(LIST_INSTANCIAS)){
+		INDEX = 0;
+		instancia = list_get(LIST_INSTANCIAS,INDEX);//ojo q list_get si no encuentra nada retorna NULL
+	}else{
+		printf("Aplico Algoritmo EL\n");
+		instancia = list_get(LIST_INSTANCIAS,INDEX);
+		INDEX ++;
+	}
+	if(instancia != NULL){//pregunto si efectivamente hay algo
+		return envio_tarea_instancia(2,instancia,2,resultado);
+	}
+	return FALLO_OPERACION_INSTANCIA;
+
 }
 

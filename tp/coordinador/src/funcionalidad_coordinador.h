@@ -46,6 +46,7 @@ int RETARDO;
 
 //Variables del COODINADOR
 int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
+int equitativeLoad(char** resultado);
 //en variables del COORINADOR
 
 typedef struct {
