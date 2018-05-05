@@ -200,8 +200,8 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 		return equitativeLoad(resultado);
 	}
 	if (strstr(algoritmo, "LSU") != NULL) {
-		//TODO: busco de mi lista de instancias, la que tenga numero de memoria libre mas grande
 		printf("INFO: Algoritmo LSU\n");
+		return LeastSpaceUsed(resultado);
 		//return envio_tarea_instancia(2,inst,2,resultado);
 	}
 	if (strstr(algoritmo, "INS") != NULL) {
@@ -462,3 +462,23 @@ int equitativeLoad(char** resultado){
 
 }
 
+int LeastSpaceUsed(char** resultado){
+	int i;
+	t_Instancia* instancia;
+	t_Instancia* instancia_max;
+		for(i=0;i<=list_size(LIST_INSTANCIAS);i++){
+			if(i==0){
+				instancia_max=list_get(LIST_INSTANCIAS,i);
+			}else{
+			instancia = list_get(LIST_INSTANCIAS,i);
+			if((instancia_max->tamanio_libre) < (instancia->tamanio_libre)){
+				instancia_max=list_get(LIST_INSTANCIAS,i);
+				}
+			}
+		}
+		if(instancia_max != NULL){//pregunto si efectivamente hay algo
+			return envio_tarea_instancia(2,instancia_max,2,resultado);
+		}
+		return FALLO_OPERACION_INSTANCIA;
+
+}
