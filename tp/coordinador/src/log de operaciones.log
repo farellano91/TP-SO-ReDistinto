@@ -176,3 +176,22 @@
 [INFO] 00:00:54:694 tp-redistinto/(4024:4024): Empezamos.....
 [INFO] 00:01:52:154 tp-redistinto/(4024:4060): ESI 2 SET jugador1 messi
 [INFO] 00:02:16:366 tp-redistinto/(4024:4063): ESI 2 SET jugador1 messi
+[INFO] 20:07:26:891 tp-redistinto/(3034:3034): Empezamos.....
+[INFO] 20:13:59:165 tp-redistinto/(3185:3185): Empezamos.....
+[INFO] 20:14:39:585 tp-redistinto/(3185:3215): ESI 1 SET jugador2 titi
+[INFO] 20:14:39:585 tp-redistinto/(3185:3215): ESI 1 SET  => OK
+[INFO] 20:14:44:587 tp-redistinto/(3185:3215): ESI 1 SET jugador1 messi
+[INFO] 20:14:44:587 tp-redistinto/(3185:3215): ESI 1 SET  => OK
+[INFO] 20:47:25:248 tp-redistinto/(3929:3929): Empezamos.....
+[INFO] 20:47:41:262 tp-redistinto/(3929:3938): ESI 1 SET jugador2 titi
+[INFO] 20:47:41:262 tp-redistinto/(3929:3938): ESI 1 SET  =>  - 
+[INFO] 20:47:46:272 tp-redistinto/(3929:3938): ESI 1 SET jugador1 messi
+[INFO] 20:47:46:272 tp-redistinto/(3929:3938): ESI 1 SET  => OK
+[INFO] 20:50:22:317 tp-redistinto/(3929:3941): ESI 2 SET jugador2 titi
+[INFO] 20:50:22:317 tp-redistinto/(3929:3941): ESI 2 SET  => ABORTA
+[INFO] 20:50:27:326 tp-redistinto/(3929:3941): ESI 2 SET jugador1 messi
+[INFO] 20:50:27:326 tp-redistinto/(3929:3941): ESI 2 SET  => ABORTA
+[INFO] 20:50:35:894 tp-redistinto/(3929:3943): ESI 3 SET jugador2 titi
+[INFO] 20:50:35:894 tp-redistinto/(3929:3943): ESI 3 SET  => ABORTA
+[INFO] 20:50:40:895 tp-redistinto/(3929:3943): ESI 3 SET jugador1 messi
+[INFO] 20:50:40:895 tp-redistinto/(3929:3943): ESI 3 SET  => ABORTA
