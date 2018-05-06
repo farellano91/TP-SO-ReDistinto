@@ -27,5 +27,5 @@ Para levantar el proyecto:</br>
     ./instancia</br>
 
 -------------------------------------------
-Enunciado del TP: https://sisoputnfrba.gitbook.io/re-distinto/
+Enunciado del TP: https://sisoputnfrba.gitbook.io/re-distinto/ <br>
 Más info acá: https://github.com/sisoputnfrba/tp-2018-1c-Real-Mandril/wiki
