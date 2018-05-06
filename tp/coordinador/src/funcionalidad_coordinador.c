@@ -492,7 +492,10 @@ int equitativeLoad(char** resultado){
 	}else{
 		printf("Aplico Algoritmo EL\n");
 		instancia = list_get(LIST_INSTANCIAS,INDEX);
-		INDEX ++;
+		if(list_get(LIST_INSTANCIAS,INDEX))
+			INDEX ++;
+		else
+			INDEX = 0;
 	}
 	if(instancia != NULL){//pregunto si efectivamente hay algo
 		return envio_tarea_instancia(2,instancia,2,resultado);
@@ -527,13 +530,12 @@ int keyExplicit(char** resultado) {//TODO: recibir char
 	//vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
 	int i;
 	char valorinicialetras = 'a';
+	double cantidad_letras_por_instancia_sinCeil = 25 / LIST_INSTANCIAS->elements_count;
 	t_Instancia* instancia;
 	int cantidad_instancias = LIST_INSTANCIAS->elements_count;
 	if (cantidad_instancias > 0) {
 		float cantidad_letras_por_instancia;
-
-		cantidad_letras_por_instancia = ceil(25 / LIST_INSTANCIAS->elements_count);	//9
-
+    	cantidad_letras_por_instancia = ceil(cantidad_letras_por_instancia_sinCeil);	//9
 		for (i = 0; i <= cantidad_instancias; i++) {
 
 			if (resultado[1][0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115

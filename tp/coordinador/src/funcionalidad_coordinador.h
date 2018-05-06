@@ -9,7 +9,6 @@
 #define FUNCIONALIDAD_COORDINADOR_H_
 
 #include <stdio.h>
-#include<math.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -24,6 +23,7 @@
 #include <commons/collections/list.h>
 #include <pthread.h>
 #include <commons/string.h>
+#include <math.h>
 
 pthread_mutex_t MUTEX;
 
@@ -157,5 +157,5 @@ enum t_operacion {
 	SET = 2, //SET CLAVE VALOR
 	STORE = 3, //STORE CLAVE
 };
-char letras[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
+
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

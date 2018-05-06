@@ -7,7 +7,7 @@ OBJS := coordinador.o servidor.o funcionalidad_coordinador.o
 all: coordinador
 
 coordinador: $(OBJS)
-	gcc -o coordinador $(OBJS) -pthread -lcommons
+	gcc -o coordinador $(OBJS) -pthread -lcommons -lm
 
 coordinador.o: coordinador.c servidor.h funcionalidad_coordinador.h
 	gcc -c coordinador.c
