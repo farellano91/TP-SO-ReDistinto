@@ -536,7 +536,7 @@ int keyExplicit(char** resultado) {//TODO: recibir char
 	if (cantidad_instancias > 0) {
 		float cantidad_letras_por_instancia;
     	cantidad_letras_por_instancia = ceil(cantidad_letras_por_instancia_sinCeil);	//9
-		for (i = 0; i <= cantidad_instancias; i++) {
+		for (i = 0; i < cantidad_instancias; i++) {
 
 			if (resultado[1][0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115
 				instancia = list_get(LIST_INSTANCIAS, i);
