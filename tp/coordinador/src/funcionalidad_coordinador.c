@@ -486,7 +486,7 @@ bool exist_clave_registro_instancias(char * clave){
 
 int equitativeLoad(char** resultado){
 	t_Instancia* instancia;
-	if(INDEX == list_size(LIST_INSTANCIAS)){
+	if((INDEX == list_size(LIST_INSTANCIAS)) || (INDEX > list_size(LIST_INSTANCIAS)) ){
 		INDEX = 0;
 		instancia = list_get(LIST_INSTANCIAS,INDEX);//ojo q list_get si no encuentra nada retorna NULL
 	}else{
