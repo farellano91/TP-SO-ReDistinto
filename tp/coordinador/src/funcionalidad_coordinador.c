@@ -130,69 +130,6 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
 }
 
-/*
-int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
-
-	#define INVALID_ALGORITMO_DISTRIBUCION -1
-	#define EL 4
-	#define LSU 5
-	#define KE 6
-
-	typedef struct { char *key; int val; } t_symstruct;
-
-	static t_symstruct buscarTabla[] = {
-		{ "EL", EL }, { "LSU", LSU }, { "KE", KE }
-	};
-
-	#define NKEYS (sizeof(buscarTabla)/sizeof(t_symstruct))
-
-	int keyfromstring(char *key)
-	{
-		int i;
-		for (i=0; i < NKEYS; i++) {
-			t_symstruct *sym = buscarTabla + i*sizeof(t_symstruct);
-			if (strcmp(sym->key, key) == 0)
-				return sym->val;
-		}
-		return INVALID_ALGORITMO_DISTRIBUCION;
-	}
-
-	t_Instancia* instancia;
-
-	switch (keyfromstring(algoritmo)) {
-
-		int index;
-		case EL:
-
-			index = 0;
-			if(index == list_size(LIST_INSTANCIAS)){
-				index = 0;
-				instancia = list_get(LIST_INSTANCIAS,index);
-			}else{
-				printf("Aplico Algoritmo EL\n");
-				instancia = list_get(LIST_INSTANCIAS,index);
-				index ++;
-			}
-			return envio_tarea_instancia(2,instancia,2,resultado);
-			break;
-
-		case LSU:
-			printf("INFO: Algoritmo LSU\n");
-			break;
-		case KE:
-			printf("INFO: Algoritmo KE\n");
-			break;
-		case INVALID_ALGORITMO_DISTRIBUCION:
-			printf("Error: ALGORITMO_DISTRIBUCION invalido\n");
-			exit(1);
-
-	}
-	return 1;
-
-}
-*/
-
-
 // retorna -> 1: si esta mal ; 2: si esta bien
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 
@@ -202,13 +139,11 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 	if (strstr(algoritmo, "LSU") != NULL) {
 		printf("INFO: Algoritmo LSU\n");
 		return LeastSpaceUsed(resultado);
-		//return envio_tarea_instancia(2,inst,2,resultado);
 	}
 	if (strstr(algoritmo, "INS") != NULL) {
 		printf("INFO: Algoritmo KE\n");
-		//return envio_tarea_instancia(2,inst,2,resultado);
+		return keyExplicit(resultado);
 	}
-
 
 	return FALLO_OPERACION_INSTANCIA;
 }
@@ -481,4 +416,26 @@ int LeastSpaceUsed(char** resultado) {
 	}
 	return FALLO_OPERACION_INSTANCIA;
 
+}
+int keyExplicit(char** resultado) {//TODO: recibir char
+	//vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
+	int i;
+	char valorinicialetras = 'a';
+	t_Instancia* instancia;
+	int cantidad_instancias = LIST_INSTANCIAS->elements_count;
+	if (cantidad_instancias > 0) {
+		float cantidad_letras_por_instancia;
+
+		cantidad_letras_por_instancia = ceil(25 / LIST_INSTANCIAS->elements_count);	//9
+
+		for (i = 0; i <= cantidad_instancias; i++) {
+
+			if (resultado[1][0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115
+				instancia = list_get(LIST_INSTANCIAS, i);
+				return envio_tarea_instancia(2, instancia, 2, resultado);
+			}
+		}
+	}
+
+	return FALLO_OPERACION_INSTANCIA;
 }
