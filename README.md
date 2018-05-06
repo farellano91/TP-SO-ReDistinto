@@ -25,3 +25,6 @@ Para levantar el proyecto:</br>
     cd tp-2018-1c-Real-Mandril/tp/instancia/src/</br>
     make</br>
     ./instancia</br>
+
+-------------------------------------------
+Más info acá: https://github.com/sisoputnfrba/tp-2018-1c-Real-Mandril/wiki
