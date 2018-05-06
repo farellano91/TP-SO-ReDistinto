@@ -26,7 +26,8 @@
 
 #define BACKLOG 10     // Cuántas conexiones pendientes se mantienen en cola
 
-#define MYIP "0.0.0.0"
+//#define MYIP "0.0.0.0" para muchas pc (dejar comentado para poder usar localmente)
+#define MYIP "127.0.0.1"
 
 
 typedef struct InfoCoordinador{
