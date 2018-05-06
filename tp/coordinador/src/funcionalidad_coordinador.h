@@ -9,6 +9,7 @@
 #define FUNCIONALIDAD_COORDINADOR_H_
 
 #include <stdio.h>
+#include<math.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -46,6 +47,7 @@ int RETARDO;
 int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
 int equitativeLoad(char** resultado);
 int LeastSpaceUsed(char** resultado);
+int keyExplicit(char** resultado);
 //en variables del COORINADOR
 
 typedef struct {
@@ -155,4 +157,5 @@ enum t_operacion {
 	SET = 2, //SET CLAVE VALOR
 	STORE = 3, //STORE CLAVE
 };
+char letras[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */
