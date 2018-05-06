@@ -64,6 +64,24 @@ void envio_datos_entrada(int fd_instancia){
 	free(bufferEnvio);
 }
 
+t_registro_instancia* creo_registro_instancia(char* nombre_instancia, char* clave){
+	t_registro_instancia* registro_instancia = malloc(sizeof(t_registro_instancia));
+	registro_instancia->nombre_instancia = malloc(sizeof(char)*100);
+	registro_instancia->clave = malloc(sizeof(char)*40);
+	strcpy(registro_instancia->nombre_instancia,nombre_instancia);
+	strcpy(registro_instancia->clave,clave);
+	return registro_instancia;
+}
+
+t_instancia_respuesta* creo_instancia_respuesta(char* nombre_instancia,int respuesta){
+	t_instancia_respuesta* instancia_respuesta = malloc(sizeof(t_instancia_respuesta));
+	instancia_respuesta->nombre_instancia = malloc(sizeof(char)*200);
+	strcpy(instancia_respuesta->nombre_instancia,nombre_instancia);
+	instancia_respuesta->respuesta = respuesta;
+	return instancia_respuesta;
+}
+
+
 t_Instancia* creo_instancia(int fd_instancia){
 	t_Instancia* instancia_nueva = malloc(sizeof(t_Instancia));
 	instancia_nueva->nombre_instancia = malloc(sizeof(char)*100);
@@ -93,7 +111,6 @@ t_Instancia* creo_instancia(int fd_instancia){
 }
 
 bool controlo_existencia(t_Instancia * instanciaNueva){
-
 	bool _existInstancia(t_Instancia* una_instancia) { return strcmp(una_instancia->nombre_instancia,instanciaNueva->nombre_instancia)== 0;}
 	if(list_find(LIST_INSTANCIAS, (void*)_existInstancia) != NULL){
 		return true;
@@ -267,76 +284,122 @@ char ** get_clave_valor(int fd_esi) {
 int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Instancia* instancia){
 
 	int32_t len_clave = strlen(clave) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
-
+	int resultado_instancia = 0;
 	void* bufferEnvio = malloc(sizeof(int32_t) * 2 + len_clave);
 	memcpy(bufferEnvio, &id_operacion, sizeof(int32_t));
 	memcpy(bufferEnvio+sizeof(int32_t), &len_clave, sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t)*2,clave,len_clave);
 
+	//limpio mi lista de instancia respuesta
+	list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+
+	if(instancia == NULL){
+		printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
+		free(bufferEnvio);
+		//la saco de mi tabla de registro instancia
+		remove_registro_instancia(clave);
+		return FALLO_OPERACION_INSTANCIA;
+	}
+
 	if (send(instancia->fd, bufferEnvio,sizeof(int32_t) * 2 + len_clave, 0) == -1) {
 		printf("No se pudo enviar la info a la INSTANCIA\n");
 		free(bufferEnvio);
-		RESULTADO_INSTANCIA_VG = FALLO_DESCONEXION_INSTANCIA; //para q esi sepa que falle
-		return RESULTADO_INSTANCIA_VG;
+		resultado_instancia = FALLO_DESCONEXION_INSTANCIA; //para q esi sepa que falle
+
+		//la saco de mi tabla de registro instancia
+		remove_registro_instancia(instancia->nombre_instancia);
+
+		return resultado_instancia;
 	}
 	printf("Se envio STORE clave: %s a la INSTANCIA correctamente\n",clave);
 
-	//espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
-	struct timespec ts;
-	struct timeval tp;
-	ts.tv_sec  = tp.tv_sec;
-	ts.tv_nsec = tp.tv_usec * 1000;
-	ts.tv_sec += 10;
-	pthread_cond_timedwait(&CONDICION_RECV_INSTANCIA,&MUTEX,&ts);
-	//
+	//mientras la instancia no mande su respuesta loopeo, cuando me active la busco
+	bool _esNombreInstancia(t_instancia_respuesta* instancia_respuesta) { return (strcmp(instancia_respuesta->nombre_instancia,instancia->nombre_instancia)==0);}
+	t_instancia_respuesta * instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
+	while(instancia_resp == NULL){
+		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+		instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
+	}
+	resultado_instancia = instancia_resp->respuesta;
 
-	//pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta)
+	//limpio mi lista de instancia respuesta
+	list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+
 	free(bufferEnvio);
-	return RESULTADO_INSTANCIA_VG;
+	return resultado_instancia;
 }
 
+t_Instancia* get_instancia_by_name(char* name){
+	bool _getInstancia(t_Instancia* instancia) { return strcmp(instancia->nombre_instancia,name)== 0;}
+	return list_find(LIST_INSTANCIAS, (void*)_getInstancia);
+
+}
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t id_esi,char** clave_valor_recibido) {
 		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
 		int32_t claveInstacia = strlen(clave_valor_recibido[0]) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
 		int32_t valorInstacia = strlen(clave_valor_recibido[1]) + 1; // Tomo la VALOR  de la sentencia SET q me llega de la instacia
-
 		void* bufferEnvio = malloc(sizeof(int32_t) * 3 + valorInstacia + claveInstacia);
+		int resultado_instancia = 0;
 		memcpy(bufferEnvio, &id_operacion, sizeof(int32_t));
 		memcpy(bufferEnvio+sizeof(int32_t), &claveInstacia, sizeof(int32_t));
 		memcpy(bufferEnvio + sizeof(int32_t)*2,clave_valor_recibido[0],claveInstacia);
 		memcpy(bufferEnvio + sizeof(int32_t)*2 + claveInstacia, &valorInstacia,sizeof(int32_t));
 		memcpy(bufferEnvio + (sizeof(int32_t) * 3) + claveInstacia,clave_valor_recibido[1], valorInstacia);
 
+		//limpio mi lista de instancia respuesta
+		list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+
+		if(instancia == NULL){
+			printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
+			free(bufferEnvio);
+			//la saco de mi tabla de registro instancia
+			remove_registro_instancia(clave_valor_recibido[0]);
+			return FALLO_OPERACION_INSTANCIA;
+		}
 		if (send(instancia->fd, bufferEnvio,
 				sizeof(int32_t) * 3 + valorInstacia + claveInstacia, 0) == -1) {
 			printf("No se pudo enviar la info a la INSTANCIA\n");
 			free(bufferEnvio);
-			RESULTADO_INSTANCIA_VG = FALLO_OPERACION_INSTANCIA; //para q esi sepa que falle
-			return RESULTADO_INSTANCIA_VG;
+
+			//la saco de mi tabla de registro instancia
+			remove_registro_instancia(clave_valor_recibido[0]);
+
+			return FALLO_OPERACION_INSTANCIA;
 		}
-		printf("Se envio SET clave: %s valor: %s a la INSTANCIA correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1]);
+		printf("Se envio SET clave: %s valor: %s a la %s correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1],instancia->nombre_instancia);
 
-		//espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
-		struct timespec ts;
-		struct timeval tp;
-		ts.tv_sec  = tp.tv_sec;
-		ts.tv_nsec = tp.tv_usec * 1000;
-		ts.tv_sec += 10;
-		pthread_cond_timedwait(&CONDICION_RECV_INSTANCIA,&MUTEX,&ts);
-		//
+		//mientras la instancia no mande su respuesta loopeo, cuando me active la busco
+		bool _esNombreInstancia(t_instancia_respuesta* instancia_respuesta) { return (strcmp(instancia_respuesta->nombre_instancia,instancia->nombre_instancia)==0);}
+		t_instancia_respuesta * instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
+		while(instancia_resp == NULL){
+			pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+			instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
+		}
+		resultado_instancia = instancia_resp->respuesta;
+		if(resultado_instancia == OK_SET_INSTANCIA){
+			printf("Sentencia SET realizado correctamente\n");
+			//actualizo su espacio (en lista_instnacias)
+			instancia->tamanio_libre = instancia->tamanio_libre - claveInstacia;
+			printf("Actualizo el nuevo tamaño disponible de %s ahora es %d\n",instancia->nombre_instancia,instancia->tamanio_libre);
+			//registro la instancia para esa clave si es que no esta registrado antes
+			if(!exist_clave_registro_instancias(clave_valor_recibido[0])){
+				t_registro_instancia * nuevo_Registro = creo_registro_instancia(instancia->nombre_instancia,clave_valor_recibido[0]);
+				list_add(LIST_REGISTRO_INSTANCIAS,nuevo_Registro);
+				printf("Se registra en instancia-clave la %s de clave: %s\n",nuevo_Registro->nombre_instancia,clave_valor_recibido[0]);
+			}
 
-		//pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
-
-		if(RESULTADO_INSTANCIA_VG == OK_SET_INSTANCIA){
-			//TODO: como hizo correctamente la operacion set, aca va
-			//codigo para actualizar el espacio de memoria disponible de una instancia
-			//buscandola en mi lista de registro instancia
+		}
+		if(resultado_instancia == OK_STORE_INSTANCIA){
+			printf("Sentencia STORE realizado correctamente\n");
 		}
 		free(bufferEnvio);
 		free(clave_valor_recibido[0]);
 		free(clave_valor_recibido[1]);
 		free(clave_valor_recibido);
-		return RESULTADO_INSTANCIA_VG;
+
+		//limpio mi lista de instancia respuesta
+		list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+		return resultado_instancia;
 }
 void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	char* registro = malloc(sizeof(char) * 500);
@@ -446,6 +509,16 @@ void free_instancia(t_Instancia * instancia){
 	free(instancia);
 }
 
+void free_registro_instancia(t_registro_instancia* registro_instancia){
+	free(registro_instancia->clave);
+	free(registro_instancia->nombre_instancia);
+	free(registro_instancia);
+}
+
+void free_instancia_respuesta(t_instancia_respuesta* instancia_respuesta){
+	free(instancia_respuesta->nombre_instancia);
+	free(instancia_respuesta);
+}
 
 void remove_instancia(int fd_instancia){
 	bool _esInstanciaFd(t_Instancia* instancia) { return instancia->fd == fd_instancia;}
@@ -456,3 +529,32 @@ void remove_instancia(int fd_instancia){
 	}
 }
 
+void remove_registro_instancia( char * clave){
+	bool _esRegistroInstancia(t_registro_instancia* reg) { return strcmp(reg->clave,clave) == 0;}
+	t_registro_instancia* registro_inst = list_find(LIST_REGISTRO_INSTANCIAS,(void*)_esRegistroInstancia);
+	if(registro_inst != NULL){
+		printf("Sacamos de mi registro instancia - clave a la %s\n", registro_inst->nombre_instancia);
+		list_remove_and_destroy_by_condition(LIST_REGISTRO_INSTANCIAS,(void*) _esRegistroInstancia,(void*) free_registro_instancia);
+	}
+}
+
+//Cargo la instancia_respuesta sin repetir!
+void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta){
+	bool _existInstanciaRespuesta(t_instancia_respuesta* inst_respue) { return strcmp(inst_respue->nombre_instancia,nombre_instancia)== 0;}
+	if(list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta) != NULL){
+		t_instancia_respuesta * insta_respu = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta);
+		insta_respu->respuesta = nueva_respuesta;
+	}else{
+		t_instancia_respuesta* instancia_respuesta = creo_instancia_respuesta(nombre_instancia,nueva_respuesta);
+		list_add(LIST_INSTANCIA_RESPUESTA,instancia_respuesta);
+	}
+
+}
+
+bool exist_clave_registro_instancias(char * clave){
+	bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
+	if(list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia) != NULL){
+		return true;
+	}
+	return false;
+}

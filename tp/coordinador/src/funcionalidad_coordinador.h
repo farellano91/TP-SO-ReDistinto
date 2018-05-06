@@ -30,8 +30,6 @@ pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
 pthread_cond_t CONDICION_RECV_INSTANCIA;
 
-//Para manejar el valor de resultado de la instancia
-int RESULTADO_INSTANCIA_VG;
 
 //Para planificador
 int FD_PLANIFICADOR;
@@ -50,13 +48,22 @@ typedef struct {
 	int tamanio_libre;
 } t_Instancia;
 
-//esto me sirve para armar mi tabla <nombre instancia,tamaño libre,clave>
+//esto me sirve para armar mi tabla <nombre instancia,clave> par guardar las claves que ya se crearon
 typedef struct {
-	t_Instancia* instancia;
+	char* nombre_instancia;
 	char* clave;
 } t_registro_instancia;
 
+typedef struct {
+	char* nombre_instancia;
+	int respuesta;
+} t_instancia_respuesta;
+
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia, int32_t id_esi,char** clave_valor);
+
+t_Instancia* get_instancia_by_name(char* name);
+
+void remove_registro_instancia( char * clave);
 
 int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Instancia *instancia);
 
@@ -68,6 +75,8 @@ void free_parametros_config();
 
 void configure_logger();
 
+t_list* LIST_INSTANCIA_RESPUESTA;
+
 t_list* LIST_INSTANCIAS;
 
 t_list* LIST_REGISTRO_INSTANCIAS;
@@ -77,6 +86,10 @@ t_list* create_list();
 void envio_datos_entrada(int fd_instancia);
 
 t_Instancia* creo_instancia(int fd_instancia);
+
+t_registro_instancia* creo_registro_instancia(char* nombre_instancia, char* clave);
+
+t_instancia_respuesta* creo_instancia_respuesta(char* nombre_instancia,int respuesta);
 
 void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva);
 
@@ -94,7 +107,15 @@ int reciboRespuestaInstancia(int fd_instancia);
 
 void free_instancia(t_Instancia * instancia);
 
+void free_registro_instancia(t_registro_instancia* registro_instancia);
+
+void free_instancia_respuesta(t_instancia_respuesta* instancia_respuesta);
+
 void remove_instancia(int fd_instancia);
+
+void cargo_instancia_respuesta(char * instancia_nueva,int respuesta);
+
+bool exist_clave_registro_instancias(char * clave);
 
 bool controlo_existencia(t_Instancia * instanciaNueva);
 

@@ -102,8 +102,14 @@ void recibo_lineas(int fd_esi) {
 					case GET:
 						clave = get_clave_recibida(fd_esi);
 						loggeo_info(1, id_esi, clave, "");
-
-						//TODO: ANALIZAR EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, sino aborta al esi resultado_linea = ABORTA_ESI
+						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta entonces ABORTA_ESI
+						if(!exist_clave_registro_instancias(clave)){
+							printf("No existe registro de la clave buscada... abortamos al ESI\n");
+							resultado_linea = ABORTA_ESI;
+							loggeo_respuesta("GET",id_esi,resultado_linea);
+							free(clave);
+							break;
+						}
 						envio_tarea_planificador(1,clave,id_esi);
 						resultado_linea = recibo_resultado_planificador();
 
@@ -115,7 +121,16 @@ void recibo_lineas(int fd_esi) {
 						clave_valor = get_clave_valor(fd_esi); //noc porque si metemos get_clave_valor dentro de aplicoA.. no recibe los valores posta
 						loggeo_info(2, id_esi, clave_valor[0],clave_valor[1]);
 
-						//TODO: Busco en tabla, si no esta aplico algoritmo, si esta, uso esa instancia defrente
+						//Busco en LIST_REGISTRO_INSTANCIAS si ya tengo alguna instancia que conoce esa clave,
+						//, si no esta aplico algoritmo
+						if(exist_clave_registro_instancias(clave_valor[0])){
+							printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
+							bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor[0])== 0;}
+							t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+							resultado_linea = envio_tarea_instancia(2,get_instancia_by_name(registro_instancia->nombre_instancia),2,clave_valor);
+							loggeo_respuesta("SET",id_esi,resultado_linea);
+							break;
+						}
 						resultado_linea = aplicarAlgoritmoDisctribucion(ALGORITMO_DISTRIBUCION,clave_valor);//free(clave_valor) esta aca adentro
 
 						loggeo_respuesta("SET",id_esi,resultado_linea);
@@ -124,15 +139,18 @@ void recibo_lineas(int fd_esi) {
 						clave = get_clave_recibida(fd_esi);
 						loggeo_info(3, id_esi, clave,"");
 
-						//TODO: ANALIZAR EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, sino aborta al esi resultado_linea = ABORTA_ESI
-						//por ahora le doy la primera instancia que encuentro pero eso tiene q cambiar
-						if(list_get(LIST_INSTANCIAS,0) != NULL){
-							resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,list_get(LIST_INSTANCIAS,0));
-						}else{
-							printf("No hay instancias para usar\n");
-							resultado_instancia = FALLO_DESCONEXION_INSTANCIA;
+						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta entonces ABORTA_ESI
+						if(!exist_clave_registro_instancias(clave)){
+							printf("No existe registro de la clave buscada... abortamos al ESI\n");
+							resultado_linea = ABORTA_ESI;
+							loggeo_respuesta("STORE",id_esi,resultado_linea);
+							free(clave);
+							break;
 						}
-						//
+						printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
+						bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
+						t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+						resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,get_instancia_by_name(registro_instancia->nombre_instancia));
 
 						envio_tarea_planificador(3,clave,id_esi);
 						resultado_planificador = recibo_resultado_planificador();
@@ -251,11 +269,14 @@ void atender_cliente(void* idSocketCliente) {
 			agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
 			while(1){
 				int32_t respuesta = reciboRespuestaInstancia(fdCliente);
-				if(respuesta == FALLO_DESCONEXION_INSTANCIA){ //es necesario tener el if aca para los casos de desconexion de instancias agenas no me afecte
+				//guardamos solo si no existe, si esta, lo actualizo
+				cargo_instancia_respuesta(instancia_nueva->nombre_instancia,respuesta);
+
+				if(respuesta == FALLO_DESCONEXION_INSTANCIA){
 					remove_instancia(fdCliente);//Si se desconecto limpio la list_instancia
+					pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
 					break; //para salir del while y que se vaya
 				}
-				RESULTADO_INSTANCIA_VG = respuesta;
 				pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
 			}
 			break;
@@ -281,8 +302,6 @@ void intHandler(int dummy) {
 }
 void levantar_servidor_coordinador() {
 
-	RESULTADO_INSTANCIA_VG = -1;
-
 	FD_PLANIFICADOR = -1;
 
 	//creo mi lista de instancia
@@ -290,6 +309,9 @@ void levantar_servidor_coordinador() {
 
 	//creo mi tabla registro instancias
 	LIST_REGISTRO_INSTANCIAS = create_list();
+
+	//creo mi tabla de instancia respuestas
+	LIST_INSTANCIA_RESPUESTA = create_list();
 
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
