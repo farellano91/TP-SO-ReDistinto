@@ -6,6 +6,9 @@
  */
 
 #include "funcionalidad_coordinador.h"
+
+
+
 void get_parametros_config(){
 
 	t_config* config = config_create("config.cfg");
@@ -209,32 +212,16 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 
 // retorna -> 1: si esta mal ; 2: si esta bien
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
-	//TODO: revisar algoritmo porque solo toma SIEMPRE a la primera INSTANCIA,posiblemente "index" tenga q ser VG para persistir
-	t_Instancia* inst;
-	int index;
+
 	if (strstr(algoritmo, "EL") != NULL) {
-		index = 0;
-		if(index == list_size(LIST_INSTANCIAS)){
-			index = 0;
-			inst = list_get(LIST_INSTANCIAS,index);//ojo q list_get si no encuentra nada retorna NULL
-		}else{
-			printf("Aplico Algoritmo EL\n");
-			inst = list_get(LIST_INSTANCIAS,index);
-			index ++;
-		}
-		if(inst != NULL){//pregunto si efectivamente hay algo
-			return envio_tarea_instancia(2,inst,2,resultado);
-		}
-		printf("No hay instancias conectadas\n");
+		return equitativeLoad(resultado);
 	}
 	if (strstr(algoritmo, "LSU") != NULL) {
-		//TODO: busco de mi lista de instancias, la que tenga numero de memoria libre mas grande
 		printf("INFO: Algoritmo LSU\n");
-		//return envio_tarea_instancia(2,inst,2,resultado);
+		return LeastSpaceUsed(resultado);
 	}
 	if (strstr(algoritmo, "INS") != NULL) {
 		printf("INFO: Algoritmo KE\n");
-		//return envio_tarea_instancia(2,inst,2,resultado);
 	}
 
 
@@ -529,6 +516,7 @@ void remove_instancia(int fd_instancia){
 	}
 }
 
+
 void remove_registro_instancia( char * clave){
 	bool _esRegistroInstancia(t_registro_instancia* reg) { return strcmp(reg->clave,clave) == 0;}
 	t_registro_instancia* registro_inst = list_find(LIST_REGISTRO_INSTANCIAS,(void*)_esRegistroInstancia);
@@ -557,4 +545,44 @@ bool exist_clave_registro_instancias(char * clave){
 		return true;
 	}
 	return false;
+}
+
+int equitativeLoad(char** resultado){
+	t_Instancia* instancia;
+	if(INDEX == list_size(LIST_INSTANCIAS)){
+		INDEX = 0;
+		instancia = list_get(LIST_INSTANCIAS,INDEX);//ojo q list_get si no encuentra nada retorna NULL
+	}else{
+		printf("Aplico Algoritmo EL\n");
+		instancia = list_get(LIST_INSTANCIAS,INDEX);
+		INDEX ++;
+	}
+	if(instancia != NULL){//pregunto si efectivamente hay algo
+		return envio_tarea_instancia(2,instancia,2,resultado);
+	}
+	printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
+	return FALLO_OPERACION_INSTANCIA;
+
+}
+
+int LeastSpaceUsed(char** resultado) {
+	int i;
+	t_Instancia* instancia;
+	t_Instancia* instancia_max;
+	for (i = 0; i <= list_size(LIST_INSTANCIAS); i++) {
+		if (i == 0) {
+			instancia_max = list_get(LIST_INSTANCIAS, i);
+		} else {
+			instancia = list_get(LIST_INSTANCIAS, i);
+			if ((instancia_max->tamanio_libre) < (instancia->tamanio_libre)) {
+				instancia_max = list_get(LIST_INSTANCIAS, i);
+			}
+		}
+	}
+	if (instancia_max != NULL) {			//pregunto si efectivamente hay algo
+		return envio_tarea_instancia(2, instancia_max, 2, resultado);
+	}
+	printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
+	return FALLO_OPERACION_INSTANCIA;
+
 }
