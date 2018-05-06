@@ -25,13 +25,3 @@ Para levantar el proyecto:</br>
     cd tp-2018-1c-Real-Mandril/tp/instancia/src/</br>
     make</br>
     ./instancia</br>
-Conexion entre diferentes ips
-------------------------------------------
-1° Poner maquina viertual en modo puente.</br>
-2° Generar una mac distinta en cada VM.</br>
-3° Una vez levantada la vm ver q los ips sean distintos</br>
-4° Configurar el ip del servidor en 0.0.0.0 (puerto 8998, con este anduvo)</br>
-LISTO!</br>
-5° En caso de q no ande probar esto:
-	- nc -l <puerto> (en este caso 8998) en la otra pc nc <ip-de-la-otra-pc> <puerto>
-	- esto deberia poder dejar enviar msj entre pcs por ip, si esto no funciona hay problemas 		  en la red	
