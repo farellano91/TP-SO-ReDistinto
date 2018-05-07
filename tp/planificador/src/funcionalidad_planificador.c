@@ -130,7 +130,8 @@ bool aplico_algoritmo(char clave[40]){
 //			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 //			list_remove(LIST_READY, 0);
 //		} else {
-
+	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
+	esiEjecutando ->cantSentenciasProcesadas++;
 
 		//controlo si tiene el flag de bloqueado para mandarlo a la list_block
 		if(bloqueado_flag() ==  1){
@@ -138,7 +139,6 @@ bool aplico_algoritmo(char clave[40]){
 			//saco de EXECUTE a BLOQUEADO
 			// sumo una sentencia mas procesada que seria el get
 			t_Esi* esi= list_get(LIST_EXECUTE, 0);
-			esi ->cantSentenciasProcesadas++;
 			char* clave_block = malloc(sizeof(char)*40);
 			strcpy(clave_block,clave);
 			clave_block[strlen(clave_block)] = '\0';
@@ -189,8 +189,7 @@ bool aplico_algoritmo(char clave[40]){
 
 }
 void ActualizarIndices(t_Esi *esi){
- esi->cantSentenciasProcesadas ++;
- esi->tiempoEnListo ++;
+  esi->tiempoEnListo ++;
 
 }
 void ActualizarIndicesEnLista(){
