@@ -131,8 +131,9 @@ bool aplico_algoritmo(char clave[40]){
 //			list_remove(LIST_READY, 0);
 //		} else {
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
-	esiEjecutando ->cantSentenciasProcesadas++;
-
+	if(esiEjecutando != NULL){
+	esiEjecutando ->cantSentenciasProcesadas++;}
+	ActualizarIndicesEnLista();
 		//controlo si tiene el flag de bloqueado para mandarlo a la list_block
 		if(bloqueado_flag() ==  1){
 			//Aca tengo que actualizar la estimacion inicial anterior.
@@ -156,13 +157,15 @@ bool aplico_algoritmo(char clave[40]){
 			//TODO:ACTUALIZO CONTADORES
 			ordeno_listas();
 			//toma el primero de listo -> exec y lo saca de listo
+
 			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
+			//Blanqueo el Esi que pasa a ejecutando
+			BlanquearIndices()
 		}else{
 
 			//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
 			//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
-			ActualizarIndicesEnLista();
 			if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
 				//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
 				if(get_time_SJF(list_get(LIST_EXECUTE, 0)) < get_time_SJF(list_get(LIST_READY, 0))){
@@ -178,6 +181,8 @@ bool aplico_algoritmo(char clave[40]){
 				//el primero de listo va a exec
 				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 				list_remove(LIST_READY, 0);
+				//Blanqueo el Esi que pasa a ejecutando
+				BlanquearIndices()
 			}else{
 				//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
 				//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
@@ -186,6 +191,14 @@ bool aplico_algoritmo(char clave[40]){
 			}
 		}
 	return sContinuarComunicacion;
+
+}
+
+// Pongo en 0 el tiempo en listos del esi que voy a ejecutar.
+void BlanquearIndices(){
+	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
+		if(esiEjecutando != NULL){
+		esiEjecutando ->tiempoEnListo = 0;}
 
 }
 void ActualizarIndices(t_Esi *esi){
@@ -419,19 +432,25 @@ t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char* clave){
 double  get_time_SJF(t_Esi* esi){
 	// alpha lo leo por config = 5
 	// cada vez que proceso el esi, le voy sumando los tiempos;
-	if(esi->cantSentenciasProcesadas == 0){
-		return ESTIMACION_INICIAL;
+	if( esi == NULL){
+		return 0;
 	}
-	double result = (esi->cantSentenciasProcesadas * ALPHA) + ((1 - ALPHA)* esi->estimacionRafagaAnterior);
-	esi->estimacionRafagaAnterior = result;
-	return result;
-	// estimacionRafagaAnterior seria tn , cada vez que desalojo tengo que actualizar el
-	// contadorReal seria tn +1
+		if(esi->cantSentenciasProcesadas == 0){
+			return ESTIMACION_INICIAL;
+		}
+		double result = (esi->cantSentenciasProcesadas * ALPHA) + ((1 - ALPHA)* esi->estimacionRafagaAnterior);
+		esi->estimacionRafagaAnterior = result;
+		return result;
+		// estimacionRafagaAnterior seria tn , cada vez que desalojo tengo que actualizar el
+		// contadorReal seria tn +1
 
 }
 // el cantidad de sentencias procesadas
 // si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. OK
 double getT_time_HRRN(t_Esi* esi){
+	if( esi == NULL){
+			return 0;
+	}
 	if(esi->cantSentenciasProcesadas == 0){
 		return ESTIMACION_INICIAL;
 	}
