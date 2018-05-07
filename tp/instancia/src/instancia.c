@@ -11,14 +11,16 @@ int main(void) {
 	CANT_ENTRADA = 0;
 	TAMANIO_ENTRADA = 0;
 	get_parametros_config();
-	//TODO: leer los archivos .txt creador a partir del dump
-	//TODO: crea/cargar mis estructuras administrativas
 	int sockfd = conectar_coodinador();
 	saludo_inicial_coordinador(sockfd);
 
 	//REcibo datos de entrada
 	recibo_datos_entrada(sockfd);
-	//Envio mis datos
+
+	//TODO: leer los archivos .txt creador a partir del dump para asi
+	//poder cargar mis estructuras administrativas
+
+	//Envio mis datos (TODO:tendriamos que mandar tambien el tamaño libre q tengo si esk ya tenia algo guardado en mi .txt)
 	envio_datos(sockfd);
 
 	//recibo mensaje de si me pudieron agregar a la lista  o no
@@ -26,7 +28,7 @@ int main(void) {
 
 	while(1){
 		int resultado = recibo_sentencia(sockfd);
-		envio_resultado_al_coordinador(sockfd,resultado);
+		envio_resultado_al_coordinador(sockfd,resultado);//(TODO:deberia mandar mi espacio libre actualizado)
 	}
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
 	free_algo_punt_nom();
