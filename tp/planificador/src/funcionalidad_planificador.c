@@ -423,7 +423,7 @@ double  get_time_SJF(t_Esi* esi){
 	if(esi->cantSentenciasProcesadas == 0){
 		return ESTIMACION_INICIAL;
 	}
-	double result = (esi->estimacionRafagaAnterior * ALPHA) + ((1 - ALPHA)* esi->cantSentenciasProcesadas);
+	double result = (esi->cantSentenciasProcesadas * ALPHA) + ((1 - ALPHA)* esi->estimacionRafagaAnterior);
 	esi->estimacionRafagaAnterior = result;
 	return result;
 	// estimacionRafagaAnterior seria tn , cada vez que desalojo tengo que actualizar el
