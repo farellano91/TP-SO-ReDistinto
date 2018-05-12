@@ -31,6 +31,11 @@ pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
 pthread_cond_t CONDICION_RECV_INSTANCIA;
 
+pthread_mutex_t MUTEX_RECV_INSTANCIA;
+
+pthread_cond_t CONDICION_INSTANCIA;
+
+pthread_mutex_t MUTEX_INSTANCIA;
 
 //Para planificador
 int FD_PLANIFICADOR;
@@ -43,18 +48,20 @@ int32_t CANTIDAD_ENTRADAS;
 int32_t TAMANIO_ENTRADA;
 int RETARDO;
 
-//Variables del COODINADOR
-int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
-int equitativeLoad(char** resultado);
-int LeastSpaceUsed(char** resultado);
-int keyExplicit(char** resultado);
-//en variables del COORINADOR
-
 typedef struct {
 	int fd;
 	char* nombre_instancia;
 	int tamanio_libre;
 } t_Instancia;
+
+//Variables del COODINADOR
+int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
+t_Instancia* equitativeLoad(char** resultado);
+t_Instancia*  LeastSpaceUsed(char** resultado);
+t_Instancia*  keyExplicit(char** resultado);
+//en variables del COORINADOR
+
+
 
 //esto me sirve para armar mi tabla <nombre instancia,clave> par guardar las claves que ya se crearon
 typedef struct {
@@ -67,7 +74,7 @@ typedef struct {
 	int respuesta;
 } t_instancia_respuesta;
 
-int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia, int32_t id_esi,char** clave_valor);
+int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** clave_valor);
 
 t_Instancia* get_instancia_by_name(char* name);
 
@@ -129,27 +136,38 @@ bool controlo_existencia(t_Instancia * instanciaNueva);
 
 void send_mensaje_rechazo(t_Instancia * instancia_nueva);
 
+int aplicar_filtro_respuestas(int resultado_linea);
+
 enum t_tipo_cliente {
 	ESI = 1, PLANIFICADOR = 2, INSTANCIA = 3,
 };
 
 enum t_respuesta_de_instancia {
-	FALLO_DESCONEXION_INSTANCIA = -1, //fallo solo por desconexion de instancia  AMBOS FALLO DERIVAN EN SER 1 PARA ABORAR AL ESI
-	FALLO_OPERACION_INSTANCIA = 1, //fallo al hacer algo
-	OK_SET_INSTANCIA = 2,         //AMBOS OK DERIVAN EN SER 2 PARA AVISAR OK AL ESI
-	OK_STORE_INSTANCIA = 3,
+	FALLO_INSTANCIA = 5, //
+	OK_SET_INSTANCIA = 6,         //AMBOS OK DERIVAN EN SER 2 PARA AVISAR OK AL ESI
+	OK_STORE_INSTANCIA = 7,
+	ABORTA_ESI_CLAVE_INNACCESIBLE = 8, //Por instancia desconectada
 };
 
 enum t_respuesta_de_planificador {
-	FALLO_PLANIFICADOR = 1, //no deberia evaluarse el caso
+	FALLO_PLANIFICADOR = 1, //planificador desconectado
 	OK_PLANIFICADOR = 2,
 	OK_BLOQUEADO_PLANIFICADOR = 3,
+	ABORTA_ESI_CLAVE_NO_BLOQUEADA = 4
 };
 
+enum t_respuesta_de_coordinador {
+	ABORTA_ESI_CLAVE_NO_IDENTIFICADA = 9,
+	FALLA_ELEGIR_INSTANCIA = 10,
+	FALLA_PLANIFICADOR_DESCONECTADO = 11,
+	FALLA_SIN_INSTANCIA_CLAVE_STORE = 12,
+
+};
 enum t_respuesta_al_esi {
 	ABORTA_ESI = 1,
-	OK_ESI = 2,
+	OK_ESI = 2, //los casos de error que no deriven el aborto segun el enunciado, los filtramos por aca, pero lo registramos en el log
 	BLOQUEADO_ESI = 3,
+
 };
 
 enum t_operacion {

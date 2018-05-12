@@ -44,6 +44,7 @@ void configure_logger() {
 
 void inicializo_semaforos(){
 	pthread_mutex_init(&MUTEX,NULL);
+	pthread_mutex_init(&MUTEX_RECV_INSTANCIA,NULL);
 	pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
 	pthread_cond_init(&CONDICION_RECV_INSTANCIA, NULL);
 }
@@ -147,9 +148,7 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
 }
 
-// retorna -> 1: si esta mal ; 2: si esta bien
-int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
-
+t_Instancia* busco_instancia_por_algortimo(char * algoritmo,char** resultado){
 	if (strstr(algoritmo, "EL") != NULL) {
 		return equitativeLoad(resultado);
 	}
@@ -161,10 +160,8 @@ int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado){
 		printf("INFO: Algoritmo KE\n");
 		return keyExplicit(resultado);
 	}
-
-	return FALLO_OPERACION_INSTANCIA;
+	return NULL;
 }
-
 
 char ** get_clave_valor(int fd_esi) {
 
@@ -218,17 +215,17 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 	list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
 
 	if(instancia == NULL){
-		printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
+		printf("Se desconecto la instancia\n");
 		free(bufferEnvio);
 		//la saco de mi tabla de registro instancia
 		remove_registro_instancia(clave);
-		return FALLO_OPERACION_INSTANCIA;
+		return ABORTA_ESI_CLAVE_INNACCESIBLE;
 	}
 
 	if (send(instancia->fd, bufferEnvio,sizeof(int32_t) * 2 + len_clave, 0) == -1) {
 		printf("No se pudo enviar la info a la INSTANCIA\n");
 		free(bufferEnvio);
-		resultado_instancia = FALLO_DESCONEXION_INSTANCIA; //para q esi sepa que falle
+		resultado_instancia = ABORTA_ESI_CLAVE_INNACCESIBLE; //para q esi sepa que falle
 
 		//la saco de mi tabla de registro instancia
 		remove_registro_instancia(instancia->nombre_instancia);
@@ -241,7 +238,7 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 	bool _esNombreInstancia(t_instancia_respuesta* instancia_respuesta) { return (strcmp(instancia_respuesta->nombre_instancia,instancia->nombre_instancia)==0);}
 	t_instancia_respuesta * instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 	while(instancia_resp == NULL){
-		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX_RECV_INSTANCIA); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
 		instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 	}
 	resultado_instancia = instancia_resp->respuesta;
@@ -258,7 +255,7 @@ t_Instancia* get_instancia_by_name(char* name){
 	return list_find(LIST_INSTANCIAS, (void*)_getInstancia);
 
 }
-int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t id_esi,char** clave_valor_recibido) {
+int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** clave_valor_recibido) {
 		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
 		int32_t claveInstacia = strlen(clave_valor_recibido[0]) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
 		int32_t valorInstacia = strlen(clave_valor_recibido[1]) + 1; // Tomo la VALOR  de la sentencia SET q me llega de la instacia
@@ -274,21 +271,18 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t 
 		list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
 
 		if(instancia == NULL){
-			printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
-			free(bufferEnvio);
 			//la saco de mi tabla de registro instancia
 			remove_registro_instancia(clave_valor_recibido[0]);
-			return FALLO_OPERACION_INSTANCIA;
+			return ABORTA_ESI_CLAVE_INNACCESIBLE;
 		}
 		if (send(instancia->fd, bufferEnvio,
 				sizeof(int32_t) * 3 + valorInstacia + claveInstacia, 0) == -1) {
-			printf("No se pudo enviar la info a la INSTANCIA\n");
+			printf("Se desconecto la instancia\n");
 			free(bufferEnvio);
 
 			//la saco de mi tabla de registro instancia
 			remove_registro_instancia(clave_valor_recibido[0]);
-
-			return FALLO_OPERACION_INSTANCIA;
+			return ABORTA_ESI_CLAVE_INNACCESIBLE;
 		}
 		printf("Se envio SET clave: %s valor: %s a la %s correctamente\n",clave_valor_recibido[0], clave_valor_recibido[1],instancia->nombre_instancia);
 
@@ -296,7 +290,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t 
 		bool _esNombreInstancia(t_instancia_respuesta* instancia_respuesta) { return (strcmp(instancia_respuesta->nombre_instancia,instancia->nombre_instancia)==0);}
 		t_instancia_respuesta * instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 		while(instancia_resp == NULL){
-			pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+			pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX_RECV_INSTANCIA); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
 			instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 		}
 		resultado_instancia = instancia_resp->respuesta;
@@ -309,7 +303,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t 
 			if(!exist_clave_registro_instancias(clave_valor_recibido[0])){
 				t_registro_instancia * nuevo_Registro = creo_registro_instancia(instancia->nombre_instancia,clave_valor_recibido[0]);
 				list_add(LIST_REGISTRO_INSTANCIAS,nuevo_Registro);
-				printf("Se registra en instancia-clave la %s de clave: %s\n",nuevo_Registro->nombre_instancia,clave_valor_recibido[0]);
+				printf("Se registra en instancia-clave la %s con clave: %s\n",nuevo_Registro->nombre_instancia,clave_valor_recibido[0]);
 			}
 
 		}
@@ -317,9 +311,9 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,int32_t 
 			printf("Sentencia STORE realizado correctamente\n");
 		}
 		free(bufferEnvio);
-		free(clave_valor_recibido[0]);
-		free(clave_valor_recibido[1]);
-		free(clave_valor_recibido);
+//		free(clave_valor_recibido[0]);
+//		free(clave_valor_recibido[1]);
+//		free(clave_valor_recibido);
 
 		//limpio mi lista de instancia respuesta
 		list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
@@ -333,16 +327,36 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	strcat(registro, operacion);
 	strcat(registro, "  => ");
 	switch (resultado_linea) {
-	case ABORTA_ESI:
-		strcat(registro, "ABORTA");
+	case OK_PLANIFICADOR:
+		strcat(registro, "ESI BLOQUEADO");
 		break;
-	case OK_ESI:
-		strcat(registro, "OK");
+	case OK_BLOQUEADO_PLANIFICADOR:
+		strcat(registro, "ESI BLOQUEADO");
 		break;
-	case BLOQUEADO_ESI:
-		strcat(registro, "OK pero BLOQUEADO");
+	case OK_SET_INSTANCIA:
+		strcat(registro, "SET REALIZADO CORRECTAMENTE");
 		break;
-
+	case OK_STORE_INSTANCIA:
+		strcat(registro, "STORE REALIZADO CORRECTAMENTE");
+		break;
+	case ABORTA_ESI_CLAVE_NO_IDENTIFICADA:
+		strcat(registro, "SE ABORTA EL ESI POR CLAVE NO IDENTIFICADA");
+		break;
+	case ABORTA_ESI_CLAVE_NO_BLOQUEADA:
+		strcat(registro, "SE ABORTA EL ESI POR CLAVE NO BLOQUEADA");
+		break;
+	case FALLO_PLANIFICADOR:
+		strcat(registro, "OCURRIO UN ERROR CON EL PLANIFICADOR, MIRAR CONSOLA DEL PLANIFICADOR");
+		break;
+	case FALLO_INSTANCIA:
+		strcat(registro, "OCURRIO UN ERROR CON LA INSTANCIA, MIRAR CONSOLA DE INSTANCIA");
+		break;
+	case FALLA_PLANIFICADOR_DESCONECTADO:
+		strcat(registro, "FALLA: planificador desconectado");
+		break;
+	case FALLA_ELEGIR_INSTANCIA:
+		strcat(registro, "FALLA: planificador desconectado");
+		break;
 	default:
 		strcat(registro, " - ");
 		break;
@@ -420,7 +434,7 @@ int reciboRespuestaInstancia(int fd_instancia){
 			perror("ERROR: al recibir respuesta de la INSTANCIA");
 
 		}
-		respuestaInstacia = FALLO_DESCONEXION_INSTANCIA;
+		respuestaInstacia = ABORTA_ESI_CLAVE_INNACCESIBLE;
 	}else{
 		printf("Recibimos respuesta de Instancia FD: %d\n", fd_instancia);
 
@@ -466,6 +480,7 @@ void remove_registro_instancia( char * clave){
 //Cargo la instancia_respuesta sin repetir!
 void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta){
 	bool _existInstanciaRespuesta(t_instancia_respuesta* inst_respue) { return strcmp(inst_respue->nombre_instancia,nombre_instancia)== 0;}
+	pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
 	if(list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta) != NULL){
 		t_instancia_respuesta * insta_respu = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta);
 		insta_respu->respuesta = nueva_respuesta;
@@ -473,6 +488,7 @@ void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta){
 		t_instancia_respuesta* instancia_respuesta = creo_instancia_respuesta(nombre_instancia,nueva_respuesta);
 		list_add(LIST_INSTANCIA_RESPUESTA,instancia_respuesta);
 	}
+	pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
 
 }
 
@@ -484,7 +500,7 @@ bool exist_clave_registro_instancias(char * clave){
 	return false;
 }
 
-int equitativeLoad(char** resultado){
+t_Instancia* equitativeLoad(char** resultado){
 	printf("Aplico Algoritmo EL\n");
 	t_Instancia* instancia;
 	if((INDEX == list_size(LIST_INSTANCIAS)) || (INDEX > list_size(LIST_INSTANCIAS)) ){
@@ -499,17 +515,17 @@ int equitativeLoad(char** resultado){
 			INDEX = 0;
 	}
 	if(instancia != NULL){//pregunto si efectivamente hay algo
-		return envio_tarea_instancia(2,instancia,2,resultado);
+		return instancia;
 	}
-	printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
-	return FALLO_OPERACION_INSTANCIA;
+	printf("Error al tratar de elegir una instancia\n");
+	return NULL;
 
 }
 
-int LeastSpaceUsed(char** resultado) {
+t_Instancia* LeastSpaceUsed(char** resultado) {
 	int i;
-	t_Instancia* instancia;
-	t_Instancia* instancia_max;
+	t_Instancia* instancia = NULL;
+	t_Instancia* instancia_max = NULL;
 	for (i = 0; i < list_size(LIST_INSTANCIAS); i++) {
 		if (i == 0) {
 			instancia_max = list_get(LIST_INSTANCIAS, i);
@@ -521,18 +537,19 @@ int LeastSpaceUsed(char** resultado) {
 		}
 	}
 	if (instancia_max != NULL) {			//pregunto si efectivamente hay algo
-		return envio_tarea_instancia(2, instancia_max, 2, resultado);
+		return instancia_max;
 	}
-	printf("La instancia no esta mas, no le podemos mandar nada, aborto!\n");
-	return FALLO_OPERACION_INSTANCIA;
+	printf("Error al tratar de elegir una instancia\n");
+	return NULL;
 
 }
-int keyExplicit(char** resultado) {//TODO: recibir char
+
+t_Instancia* keyExplicit(char** resultado) {//TODO: recibir char
 	//vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
 	int i;
 	char valorinicialetras = 'a';
 	double cantidad_letras_por_instancia_sinCeil = 25 / LIST_INSTANCIAS->elements_count;
-	t_Instancia* instancia;
+	t_Instancia* instancia = NULL;
 	int cantidad_instancias = LIST_INSTANCIAS->elements_count;
 	if (cantidad_instancias > 0) {
 		float cantidad_letras_por_instancia;
@@ -541,10 +558,22 @@ int keyExplicit(char** resultado) {//TODO: recibir char
 
 			if (resultado[1][0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115
 				instancia = list_get(LIST_INSTANCIAS, i);
-				return envio_tarea_instancia(2, instancia, 2, resultado);
+				return instancia;
 			}
 		}
 	}
+	printf("Error al tratar de elegir una instancia\n");
+	return NULL;
+}
 
-	return FALLO_OPERACION_INSTANCIA;
+int aplicar_filtro_respuestas(int resultado_linea){
+	if(resultado_linea == OK_SET_INSTANCIA || resultado_linea == OK_STORE_INSTANCIA || resultado_linea == OK_PLANIFICADOR){
+		return OK_ESI;
+	}
+	if(resultado_linea == OK_BLOQUEADO_PLANIFICADOR){
+		return BLOQUEADO_ESI;
+	}
+	//ABORTA EN LOS CASOS PLANTEADOS Y LOS QUE NOSOTROS AGREGAMOS
+	return ABORTA_ESI;
+
 }

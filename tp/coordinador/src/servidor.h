@@ -38,6 +38,8 @@ typedef struct InfoCoordinador{
 
 char ** get_clave_valor(int fd_esi);
 
+t_Instancia* busco_instancia_por_algortimo(char * algoritmo,char** resultado);
+
 char* get_clave_recibida(int fd_esi);
 
 void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi);

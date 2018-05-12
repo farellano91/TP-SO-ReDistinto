@@ -59,9 +59,9 @@ void envio_resultado_al_coordinador(int sockfd,int resultado);
 void recibo_mensaje_aceptacion(int fd_coordinador);
 
 enum t_respuesta_al_coordinador {
-	FALLO_OPERACION_INSTANCIA = 1, //fallo al hacer algo
-	OK_SET_INSTANCIA = 2,
-	OK_STORE_INSTANCIA = 3,
+	FALLO_OPERACION_INSTANCIA = 5, //fallo al hacer algo
+	OK_SET_INSTANCIA = 6,
+	OK_STORE_INSTANCIA = 7,
 };
 
 enum t_operacion {
