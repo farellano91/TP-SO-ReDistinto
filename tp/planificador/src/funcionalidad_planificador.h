@@ -172,4 +172,6 @@ void ordeno_listas();
 
 void inicializo_semaforos();
 
+void BlanquearIndices();
+
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

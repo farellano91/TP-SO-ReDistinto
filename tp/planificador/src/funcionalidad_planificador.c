@@ -63,7 +63,9 @@ bool aplico_algoritmo_primer_ingreso(){
 
 	pthread_mutex_lock(&MUTEX);
 	while (PLANIFICADOR_EN_PAUSA){
+		//pthread_mutex_unlock(&MUTEX);
 		pthread_cond_wait(&CONDICION_PAUSA_PLANIFICADOR,&MUTEX);
+		//pthread_mutex_lock(&MUTEX);
 	}
 	pthread_mutex_unlock(&MUTEX);
 
@@ -88,7 +90,9 @@ bool aplico_algoritmo_ultimo(){
 
 	pthread_mutex_lock(&MUTEX);
 	while (PLANIFICADOR_EN_PAUSA){
+		//pthread_mutex_unlock(&MUTEX);
 		pthread_cond_wait(&CONDICION_PAUSA_PLANIFICADOR,&MUTEX);
+		//pthread_mutex_lock(&MUTEX);
 	}
 	pthread_mutex_unlock(&MUTEX);
 
@@ -120,7 +124,9 @@ bool aplico_algoritmo(char clave[40]){
 
 	pthread_mutex_lock(&MUTEX);//sirve para delimitar mi RC como atomica ya que usamos la misma variable entre hilos
 	while (PLANIFICADOR_EN_PAUSA){
+		//pthread_mutex_unlock(&MUTEX);
 		pthread_cond_wait(&CONDICION_PAUSA_PLANIFICADOR,&MUTEX);
+		//pthread_mutex_lock(&MUTEX);
 	}
 	pthread_mutex_unlock(&MUTEX);
 
@@ -161,7 +167,7 @@ bool aplico_algoritmo(char clave[40]){
 			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
 			//Blanqueo el Esi que pasa a ejecutando
-			BlanquearIndices()
+			BlanquearIndices();
 		}else{
 
 			//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
@@ -182,7 +188,7 @@ bool aplico_algoritmo(char clave[40]){
 				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 				list_remove(LIST_READY, 0);
 				//Blanqueo el Esi que pasa a ejecutando
-				BlanquearIndices()
+				BlanquearIndices();
 			}else{
 				//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
 				//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
