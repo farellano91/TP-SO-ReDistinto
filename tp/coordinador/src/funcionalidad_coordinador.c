@@ -45,6 +45,8 @@ void configure_logger() {
 void inicializo_semaforos(){
 	pthread_mutex_init(&MUTEX,NULL);
 	pthread_mutex_init(&MUTEX_RECV_INSTANCIA,NULL);
+	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
+	pthread_cond_init(&CONDICION_INSTANCIA, NULL);
 	pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
 	pthread_cond_init(&CONDICION_RECV_INSTANCIA, NULL);
 }
@@ -110,15 +112,18 @@ t_Instancia* creo_instancia(int fd_instancia){
 	instancia_nueva->tamanio_libre = TAMANIO_ENTRADA * CANTIDAD_ENTRADAS;
 
 	free(nombreInstancia);
-	printf("Se creo la instancia de nombre:%s\n",instancia_nueva->nombre_instancia);
+	printf("Quiere ingresar la instancia de nombre:%s\n",instancia_nueva->nombre_instancia);
 	return (instancia_nueva);
 }
 
 bool controlo_existencia(t_Instancia * instanciaNueva){
 	bool _existInstancia(t_Instancia* una_instancia) { return strcmp(una_instancia->nombre_instancia,instanciaNueva->nombre_instancia)== 0;}
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	if(list_find(LIST_INSTANCIAS, (void*)_existInstancia) != NULL){
+		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 		return true;
 	}
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	return false;
 }
 
@@ -142,8 +147,9 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 		printf("Se envio aceptacion la INSTANCIA: %s\n",
 				instancia_nueva->nombre_instancia);
 	}
-
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	list_add(list,instancia_nueva);
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	printf("Se agrego la instancia de nombre:%s a la lista\n",instancia_nueva->nombre_instancia);
 
 }
@@ -211,8 +217,8 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 	memcpy(bufferEnvio+sizeof(int32_t), &len_clave, sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t)*2,clave,len_clave);
 
-	//limpio mi lista de instancia respuesta
-	list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+	//limpio mi lista de instancia respuestasds
+	limpia_destruye_elemt_lista_respuesta_instancia();
 
 	if(instancia == NULL){
 		printf("Se desconecto la instancia\n");
@@ -236,17 +242,23 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 
 	//mientras la instancia no mande su respuesta loopeo, cuando me active la busco
 	bool _esNombreInstancia(t_instancia_respuesta* instancia_respuesta) { return (strcmp(instancia_respuesta->nombre_instancia,instancia->nombre_instancia)==0);}
+
+	pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
 	t_instancia_respuesta * instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
+	pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
+
+	pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
 	while(instancia_resp == NULL){
 		pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX_RECV_INSTANCIA); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
 		instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 	}
+	pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
 	resultado_instancia = instancia_resp->respuesta;
 	if(resultado_instancia == OK_STORE_INSTANCIA){
 		printf("Sentencia STORE realizado correctamente\n");
 	}
 	//limpio mi lista de instancia respuesta
-	list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+	limpia_destruye_elemt_lista_respuesta_instancia();
 
 	free(bufferEnvio);
 	return resultado_instancia;
@@ -254,7 +266,10 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 
 t_Instancia* get_instancia_by_name(char* name){
 	bool _getInstancia(t_Instancia* instancia) { return strcmp(instancia->nombre_instancia,name)== 0;}
-	return list_find(LIST_INSTANCIAS, (void*)_getInstancia);
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
+	t_Instancia* instancia = list_find(LIST_INSTANCIAS, (void*)_getInstancia);
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
+	return instancia;
 
 }
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** clave_valor_recibido) {
@@ -270,7 +285,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 		memcpy(bufferEnvio + (sizeof(int32_t) * 3) + claveInstacia,clave_valor_recibido[1], valorInstacia);
 
 		//limpio mi lista de instancia respuesta
-		list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+		limpia_destruye_elemt_lista_respuesta_instancia();
 
 		if(instancia == NULL){
 			//la saco de mi tabla de registro instancia
@@ -290,11 +305,16 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 
 		//mientras la instancia no mande su respuesta loopeo, cuando me active la busco
 		bool _esNombreInstancia(t_instancia_respuesta* instancia_respuesta) { return (strcmp(instancia_respuesta->nombre_instancia,instancia->nombre_instancia)==0);}
+
+		pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
 		t_instancia_respuesta * instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
+		pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
+		pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
 		while(instancia_resp == NULL){
 			pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX_RECV_INSTANCIA); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
 			instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 		}
+		pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
 		resultado_instancia = instancia_resp->respuesta;
 		if(resultado_instancia == OK_SET_INSTANCIA){
 			printf("Sentencia SET realizado correctamente\n");
@@ -311,7 +331,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 		free(bufferEnvio);
 
 		//limpio mi lista de instancia respuesta
-		list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+		limpia_destruye_elemt_lista_respuesta_instancia();
 		return resultado_instancia;
 }
 void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
@@ -339,6 +359,9 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 		break;
 	case ABORTA_ESI_CLAVE_NO_BLOQUEADA:
 		strcat(registro, "SE ABORTA EL ESI POR CLAVE NO BLOQUEADA");
+		break;
+	case ABORTA_ESI_CLAVE_INNACCESIBLE:
+		strcat(registro, "SE ABORTA EL ESI POR CLAVE INNACCESIBLE");
 		break;
 	case FALLO_PLANIFICADOR:
 		strcat(registro, "OCURRIO UN ERROR CON EL PLANIFICADOR, MIRAR CONSOLA DEL PLANIFICADOR");
@@ -458,11 +481,13 @@ void free_instancia_respuesta(t_instancia_respuesta* instancia_respuesta){
 
 void remove_instancia(int fd_instancia){
 	bool _esInstanciaFd(t_Instancia* instancia) { return instancia->fd == fd_instancia;}
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	t_Instancia* unInstancia = list_find(LIST_INSTANCIAS,(void*)_esInstanciaFd);
 	if(unInstancia != NULL){
 		printf("Sacamos a la INSTANCIA: %s de la lista\n", unInstancia->nombre_instancia);
 		list_remove_and_destroy_by_condition(LIST_INSTANCIAS,(void*) _esInstanciaFd,(void*) free_instancia);
 	}
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 }
 
 
@@ -479,12 +504,15 @@ void remove_registro_instancia( char * clave){
 void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta){
 	bool _existInstanciaRespuesta(t_instancia_respuesta* inst_respue) { return strcmp(inst_respue->nombre_instancia,nombre_instancia)== 0;}
 	pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
-	if(list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta) != NULL){
+	if( list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta) != NULL){
+
 		t_instancia_respuesta * insta_respu = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta);
 		insta_respu->respuesta = nueva_respuesta;
+
 	}else{
 		t_instancia_respuesta* instancia_respuesta = creo_instancia_respuesta(nombre_instancia,nueva_respuesta);
 		list_add(LIST_INSTANCIA_RESPUESTA,instancia_respuesta);
+
 	}
 	pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
 
@@ -501,21 +529,24 @@ bool exist_clave_registro_instancias(char * clave){
 t_Instancia* equitativeLoad(char** resultado){
 	printf("Aplico Algoritmo EL\n");
 	t_Instancia* instancia;
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	if((INDEX == list_size(LIST_INSTANCIAS)) || (INDEX > list_size(LIST_INSTANCIAS)) ){
 		INDEX = 0;
 		instancia = list_get(LIST_INSTANCIAS,INDEX);//ojo q list_get si no encuentra nada retorna NULL
 		INDEX ++;
 	}else{
 		instancia = list_get(LIST_INSTANCIAS,INDEX);
-		if(list_get(LIST_INSTANCIAS,INDEX))
+		if(instancia)
 			INDEX ++;
 		else
 			INDEX = 0;
 	}
 	if(instancia != NULL){//pregunto si efectivamente hay algo
+		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 		return instancia;
 	}
 	printf("Error al tratar de elegir una instancia\n");
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	return NULL;
 
 }
@@ -524,19 +555,30 @@ t_Instancia* LeastSpaceUsed(char** resultado) {
 	int i;
 	t_Instancia* instancia = NULL;
 	t_Instancia* instancia_max = NULL;
-	for (i = 0; i < list_size(LIST_INSTANCIAS); i++) {
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
+	int size_lista =list_size(LIST_INSTANCIAS);
+
+	for (i = 0; i < size_lista; i++) {
 		if (i == 0) {
+
 			instancia_max = list_get(LIST_INSTANCIAS, i);
+
 		} else {
+
 			instancia = list_get(LIST_INSTANCIAS, i);
+
 			if ((instancia_max->tamanio_libre) < (instancia->tamanio_libre)) {
+
 				instancia_max = list_get(LIST_INSTANCIAS, i);
+
 			}
 		}
 	}
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	if (instancia_max != NULL) {			//pregunto si efectivamente hay algo
 		return instancia_max;
 	}
+
 	printf("Error al tratar de elegir una instancia\n");
 	return NULL;
 
@@ -546,20 +588,27 @@ t_Instancia* keyExplicit(char** resultado) {//TODO: recibir char
 	//vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
 	int i;
 	char valorinicialetras = 'a';
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	double cantidad_letras_por_instancia_sinCeil = 25 / LIST_INSTANCIAS->elements_count;
+
 	t_Instancia* instancia = NULL;
+
 	int cantidad_instancias = LIST_INSTANCIAS->elements_count;
+
 	if (cantidad_instancias > 0) {
 		float cantidad_letras_por_instancia;
     	cantidad_letras_por_instancia = ceil(cantidad_letras_por_instancia_sinCeil);	//9
 		for (i = 0; i < cantidad_instancias; i++) {
 
 			if (resultado[1][0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115
+
 				instancia = list_get(LIST_INSTANCIAS, i);
+				pthread_mutex_unlock(&MUTEX_INSTANCIA);
 				return instancia;
 			}
 		}
 	}
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	printf("Error al tratar de elegir una instancia\n");
 	return NULL;
 }
@@ -575,3 +624,12 @@ int aplicar_filtro_respuestas(int resultado_linea){
 	return ABORTA_ESI;
 
 }
+
+void limpia_destruye_elemt_lista_respuesta_instancia(){
+	pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
+	list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
+	pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
+}
+
+
+

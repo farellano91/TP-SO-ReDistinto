@@ -138,6 +138,8 @@ void send_mensaje_rechazo(t_Instancia * instancia_nueva);
 
 int aplicar_filtro_respuestas(int resultado_linea);
 
+void limpia_destruye_elemt_lista_respuesta_instancia();
+
 enum t_tipo_cliente {
 	ESI = 1, PLANIFICADOR = 2, INSTANCIA = 3,
 };
