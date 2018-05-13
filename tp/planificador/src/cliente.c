@@ -129,7 +129,7 @@ void recibirInfoCoordinador() {
 			}
 
 			switch (id_operacion) {
-			case 1:
+			case GET:
 				printf("Coordinador envio GET clave: %s del ESI ID: %d\n",clave,id_esi);
 				//Controlo si get es sobre un recurso tomado (osea dentro de LIST_ESI_BLOQUEADOR para un unico ESI PAG.10)
 				if(find_recurso_by_clave(clave)){
@@ -155,18 +155,37 @@ void recibirInfoCoordinador() {
 					send_mensaje(fdCoordinador,2);
 				}
 				break;
-			case 3:
 
+			case SET://con la clave me basta
+				printf("Coordinador envio SET con clave: %s\n",clave);
+				if(!clave_tomada_esi_ejecutando(clave)){
+					printf("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA\n",id_esi,clave);
+					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste, 4:ABORTA_ESI_CLAVE_NO_BLOQUEADA
+					send_mensaje(fdCoordinador,4);
+				}else{
+					send_mensaje(fdCoordinador,2);
+				}
+
+				break;
+			case STORE:
 				printf("Coordinador envio STORE clave: %s del ESI ID: %d\n",clave,id_esi);
-				//libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
-				//TODO:por ahora se supone que solo puedo hacer STORE de los recursos que tome
-				libero_recurso_by_clave_id(clave,id_esi);
+				//verifico si el esi que pidio el store lo puede hacer -> ABORTA_ESI_CLAVE_NO_BLOQUEADA
+				if(!clave_tomada_esi_ejecutando(clave)){
+					printf("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA\n",id_esi,clave);
+					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste, 4:ABORTA_ESI_CLAVE_NO_BLOQUEADA
+					send_mensaje(fdCoordinador,4);
+				}else{
+					//libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
+					//TODO:por ahora se supone que solo puedo hacer STORE de los recursos que tome
+					libero_recurso_by_clave_id(clave,id_esi);
 
-				//paso de bloqueado a listo todos los ESIs que querian esa clave
-				move_esi_from_bloqueado_to_listo(clave);
+					//paso de bloqueado a listo todos los ESIs que querian esa clave
+					move_esi_from_bloqueado_to_listo(clave);
 
-				//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
-				send_mensaje(fdCoordinador,2);
+					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste, 4:ABORTA_ESI_CLAVE_NO_BLOQUEADA
+					send_mensaje(fdCoordinador,2);
+				}
+
 				break;
 
 			}
@@ -176,7 +195,15 @@ void recibirInfoCoordinador() {
 	}
 }
 
-
+bool clave_tomada_esi_ejecutando(char* clave){
+	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+	t_esiBloqueador * esi_tomo_recurso = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave);
+	t_Esi * esi_ejecutando = list_get(LIST_EXECUTE,0);
+	if(esi_tomo_recurso!=NULL && esi_ejecutando != NULL ){
+		return esi_tomo_recurso->esi->id == esi_ejecutando->id;
+	}
+	return false;
+}
 void send_mensaje(int fdCoordinador,int tipo_respuesta){
 	if (send(fdCoordinador, &tipo_respuesta,sizeof(int32_t), 0) == -1) {
 		perror("recv");

@@ -123,22 +123,28 @@ void recibo_lineas(int fd_esi) {
 						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
 						if(exist_clave_registro_instancias(clave_valor[0])){
 							printf("Existe la clave en el sistema\n");
-							//TODO: ENVIAR MENSAJE AL PLANIFICADOR PARA DESCARTAR ERROR CLAVE NO BLOQUEADA
-							bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor[0])== 0;}
-							t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
-
-							if(strcmp(registro_instancia->nombre_instancia,"")==0){
-								//No hay ninguna instancia con esta clave
-								t_Instancia * instancia = busco_instancia_por_algortimo(ALGORITMO_DISTRIBUCION,clave_valor);
-								if(instancia == NULL){
-									//error al tratar de elegir una instancia
-									resultado_linea = FALLA_ELEGIR_INSTANCIA;
-								}else{
-									resultado_linea = envio_tarea_instancia(2,instancia,clave_valor);
-								}
+							//ENVIAR MENSAJE AL PLANIFICADOR PARA DESCARTAR ERROR CLAVE NO BLOQUEADA
+							envio_tarea_planificador(2,clave_valor[0],id_esi);
+							int32_t respuesta = recibo_resultado_planificador();//tiene un recv, solo se puede usar una vez
+							if(respuesta == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
+								resultado_linea = ABORTA_ESI_CLAVE_NO_BLOQUEADA;
 							}else{
-								//Existe una instancia con esa clave asignada
-								resultado_linea = envio_tarea_instancia(2,get_instancia_by_name(registro_instancia->nombre_instancia),clave_valor);
+								bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor[0])== 0;}
+								t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+
+								if(strcmp(registro_instancia->nombre_instancia,"")==0){
+									//No hay ninguna instancia con esta clave
+									t_Instancia * instancia = busco_instancia_por_algortimo(ALGORITMO_DISTRIBUCION,clave_valor);
+									if(instancia == NULL){
+										//error al tratar de elegir una instancia
+										resultado_linea = FALLA_ELEGIR_INSTANCIA;
+									}else{
+										resultado_linea = envio_tarea_instancia(2,instancia,clave_valor);
+									}
+								}else{
+									//Existe una instancia con esa clave asignada
+									resultado_linea = envio_tarea_instancia(2,get_instancia_by_name(registro_instancia->nombre_instancia),clave_valor);
+								}
 							}
 						}else{
 							printf("No existe la clave en el sistema\n");
@@ -245,7 +251,9 @@ int recibo_resultado_planificador(){
 		pthread_cond_signal(&CONDICION_LIBERO_PLANIFICADOR); //Libero ahora si al planificador
 	}else{
 		printf("Respuesta del planificador recibida\n");
-
+		if(resultado_planificador == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
+			printf("Planificador informa error de clave no bloqueada\n");
+		}
 	}
 
 	return resultado_planificador;

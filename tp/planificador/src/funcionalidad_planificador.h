@@ -65,7 +65,7 @@ void free_parametros_config();
 void move_esi_from_bloqueado_to_listo(char* clave);
 
 enum t_operationCode {
-	GET = 0, SET = 1, STORE = 2,
+	GET = 1, SET = 2, STORE = 3,
 };
 
 // revisar los tipos si son correctos la info y si van aca .

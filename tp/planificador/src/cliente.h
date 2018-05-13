@@ -38,6 +38,8 @@ void libero_recurso_by_clave_id(char* clave,int id_esi);
 //paso de bloqueado a listo todos los ESIs que querian esa clave
 void move_all_esi_bloqueado_listo(char* clave);
 
+bool clave_tomada_esi_ejecutando(char* clave);
+
 void send_mensaje(int fdCoordinador,int tipo_respuesta);
 #endif
 

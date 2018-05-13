@@ -242,7 +242,9 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 		instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 	}
 	resultado_instancia = instancia_resp->respuesta;
-
+	if(resultado_instancia == OK_STORE_INSTANCIA){
+		printf("Sentencia STORE realizado correctamente\n");
+	}
 	//limpio mi lista de instancia respuesta
 	list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
 
@@ -299,21 +301,14 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 			//actualizo su espacio (en lista_instnacias)
 			instancia->tamanio_libre = instancia->tamanio_libre - claveInstacia;
 			printf("Actualizo el nuevo tamaño disponible de %s ahora es %d\n",instancia->nombre_instancia,instancia->tamanio_libre);
-			//registro la instancia para esa clave si es que no esta registrado antes
-			if(!exist_clave_registro_instancias(clave_valor_recibido[0])){
-				t_registro_instancia * nuevo_Registro = creo_registro_instancia(instancia->nombre_instancia,clave_valor_recibido[0]);
-				list_add(LIST_REGISTRO_INSTANCIAS,nuevo_Registro);
-				printf("Se registra en instancia-clave la %s con clave: %s\n",nuevo_Registro->nombre_instancia,clave_valor_recibido[0]);
-			}
+			//registro la INSTANCIA para esa clave si es que no esta registrado antes
+			bool _registrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor_recibido[0])== 0;}
+			t_registro_instancia* reg = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_registrInstancia);
+			strcpy(reg->nombre_instancia,instancia_resp->nombre_instancia);
+			printf("Se registra en instancia-clave la %s con clave: %s\n",instancia_resp->nombre_instancia,clave_valor_recibido[0]);
+		}
 
-		}
-		if(resultado_instancia == OK_STORE_INSTANCIA){
-			printf("Sentencia STORE realizado correctamente\n");
-		}
 		free(bufferEnvio);
-//		free(clave_valor_recibido[0]);
-//		free(clave_valor_recibido[1]);
-//		free(clave_valor_recibido);
 
 		//limpio mi lista de instancia respuesta
 		list_clean_and_destroy_elements(LIST_INSTANCIA_RESPUESTA,(void*)free_instancia_respuesta);
@@ -328,16 +323,16 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	strcat(registro, "  => ");
 	switch (resultado_linea) {
 	case OK_PLANIFICADOR:
-		strcat(registro, "ESI BLOQUEADO");
+		strcat(registro, "PLANIFICADOR INFORMA QUE SE REALIZO CORRECTAMENTE");
 		break;
 	case OK_BLOQUEADO_PLANIFICADOR:
-		strcat(registro, "ESI BLOQUEADO");
+		strcat(registro, "SE BLOQUEO AL ESI CORRECTAMENTE");
 		break;
 	case OK_SET_INSTANCIA:
-		strcat(registro, "SET REALIZADO CORRECTAMENTE");
+		strcat(registro, "INSTANCIA INFORMA SET REALIZADO CORRECTAMENTE");
 		break;
 	case OK_STORE_INSTANCIA:
-		strcat(registro, "STORE REALIZADO CORRECTAMENTE");
+		strcat(registro, "INSTANCIA INFORMA STORE REALIZADO CORRECTAMENTE");
 		break;
 	case ABORTA_ESI_CLAVE_NO_IDENTIFICADA:
 		strcat(registro, "SE ABORTA EL ESI POR CLAVE NO IDENTIFICADA");
@@ -356,6 +351,9 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 		break;
 	case FALLA_ELEGIR_INSTANCIA:
 		strcat(registro, "FALLA: planificador desconectado");
+		break;
+	case FALLA_SIN_INSTANCIA_CLAVE_STORE:
+		strcat(registro, "FALLA: No existe ninguna instancia con esa clave");
 		break;
 	default:
 		strcat(registro, " - ");
