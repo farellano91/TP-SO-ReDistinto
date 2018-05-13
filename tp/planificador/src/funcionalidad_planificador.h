@@ -73,7 +73,7 @@ typedef struct {
 	int32_t id;
 	int32_t fd;
 	int32_t status; //1:bloqueado 2:ok (este va a ser un flags que me servira para saber cuando tengo que mandar a bloqueado un esi cuando tenga su respuesta)
-	int32_t estimacionRafagaAnterior;
+	int32_t tiempoProcesando;
 	int32_t tiempoEnListo;
 	int32_t cantSentenciasProcesadas;
 	int32_t lineaALeer; //cada vez q le pido a un esi q haga algo, le estoy mandando un numero de linea a leer

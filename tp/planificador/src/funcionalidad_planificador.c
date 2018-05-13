@@ -46,9 +46,9 @@ void get_parametros_config() {
 
 t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int32_t fd_esi){
 	t_Esi* esi = malloc(sizeof(t_Esi));
-	esi->estimacionRafagaAnterior = 0;
 	esi->tiempoEnListo = 0;
 	esi->lineaALeer = 0;
+	esi ->tiempoProcesando = 0;
 	esi->cantSentenciasProcesadas = 0;
 	esi->status = 2;
 	esi->fd = fd_esi;  //lo necesito para luego saber a quien mandar el send
@@ -87,7 +87,7 @@ bool aplico_algoritmo_ultimo(){
 	//si entro aca no estoy en exc, estoy en finish
 	//Aca no actualizamos ningun contador ya que el ESI solo nos esta diciendo q no tiene nada para leer, asi que no deberia considerarse como
 	//que esi hice una sentencia
-
+	ordeno_listas();
 	pthread_mutex_lock(&MUTEX);
 	while (PLANIFICADOR_EN_PAUSA){
 		//pthread_mutex_unlock(&MUTEX);
@@ -138,7 +138,11 @@ bool aplico_algoritmo(char clave[40]){
 //		} else {
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
 	if(esiEjecutando != NULL){
-	esiEjecutando ->cantSentenciasProcesadas++;}
+	esiEjecutando ->cantSentenciasProcesadas++;
+	esiEjecutando  ->tiempoProcesando --;
+	}
+	//ordeno lista
+	ordeno_listas();
 	ActualizarIndicesEnLista();
 		//controlo si tiene el flag de bloqueado para mandarlo a la list_block
 		if(bloqueado_flag() ==  1){
@@ -161,9 +165,7 @@ bool aplico_algoritmo(char clave[40]){
 			//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)
 			list_remove(LIST_EXECUTE, 0);
 			//TODO:ACTUALIZO CONTADORES
-			ordeno_listas();
 			//toma el primero de listo -> exec y lo saca de listo
-
 			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
 			//Blanqueo el Esi que pasa a ejecutando
@@ -182,8 +184,6 @@ bool aplico_algoritmo(char clave[40]){
 				list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
 				list_remove(LIST_EXECUTE, 0);
 				//TODO:ACTUALIZO CONTADORES
-				//ordeno lista
-				ordeno_listas();
 				//el primero de listo va a exec
 				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 				list_remove(LIST_READY, 0);
@@ -442,12 +442,12 @@ double  get_time_SJF(t_Esi* esi){
 		return 0;
 	}
 		if(esi->cantSentenciasProcesadas == 0){
+			esi  ->tiempoProcesando = ESTIMACION_INICIAL;
 			return ESTIMACION_INICIAL;
 		}
-		double result = (esi->cantSentenciasProcesadas * ALPHA) + ((1 - ALPHA)* esi->estimacionRafagaAnterior);
-		esi->estimacionRafagaAnterior = result;
+		double result = (esi->cantSentenciasProcesadas * ALPHA) + ((1 - ALPHA)* esi->tiempoEnListo);
 		return result;
-		// estimacionRafagaAnterior seria tn , cada vez que desalojo tengo que actualizar el
+
 		// contadorReal seria tn +1
 
 }
@@ -458,10 +458,10 @@ double getT_time_HRRN(t_Esi* esi){
 			return 0;
 	}
 	if(esi->cantSentenciasProcesadas == 0){
+		esi->tiempoEnListo = ESTIMACION_INICIAL;
 		return ESTIMACION_INICIAL;
 	}
-	double result =  ( esi->cantSentenciasProcesadas +  get_time_SJF(esi) ) / get_time_SJF(esi);
-	esi->estimacionRafagaAnterior = result;
+	double result =  ( esi->tiempoEnListo +  get_time_SJF(esi) ) / get_time_SJF(esi);
 	return result;
 }
 
