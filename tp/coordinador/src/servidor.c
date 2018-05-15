@@ -71,6 +71,7 @@ void enviar_saludo(int fdCliente) {
 void recibo_lineas(int fd_esi) {
 	int numbytes = 0;
 	int32_t resultado_linea = 0;
+	int32_t resultado_linea_final = 0;
 	while (1) {
 		sleep(RETARDO);
 		int32_t id_esi = 0;
@@ -102,13 +103,11 @@ void recibo_lineas(int fd_esi) {
 					case GET:
 						clave = get_clave_recibida(fd_esi);
 						loggeo_info(1, id_esi, clave, "");
-						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta entonces ABORTA_ESI
+						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta la registro sin instancia
 						if(!exist_clave_registro_instancias(clave)){
-							printf("No existe registro de la clave buscada... abortamos al ESI\n");
-							resultado_linea = ABORTA_ESI;
-							loggeo_respuesta("GET",id_esi,resultado_linea);
-							free(clave);
-							break;
+							printf("La clave no existe en el sistema, la creamos...\n");
+							t_registro_instancia* registro_nuevo = creo_registro_instancia("",clave);
+							list_add(LIST_REGISTRO_INSTANCIAS,registro_nuevo);
 						}
 						envio_tarea_planificador(1,clave,id_esi);
 						resultado_linea = recibo_resultado_planificador();
@@ -121,58 +120,90 @@ void recibo_lineas(int fd_esi) {
 						clave_valor = get_clave_valor(fd_esi); //noc porque si metemos get_clave_valor dentro de aplicoA.. no recibe los valores posta
 						loggeo_info(2, id_esi, clave_valor[0],clave_valor[1]);
 
-						//Busco en LIST_REGISTRO_INSTANCIAS si ya tengo alguna instancia que conoce esa clave,
-						//, si no esta aplico algoritmo
+						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
 						if(exist_clave_registro_instancias(clave_valor[0])){
-							printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
-							bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor[0])== 0;}
-							t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
-							resultado_linea = envio_tarea_instancia(2,get_instancia_by_name(registro_instancia->nombre_instancia),2,clave_valor);
-							loggeo_respuesta("SET",id_esi,resultado_linea);
-							break;
-						}
-						resultado_linea = aplicarAlgoritmoDisctribucion(ALGORITMO_DISTRIBUCION,clave_valor);//free(clave_valor) esta aca adentro
+							printf("Existe la clave en el sistema\n");
+							//ENVIAR MENSAJE AL PLANIFICADOR PARA DESCARTAR ERROR CLAVE NO BLOQUEADA
+							envio_tarea_planificador(2,clave_valor[0],id_esi);
+							int32_t respuesta = recibo_resultado_planificador();//tiene un recv, solo se puede usar una vez
+							if(respuesta == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
+								resultado_linea = ABORTA_ESI_CLAVE_NO_BLOQUEADA;
+							}else{
+								bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor[0])== 0;}
+								t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
 
+								if(strcmp(registro_instancia->nombre_instancia,"")==0){
+									//No hay ninguna instancia con esta clave
+									t_Instancia * instancia = busco_instancia_por_algortimo(ALGORITMO_DISTRIBUCION,clave_valor);
+									if(instancia == NULL){
+										//error al tratar de elegir una instancia
+										resultado_linea = FALLA_ELEGIR_INSTANCIA;
+									}else{
+										resultado_linea = envio_tarea_instancia(2,instancia,clave_valor);
+									}
+								}else{
+									//Existe una instancia con esa clave asignada
+									resultado_linea = envio_tarea_instancia(2,get_instancia_by_name(registro_instancia->nombre_instancia),clave_valor);
+								}
+							}
+						}else{
+							printf("No existe la clave en el sistema\n");
+							resultado_linea = ABORTA_ESI_CLAVE_NO_IDENTIFICADA;
+						}
 						loggeo_respuesta("SET",id_esi,resultado_linea);
+						free(clave_valor[0]);
+						free(clave_valor[1]);
+						free(clave_valor);
 						break;
 					case STORE:
 						clave = get_clave_recibida(fd_esi);
 						loggeo_info(3, id_esi, clave,"");
 
-						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta entonces ABORTA_ESI
-						if(!exist_clave_registro_instancias(clave)){
-							printf("No existe registro de la clave buscada... abortamos al ESI\n");
-							resultado_linea = ABORTA_ESI;
-							loggeo_respuesta("STORE",id_esi,resultado_linea);
-							free(clave);
-							break;
-						}
-						printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
-						bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
-						t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
-						resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,get_instancia_by_name(registro_instancia->nombre_instancia));
+						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
+						if(exist_clave_registro_instancias(clave)){
+							printf("Existe la clave en el sistema\n");
+							bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
+							t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
 
-						envio_tarea_planificador(3,clave,id_esi);
-						resultado_planificador = recibo_resultado_planificador();
+							if(strcmp(registro_instancia->nombre_instancia,"")==0){
+								//No hay ninguna instancia con esta clave
+								printf("No existe ninguna instancia que tenga esta clave\n");
+								resultado_linea = FALLA_SIN_INSTANCIA_CLAVE_STORE;
+								loggeo_respuesta("STORE",id_esi,resultado_linea);
+							}else{
+								//Existe una instancia con esa clave asignada
+								printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
+								bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
+								t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+								resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,get_instancia_by_name(registro_instancia->nombre_instancia));
+								loggeo_respuesta("STORE",id_esi,resultado_instancia);
 
-						//tanto la operacion del lado de instancia como del planificador no debe fallar para dar el OK
-						if((resultado_instancia != FALLO_DESCONEXION_INSTANCIA)&& (resultado_planificador != FALLO_PLANIFICADOR)
-								&& (resultado_instancia != FALLO_OPERACION_INSTANCIA)){
-							resultado_linea = resultado_planificador; //Si nadie fallo uso el numero del planificador
+								envio_tarea_planificador(3,clave,id_esi);
+								resultado_planificador = recibo_resultado_planificador();//aca vendra la respues si es por abor clave no bloquead
+								loggeo_respuesta("STORE",id_esi,resultado_planificador);
+
+								//Juntamos ambas respuestas para dar una sola al esi
+								if(resultado_planificador == OK_PLANIFICADOR
+										&& (resultado_instancia == OK_SET_INSTANCIA || resultado_instancia == OK_STORE_INSTANCIA)){
+									resultado_linea = OK_PLANIFICADOR;
+								}else{resultado_linea = FALLO_PLANIFICADOR;}
+							}
+
 						}else{
-							resultado_linea = FALLO_OPERACION_INSTANCIA; //Tambien puede ser FALLO_PLANIFICADOR, lo importante es mandar n°1
+							printf("No existe la clave en el sistema\n");
+							resultado_linea = ABORTA_ESI_CLAVE_NO_IDENTIFICADA;
+							loggeo_respuesta("STORE",id_esi,resultado_linea);
+
 						}
+
 						free(clave);
-						//loggeo respuesta
-						loggeo_respuesta("STORE",id_esi,resultado_linea);
 						break;
 
 					default:
 						break;
 				}
-
-				//al margen de lo q devuelva el planif o instna, el : resultado_linea solo es 1,2,3
-				envio_resultado_esi(fd_esi,resultado_linea,id_esi);
+				resultado_linea_final = aplicar_filtro_respuestas(resultado_linea); //resultado_linea solo es 1,2,3
+				envio_resultado_esi(fd_esi,resultado_linea_final,id_esi);
 			}
 		}
 	}
@@ -212,17 +243,17 @@ int recibo_resultado_planificador(){
 		if(numbytes < 0){
 			printf("ERROR: al tratar de recibir respuesta del planificador\n");
 		}else{
-			//TODO: aca debo liberar el WAIT
 			printf("El planificador se desconecto!\n");
 		}
 		FD_PLANIFICADOR = -1;
 
-		//ABORTA ESI
-		resultado_planificador = FALLO_PLANIFICADOR;
+		resultado_planificador = FALLA_PLANIFICADOR_DESCONECTADO;
 		pthread_cond_signal(&CONDICION_LIBERO_PLANIFICADOR); //Libero ahora si al planificador
 	}else{
 		printf("Respuesta del planificador recibida\n");
-
+		if(resultado_planificador == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
+			printf("Planificador informa error de clave no bloqueada\n");
+		}
 	}
 
 	return resultado_planificador;
@@ -272,7 +303,7 @@ void atender_cliente(void* idSocketCliente) {
 				//guardamos solo si no existe, si esta, lo actualizo
 				cargo_instancia_respuesta(instancia_nueva->nombre_instancia,respuesta);
 
-				if(respuesta == FALLO_DESCONEXION_INSTANCIA){
+				if(respuesta == ABORTA_ESI_CLAVE_INNACCESIBLE){
 					remove_instancia(fdCliente);//Si se desconecto limpio la list_instancia
 					pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
 					break; //para salir del while y que se vaya
@@ -294,6 +325,7 @@ void intHandler(int dummy) {
 		free_parametros_config();
 		log_destroy(LOGGER);
 		pthread_mutex_destroy(&MUTEX);
+		pthread_mutex_destroy(&MUTEX_RECV_INSTANCIA);
 		pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
 		pthread_cond_destroy(&CONDICION_RECV_INSTANCIA);
 		exit(dummy);
@@ -307,10 +339,10 @@ void levantar_servidor_coordinador() {
 	//creo mi lista de instancia
 	LIST_INSTANCIAS = create_list();
 
-	//creo mi tabla registro instancias
+	//creo mi tabla registro instancias (INTANCIA-CLAVE)
 	LIST_REGISTRO_INSTANCIAS = create_list();
 
-	//creo mi tabla de instancia respuestas
+	//creo mi tabla de instancia respuestas, respuestas dada por las instnacias
 	LIST_INSTANCIA_RESPUESTA = create_list();
 
 	//En caso de una interrupcion va por aca
@@ -390,6 +422,7 @@ void levantar_servidor_coordinador() {
 	log_destroy(LOGGER);
 	close(sockfd);
 	pthread_mutex_destroy(&MUTEX);
+	pthread_mutex_destroy(&MUTEX_RECV_INSTANCIA);
 	pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
 	pthread_cond_destroy(&CONDICION_RECV_INSTANCIA);
 }

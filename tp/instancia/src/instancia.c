@@ -20,6 +20,8 @@ int main(void) {
 	//TODO: leer los archivos .txt creador a partir del dump para asi
 	//poder cargar mis estructuras administrativas
 
+	//TODO: hilo para cada X cant de tiempo hacer DUMP
+
 	//Envio mis datos (TODO:tendriamos que mandar tambien el tamaño libre q tengo si esk ya tenia algo guardado en mi .txt)
 	envio_datos(sockfd);
 

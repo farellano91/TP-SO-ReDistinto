@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 		} else {
 
 			fp = fopen(argv[1], "r");
-			//fp = fopen("script.esi", "r");
+			//fp = fopen("script_store.esi", "r");
 			if (fp == NULL) {
 				perror("Error al abrir el archivo: ");
 				close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
