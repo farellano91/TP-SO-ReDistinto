@@ -70,6 +70,9 @@ bool aplico_algoritmo_primer_ingreso(){
 	pthread_mutex_unlock(&MUTEX);
 
 	bool sContinuarComunicacion = true;
+
+
+
 	aplicarFormulaPlanificacion(list_get(LIST_READY, 0));
 	ordeno_listas();
 
@@ -112,6 +115,16 @@ bool aplico_algoritmo_ultimo(){
 	return sContinuarComunicacion;
 
 }
+
+void aplicarFormulaPlanificacion(t_Esi *esi){
+	if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0){
+			get_time_SJF(esi);
+		}
+	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
+			getT_time_HRRN(esi);
+	}
+}
+
 
 bool aplico_algoritmo(char clave[40]){
 	//Aca estoy si recibi una respuesta de alguna tarea pedida al ESI (TAREAS QUE PUEDE SER REALIZADAS OK o BLOCKEADO
@@ -383,14 +396,6 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
 	}
 
-void aplicarFormulaPlanificacion(t_Esi *esi){
-	if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0){
-			get_time_SJF(esi);
-		}
-		if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
-			getT_time_HRRN(esi);
-		}
-}
 //	int32_t contador = 0;
 //
 //	while (contador < cant_esis_mover){

@@ -136,9 +136,8 @@ double  get_time_SJF(t_Esi* esi);
 double getT_time_HRRN(t_Esi* esi);
 
 
-bool ordenar_por_SJFt(t_Esi * esi_menor, t_Esi * esi);
+bool ordenar_por_tiempo(t_Esi * esi_menor, t_Esi * esi);
 
-bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi);
 
 void agregar_en_Lista(t_list* lista, t_Esi *esi);
 
@@ -147,6 +146,8 @@ void agregar_en_bloqueados(t_Esi *esi, char* clave);
 bool aplico_algoritmo_ultimo();
 
 bool aplico_algoritmo_primer_ingreso();
+
+void aplicarFormulaPlanificacion(t_Esi *esi);
 
 bool aplico_algoritmo();
 
@@ -175,5 +176,6 @@ void ordeno_listas();
 void inicializo_semaforos();
 
 void BlanquearIndices();
+
 
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */
