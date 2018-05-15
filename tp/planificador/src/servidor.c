@@ -221,6 +221,8 @@ void levantar_servidor_planificador() {
 							//Respuesta al primer saludo (todo nuevo)
 //							printf("ESI id: %d envio saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
+					//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
+							newEsi = nuevo_esi;
 							agregar_en_Lista(LIST_READY,nuevo_esi);
 							printf("ESI id: %d mando saludo: %s y se agrego a LISTA de READY\n",respuesta.id_esi,respuesta.mensaje);
 							if(aplico_algoritmo_primer_ingreso()){

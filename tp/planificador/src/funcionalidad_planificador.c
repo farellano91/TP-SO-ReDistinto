@@ -70,7 +70,7 @@ bool aplico_algoritmo_primer_ingreso(){
 	pthread_mutex_unlock(&MUTEX);
 
 	bool sContinuarComunicacion = true;
-
+	aplicarFormulaPlanificacion(list_get(LIST_READY, 0));
 	ordeno_listas();
 
 	//Pregunto si tengo alguno en LIST_EXECUTE (si esta vacio entro ya que significa q soy el unico)
@@ -87,7 +87,6 @@ bool aplico_algoritmo_ultimo(){
 	//si entro aca no estoy en exc, estoy en finish
 	//Aca no actualizamos ningun contador ya que el ESI solo nos esta diciendo q no tiene nada para leer, asi que no deberia considerarse como
 	//que esi hice una sentencia
-	ordeno_listas();
 	pthread_mutex_lock(&MUTEX);
 	while (PLANIFICADOR_EN_PAUSA){
 		//pthread_mutex_unlock(&MUTEX);
@@ -95,7 +94,10 @@ bool aplico_algoritmo_ultimo(){
 		//pthread_mutex_lock(&MUTEX);
 	}
 	pthread_mutex_unlock(&MUTEX);
-
+	// newEsi apunta al esi que acaba de ingresar, como nose en que orden de la lista va a estar, lo apunto
+	// con un puntero auxiliar. Luego lo libero.
+	aplicarFormulaPlanificacion(newEsi);
+	free(newEsi);
 	bool sContinuarComunicacion = true;
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
 		ordeno_listas();
@@ -176,7 +178,8 @@ bool aplico_algoritmo(char clave[40]){
 			//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
 			if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
 				//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
-				if(get_time_SJF(list_get(LIST_EXECUTE, 0)) < get_time_SJF(list_get(LIST_READY, 0))){
+				t_Esi* esiReady = list_get(LIST_READY, 0);
+				if( esiEjecutando->tiempoProcesando < esiReady->tiempoProcesando){
 					IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
 					return sContinuarComunicacion;
 				}
@@ -231,17 +234,7 @@ bool bloqueado_flag(){
 }
 
 void ordeno_listas(){
-	if (strcmp(ALGORITMO_PLANIFICACION, "SJF") == 0) {
-		order_list(LIST_READY, (void*) ordenar_por_SJFt);
-	}
-	// Ordena igual que SJFD pero desaloja el ESI que actualmente este procesando.
-	if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
-		order_list(LIST_READY, (void*) ordenar_por_SJFt);
-
-	}
-	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0) {
-		order_list(LIST_READY, (void*) ordenar_por_HRRN);
-	}
+	order_list(LIST_READY, (void*) ordenar_por_tiempo);
 }
 
 //Envia permiso de hacer una lectura a ESI
@@ -383,11 +376,21 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
 		t_Esi* esi = nodoBloqueado->esi;
 		list_add(LIST_READY,esi);
+		aplicarFormulaPlanificacion(esi);
+
 		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
 	}else{
 		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
 	}
 
+void aplicarFormulaPlanificacion(t_Esi *esi){
+	if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0){
+			get_time_SJF(esi);
+		}
+		if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
+			getT_time_HRRN(esi);
+		}
+}
 //	int32_t contador = 0;
 //
 //	while (contador < cant_esis_mover){
@@ -458,7 +461,7 @@ double getT_time_HRRN(t_Esi* esi){
 			return 0;
 	}
 	if(esi->cantSentenciasProcesadas == 0){
-		esi->tiempoEnListo = ESTIMACION_INICIAL;
+		esi->tiempoProcesando = ESTIMACION_INICIAL;
 		return ESTIMACION_INICIAL;
 	}
 	double result =  ( esi->tiempoEnListo +  get_time_SJF(esi) ) / get_time_SJF(esi);
@@ -471,16 +474,8 @@ void order_list(t_list* lista, void * funcion){
 	list_sort(lista, (void*) funcion);
 }
 
-//Criterio de ordenamiento por get_time_SJF (sin desalojo)
-//condicion para q el primer parametro este antes del segundo parametro
-bool ordenar_por_SJFt(t_Esi * esi_menor, t_Esi * esi) {
-	return (get_time_SJF(esi_menor) < get_time_SJF(esi));
-}
-
-////Criterio de ordenamiento por GetTimeTHR
-////condicion para q el primer parametro este antes del segundo parametro
-bool ordenar_por_HRRN(t_Esi * esi_menor, t_Esi * esi) {
-	return (getT_time_HRRN(esi_menor) > getT_time_HRRN(esi));
+bool ordenar_por_tiempo(t_Esi * esi_menor, t_Esi * esi) {
+	return (esi_menor->tiempoProcesando < esi->tiempoProcesando);
 }
 
 void agregar_en_bloqueados(t_Esi *esi, char* clave){

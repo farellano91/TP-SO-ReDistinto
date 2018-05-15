@@ -123,6 +123,8 @@ t_list* LIST_ESI_BLOQUEADOR;
 
 t_list* create_list();
 
+t_Esi * newEsi;
+
 t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char* clave);
 t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char* clave);
 
