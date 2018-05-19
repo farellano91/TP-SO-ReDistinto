@@ -46,14 +46,14 @@ void get_parametros_config() {
 
 t_Esi* creo_esi(t_respuesta_para_planificador respuesta,int32_t fd_esi){
 	t_Esi* esi = malloc(sizeof(t_Esi));
-	esi->tiempoEnListo = 0;
 	esi->lineaALeer = 0;
-	esi ->tiempoProcesando = 0;
-	esi->cantSentenciasProcesadas = 0;
 	esi->status = 2;
 	esi->fd = fd_esi;  //lo necesito para luego saber a quien mandar el send
 	esi->id = respuesta.id_esi;
 
+	esi->tiempoEnListo = 0;
+	esi ->estimacion = ESTIMACION_INICIAL;
+	esi->cantSentenciasProcesadas = 0;
 	return esi;
 }
 
@@ -71,9 +71,6 @@ bool aplico_algoritmo_primer_ingreso(){
 
 	bool sContinuarComunicacion = true;
 
-
-
-	aplicarFormulaPlanificacion(list_get(LIST_READY, 0));
 	ordeno_listas();
 
 	//Pregunto si tengo alguno en LIST_EXECUTE (si esta vacio entro ya que significa q soy el unico)
@@ -97,10 +94,7 @@ bool aplico_algoritmo_ultimo(){
 		//pthread_mutex_lock(&MUTEX);
 	}
 	pthread_mutex_unlock(&MUTEX);
-	// newEsi apunta al esi que acaba de ingresar, como nose en que orden de la lista va a estar, lo apunto
-	// con un puntero auxiliar. Luego lo libero.
-	aplicarFormulaPlanificacion(newEsi);
-	free(newEsi);
+
 	bool sContinuarComunicacion = true;
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
 		ordeno_listas();
@@ -116,12 +110,10 @@ bool aplico_algoritmo_ultimo(){
 
 }
 
-void aplicarFormulaPlanificacion(t_Esi *esi){
-	if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0){
-			get_time_SJF(esi);
-		}
-	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
-			getT_time_HRRN(esi);
+//cuando sale de bloqueado a listo (si es con desalojo dejo la estimacion que tiene pork cuando lo desalojo reste, asi q no hace falta ahora)
+void recalculo_estimacion(t_Esi *esi){
+	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") || strcmp(ALGORITMO_PLANIFICACION,"SJF") == 0){
+		esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
 	}
 }
 
@@ -129,13 +121,6 @@ void aplicarFormulaPlanificacion(t_Esi *esi){
 bool aplico_algoritmo(char clave[40]){
 	//Aca estoy si recibi una respuesta de alguna tarea pedida al ESI (TAREAS QUE PUEDE SER REALIZADAS OK o BLOCKEADO
 	//al ESI)
-
-	//Incides a actualizar :
-	/* contador Inicial (?)
-	 *  Contador Real
-	 *  Tiempo en listo
-	 *  cantidad sentencias Porcesadas
-	 * */
 
 	pthread_mutex_lock(&MUTEX);//sirve para delimitar mi RC como atomica ya que usamos la misma variable entre hilos
 	while (PLANIFICADOR_EN_PAUSA){
@@ -146,72 +131,70 @@ bool aplico_algoritmo(char clave[40]){
 	pthread_mutex_unlock(&MUTEX);
 
 	bool sContinuarComunicacion = true;
-	//Pregunto si tengo alguno en EXECUTE (si esta vacio entra el primero de ready)
-//		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
-//			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
-//			list_remove(LIST_READY, 0);
-//		} else {
+
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
 	if(esiEjecutando != NULL){
-	esiEjecutando ->cantSentenciasProcesadas++;
-	esiEjecutando  ->tiempoProcesando --;
+		esiEjecutando ->cantSentenciasProcesadas++;
 	}
-	//ordeno lista
-	ordeno_listas();
+
+	//a todos los esis de ready les aumento 1 el tiempo de espera
 	ActualizarIndicesEnLista();
-		//controlo si tiene el flag de bloqueado para mandarlo a la list_block
-		if(bloqueado_flag() ==  1){
-			//Aca tengo que actualizar la estimacion inicial anterior.
-			//saco de EXECUTE a BLOQUEADO
-			// sumo una sentencia mas procesada que seria el get
-			t_Esi* esi= list_get(LIST_EXECUTE, 0);
-			char* clave_block = malloc(sizeof(char)*40);
-			strcpy(clave_block,clave);
-			clave_block[strlen(clave_block)] = '\0';
-			t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
-			list_add(LIST_BLOCKED,esi_bloqueado);
 
-			printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s\n",esi->id,clave_block);
-			free(clave_block);
+	ordeno_listas();
+
+	//controlo si tiene el flag de bloqueado para mandarlo a la list_block
+	if(bloqueado_flag() ==  1){
+		//Aca tengo que actualizar la estimacion inicial anterior.
+		//saco de EXECUTE a BLOQUEADO
+		// sumo una sentencia mas procesada que seria el get
+		t_Esi* esi= list_get(LIST_EXECUTE, 0);
+		char* clave_block = malloc(sizeof(char)*40);
+		strcpy(clave_block,clave);
+		clave_block[strlen(clave_block)] = '\0';
+		t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
+		list_add(LIST_BLOCKED,esi_bloqueado);
+
+		printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s\n",esi->id,clave_block);
+		free(clave_block);
 
 
-			//Caso donde ESI se bloqueo al hacer lo que le pedi
-			desbloquea_flag(); //limpio el flag
-			//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)
+		//Caso donde ESI se bloqueo al hacer lo que le pedi
+		desbloquea_flag(); //limpio el flag
+		//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)
+		list_remove(LIST_EXECUTE, 0);
+		//toma el primero de listo -> exec y lo saca de listo
+		list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+		list_remove(LIST_READY, 0);
+		//Blanqueo el Esi que pasa a ejecutando
+		BlanquearIndices();
+	}else{
+
+		//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
+		//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
+		if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
+
+			//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
+			t_Esi* esiReady = list_get(LIST_READY, 0);
+			if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
+//				IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
+				return sContinuarComunicacion;
+			}
+			//exc -> listo
+			esiEjecutando->estimacion = esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas;//actualizo la estimacion dado que me desalojaron
+			list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
 			list_remove(LIST_EXECUTE, 0);
-			//TODO:ACTUALIZO CONTADORES
-			//toma el primero de listo -> exec y lo saca de listo
-			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+			//el primero de listo va a exec
+			list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
 			//Blanqueo el Esi que pasa a ejecutando
 			BlanquearIndices();
 		}else{
-
-			//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
-			//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
-			if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
-				//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
-				t_Esi* esiReady = list_get(LIST_READY, 0);
-				if( esiEjecutando->tiempoProcesando < esiReady->tiempoProcesando){
-					IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
-					return sContinuarComunicacion;
-				}
-				//exc -> listo
-				list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
-				list_remove(LIST_EXECUTE, 0);
-				//TODO:ACTUALIZO CONTADORES
-				//el primero de listo va a exec
-				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
-				list_remove(LIST_READY, 0);
-				//Blanqueo el Esi que pasa a ejecutando
-				BlanquearIndices();
-			}else{
-				//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
-				//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
-				//no hace falta ordenar las lista ya q estas se ordenaran cuando se bloquee el ESI o cuando TERMINE)
-				IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
-			}
+			//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
+			//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
+			//no hace falta ordenar las lista ya q estas se ordenaran cuando se bloquee el ESI o cuando TERMINE)
+//			IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
 		}
+	}
 	return sContinuarComunicacion;
 
 }
@@ -219,8 +202,10 @@ bool aplico_algoritmo(char clave[40]){
 // Pongo en 0 el tiempo en listos del esi que voy a ejecutar.
 void BlanquearIndices(){
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
-		if(esiEjecutando != NULL){
-		esiEjecutando ->tiempoEnListo = 0;}
+	if(esiEjecutando != NULL){
+		esiEjecutando->tiempoEnListo = 0;
+		esiEjecutando->cantSentenciasProcesadas = 0;
+	}
 
 }
 void ActualizarIndices(t_Esi *esi){
@@ -230,11 +215,10 @@ void ActualizarIndices(t_Esi *esi){
 void ActualizarIndicesEnLista(){
 	// recorro la lista de ready y aplico funcion actualizar Indices
 	list_iterate(LIST_READY,(void*)ActualizarIndices );
-	ordeno_listas();
 }
-void IncrementarLinealeer(t_Esi *esi){
-	esi->lineaALeer++;
-}
+//void IncrementarLinealeer(t_Esi *esi){
+//	esi->lineaALeer++;
+//}
 
 void desbloquea_flag(){
 	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
@@ -246,8 +230,14 @@ bool bloqueado_flag(){
 	return (un_esi->status == 1);
 }
 
+//Ordena la lista de ready dependiendo del algoritmo que se usa
 void ordeno_listas(){
-	order_list(LIST_READY, (void*) ordenar_por_tiempo);
+	if ((strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) || strcmp(ALGORITMO_PLANIFICACION,"SJF")){
+		order_list(LIST_READY, (void*) ordenar_por_estimacion);
+	}
+	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
+		order_list(LIST_READY, (void*) ordenar_por_prioridad);
+	}
 }
 
 //Envia permiso de hacer una lectura a ESI
@@ -262,9 +252,12 @@ void continuar_comunicacion(){
 	if(primer_esi == NULL){
 		list_remove(LIST_EXECUTE, 0);
 	}else{
+		primer_esi->lineaALeer ++;
 		if (send(primer_esi->fd, &(primer_esi->lineaALeer), sizeof(int32_t), 0) == -1) {
+			primer_esi->lineaALeer --;
 			printf("Error al tratar de enviar el permiso a ESI\n");
 		}else{
+
 			printf("Envie permiso de ejecucion linea: %d al ESI de ID: %d\n",primer_esi->lineaALeer, primer_esi->id);
 		}
 	}
@@ -321,7 +314,6 @@ void remove_esi_by_fd_finished(int32_t fd){
 		//le resto uno ya que al ingresar a listo se le sumo uno y
 		//ahora estaba ejecutando pero no hizo nada, termino de una pork no tenia nada mas para ejecutar, entonces le restamos eso asi
 		//queda bien guardado en la lisa de finalizado
-		esi_terminado->lineaALeer--;
 		list_add(LIST_FINISHED,esi_terminado);
 		list_remove_by_condition(LIST_READY,(void*) _esElfd);
 	}
@@ -366,7 +358,7 @@ void free_recurso(int32_t fd){
 
 		t_esiBloqueador * eb = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 		printf("Libero clave:%s de ESI ID:%d\n", eb->clave,eb->esi->id);
-		//paso de bloqueado a listo a todos los ESIs que esperaban esa clave
+		//paso de bloqueado a listo (EL PRIMER) ESIs que esperaban esa clave
 		move_esi_from_bloqueado_to_listo(eb->clave);
 		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
 		contador++;
@@ -388,24 +380,14 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		t_nodoBloqueado* nodoBloqueado = list_find(LIST_BLOCKED,(void*) _esElid);
 		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
 		t_Esi* esi = nodoBloqueado->esi;
+		esi->tiempoEnListo = 0;
 		list_add(LIST_READY,esi);
-		aplicarFormulaPlanificacion(esi);
-
+		recalculo_estimacion(esi);
 		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
 	}else{
 		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
 	}
 
-//	int32_t contador = 0;
-//
-//	while (contador < cant_esis_mover){
-//		t_nodoBloqueado* nodoBloqueado = list_find(LIST_BLOCKED,(void*) _esElid);
-//		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
-//		t_Esi* esi = nodoBloqueado->esi;
-//		list_add(LIST_READY,esi);
-//		contador++;
-//		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
-//	}
 
 }
 
@@ -442,34 +424,13 @@ t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char* clave){
 	return esiBloqueador;
 }
 
-// dado un esi que me llega como parametro, me estima cuantas rafagas de cpu consumira.
-double  get_time_SJF(t_Esi* esi){
-	// alpha lo leo por config = 5
-	// cada vez que proceso el esi, le voy sumando los tiempos;
+// el cantidad de sentencias procesadas
+// si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. OK
+double get_prioridad_HRRN(t_Esi* esi){
 	if( esi == NULL){
 		return 0;
 	}
-		if(esi->cantSentenciasProcesadas == 0){
-			esi  ->tiempoProcesando = ESTIMACION_INICIAL;
-			return ESTIMACION_INICIAL;
-		}
-		double result = (esi->cantSentenciasProcesadas * ALPHA) + ((1 - ALPHA)* esi->tiempoEnListo);
-		return result;
-
-		// contadorReal seria tn +1
-
-}
-// el cantidad de sentencias procesadas
-// si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. OK
-double getT_time_HRRN(t_Esi* esi){
-	if( esi == NULL){
-			return 0;
-	}
-	if(esi->cantSentenciasProcesadas == 0){
-		esi->tiempoProcesando = ESTIMACION_INICIAL;
-		return ESTIMACION_INICIAL;
-	}
-	double result =  ( esi->tiempoEnListo +  get_time_SJF(esi) ) / get_time_SJF(esi);
+	double result =  ( esi->tiempoEnListo +  esi->estimacion ) / esi->estimacion;
 	return result;
 }
 
@@ -479,8 +440,12 @@ void order_list(t_list* lista, void * funcion){
 	list_sort(lista, (void*) funcion);
 }
 
-bool ordenar_por_tiempo(t_Esi * esi_menor, t_Esi * esi) {
-	return (esi_menor->tiempoProcesando < esi->tiempoProcesando);
+bool ordenar_por_estimacion(t_Esi * esi_menor, t_Esi * esi) {
+	return (esi_menor->estimacion < esi->estimacion);
+}
+
+bool ordenar_por_prioridad(t_Esi * esi_menor, t_Esi * esi) {
+	return (get_prioridad_HRRN(esi_menor) > get_prioridad_HRRN(esi));
 }
 
 void agregar_en_bloqueados(t_Esi *esi, char* clave){
@@ -490,7 +455,7 @@ void agregar_en_bloqueados(t_Esi *esi, char* clave){
 
 //Tanto para lista de listos como para la de finalizados.
 void agregar_en_Lista(t_list* lista, t_Esi *esi){
-	esi->lineaALeer++;
+//	esi->lineaALeer ++;
 	list_add( lista ,esi);
 }
 //TODO: criterio de ordenamiento SJF con DESALOJO

@@ -220,6 +220,7 @@ int main(int argc, char** argv) {
 							strcpy(respuesta_planificador.mensaje, "ABORTO!");
 							respuesta_planificador.mensaje[strlen(
 									respuesta_planificador.mensaje)] = '\0';
+							respuesta_planificador.id_tipo_respuesta = 3; //para q el planificador me finalize;
 							break;
 						case OK: //recibi respuesta q coordinador lo hizo bien
 							strcpy(respuesta_planificador.mensaje, "OK");

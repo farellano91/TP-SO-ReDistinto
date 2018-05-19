@@ -73,10 +73,11 @@ typedef struct {
 	int32_t id;
 	int32_t fd;
 	int32_t status; //1:bloqueado 2:ok (este va a ser un flags que me servira para saber cuando tengo que mandar a bloqueado un esi cuando tenga su respuesta)
-	int32_t tiempoProcesando;
-	int32_t tiempoEnListo;
-	int32_t cantSentenciasProcesadas;
 	int32_t lineaALeer; //cada vez q le pido a un esi q haga algo, le estoy mandando un numero de linea a leer
+
+	int32_t estimacion;
+	int32_t tiempoEnListo; //cant de sentencas q pasan mientras el esi esta en listo
+	int32_t cantSentenciasProcesadas;
 
 } t_Esi;
 
@@ -99,7 +100,7 @@ typedef struct {
 /*ESI envia al planificador una respuesta al saludo o a la instruccion que hizo
  * id_tipo_respuesta = 1 respuesta al saludo, lo cual solo lleva de datos el id_esi y el mensaje
  * id_tipo_respuesta = 2 respuesta una instruccion realizad, lo cual trae todo lleno
- * id_tipo_respuesta = 3 respuesta de que ya no tiene nada mas que leer y termino feliz
+ * id_tipo_respuesta = 3 respuesta de que ya no tiene nada mas que leer y termino feliz o que lo abortaron, para el planificar es lo mismo ya que tiene que hacer los mismos pasos
  * */
 typedef struct Respuesta_para_planificador{
 	int32_t id_tipo_respuesta;
@@ -123,18 +124,8 @@ t_list* LIST_ESI_BLOQUEADOR;
 
 t_list* create_list();
 
-t_Esi * newEsi;
-
 t_nodoBloqueado* get_nodo_bloqueado(t_Esi* esi, char* clave);
 t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char* clave);
-
-// dado un esi que me llega como parametro, me estima cuantas rafagas de cpu consumira.
-double  get_time_SJF(t_Esi* esi);
-
-// el cantidad de sentencias procesadas
-// si lo pongo como un parametro del esi, voy a tener que recorrer nodo por nodo para ir acumulando. VER
-double getT_time_HRRN(t_Esi* esi);
-
 
 bool ordenar_por_tiempo(t_Esi * esi_menor, t_Esi * esi);
 
@@ -177,5 +168,7 @@ void inicializo_semaforos();
 
 void BlanquearIndices();
 
+bool ordenar_por_estimacion(t_Esi * esi_menor, t_Esi * esi);
 
+bool ordenar_por_prioridad(t_Esi * esi_menor, t_Esi * esi);
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

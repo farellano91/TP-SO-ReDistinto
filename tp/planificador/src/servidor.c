@@ -189,8 +189,6 @@ void levantar_servidor_planificador() {
 						int *idSocketCliente = (int *) malloc(sizeof(int32_t) * 2);
 						idSocketCliente[0] = socketCliente;
 						idSocketCliente[1] = contador_id_esi;
-
-
 						atender_esi(idSocketCliente);
 
 					}
@@ -211,7 +209,7 @@ void levantar_servidor_planificador() {
 						FD_CLR(i, &master); // eliminar del conjunto maestro
 						free_recurso(i); //liberamos los recursos que tenia ya que murio el esi
 						//remove_esi_by_fd(i); //TODO:Lo borramos de todos lados, no lo usaremos mas!(ver si lo tenemos que dejar al menos en terminado o no)
-						remove_esi_by_fd_finished(i); //TODO: lo borramos de donde este y lo mandamos a TERMINADO
+						remove_esi_by_fd_finished(i); //lo borramos de donde este y lo mandamos a TERMINADO
 						if(aplico_algoritmo_ultimo()){
 							continuar_comunicacion();
 						}
@@ -219,10 +217,8 @@ void levantar_servidor_planificador() {
 					}else{
 						if(respuesta.id_tipo_respuesta == 1){
 							//Respuesta al primer saludo (todo nuevo)
-//							printf("ESI id: %d envio saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
-					//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
-							newEsi = nuevo_esi;
+							//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
 							agregar_en_Lista(LIST_READY,nuevo_esi);
 							printf("ESI id: %d mando saludo: %s y se agrego a LISTA de READY\n",respuesta.id_esi,respuesta.mensaje);
 							if(aplico_algoritmo_primer_ingreso()){

@@ -176,10 +176,9 @@ void recibirInfoCoordinador() {
 					send_mensaje(fdCoordinador,4);
 				}else{
 					//libero el recurso (borro de lis_esi_bloqueador el esi q corresponda)
-					//TODO:por ahora se supone que solo puedo hacer STORE de los recursos que tome
 					libero_recurso_by_clave_id(clave,id_esi);
 
-					//paso de bloqueado a listo todos los ESIs que querian esa clave
+					//paso de bloqueado a listo (EL PRIMER) ESIs que querian esa clave
 					move_esi_from_bloqueado_to_listo(clave);
 
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste, 4:ABORTA_ESI_CLAVE_NO_BLOQUEADA
