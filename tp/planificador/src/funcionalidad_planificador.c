@@ -112,9 +112,11 @@ bool aplico_algoritmo_ultimo(){
 
 //cuando sale de bloqueado a listo (si es con desalojo dejo la estimacion que tiene pork cuando lo desalojo reste, asi q no hace falta ahora)
 void recalculo_estimacion(t_Esi *esi){
+	esi->tiempoEnListo = 0;
 	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") || strcmp(ALGORITMO_PLANIFICACION,"SJF") == 0){
 		esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
 	}
+	esi->cantSentenciasProcesadas = 0;
 }
 
 
