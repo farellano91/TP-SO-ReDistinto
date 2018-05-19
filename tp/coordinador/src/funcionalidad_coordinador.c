@@ -274,15 +274,15 @@ t_Instancia* get_instancia_by_name(char* name){
 }
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** clave_valor_recibido) {
 		//todo: mirar de la cola de instancias cual seguiria y armar el buffer para mandar los datos
-		int32_t claveInstacia = strlen(clave_valor_recibido[0]) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
-		int32_t valorInstacia = strlen(clave_valor_recibido[1]) + 1; // Tomo la VALOR  de la sentencia SET q me llega de la instacia
-		void* bufferEnvio = malloc(sizeof(int32_t) * 3 + valorInstacia + claveInstacia);
+		int32_t long_clave = strlen(clave_valor_recibido[0]) + 1; // Tomo el CLAVE de la sentencia SET q me llega de la instacia
+		int32_t long_valor = strlen(clave_valor_recibido[1]) + 1; // Tomo la VALOR  de la sentencia SET q me llega de la instacia
+		void* bufferEnvio = malloc(sizeof(int32_t) * 3 + long_clave + long_valor);
 		int resultado_instancia = 0;
 		memcpy(bufferEnvio, &id_operacion, sizeof(int32_t));
-		memcpy(bufferEnvio+sizeof(int32_t), &claveInstacia, sizeof(int32_t));
-		memcpy(bufferEnvio + sizeof(int32_t)*2,clave_valor_recibido[0],claveInstacia);
-		memcpy(bufferEnvio + sizeof(int32_t)*2 + claveInstacia, &valorInstacia,sizeof(int32_t));
-		memcpy(bufferEnvio + (sizeof(int32_t) * 3) + claveInstacia,clave_valor_recibido[1], valorInstacia);
+		memcpy(bufferEnvio + sizeof(int32_t), &long_clave, sizeof(int32_t));
+		memcpy(bufferEnvio + sizeof(int32_t)*2,clave_valor_recibido[0],long_clave);
+		memcpy(bufferEnvio + sizeof(int32_t)*2 + long_clave, &long_valor,sizeof(int32_t));
+		memcpy(bufferEnvio + (sizeof(int32_t) * 3) + long_clave,clave_valor_recibido[1], long_valor);
 
 		//limpio mi lista de instancia respuesta
 		limpia_destruye_elemt_lista_respuesta_instancia();
@@ -293,7 +293,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 			return ABORTA_ESI_CLAVE_INNACCESIBLE;
 		}
 		if (send(instancia->fd, bufferEnvio,
-				sizeof(int32_t) * 3 + valorInstacia + claveInstacia, 0) == -1) {
+				sizeof(int32_t) * 3 + long_clave + long_valor, 0) == -1) {
 			printf("Se desconecto la instancia\n");
 			free(bufferEnvio);
 
@@ -319,7 +319,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 		if(resultado_instancia == OK_SET_INSTANCIA){
 			printf("Sentencia SET realizado correctamente\n");
 			//actualizo su espacio (en lista_instnacias)
-			instancia->tamanio_libre = instancia->tamanio_libre - claveInstacia;
+			instancia->tamanio_libre = instancia->tamanio_libre - long_valor;
 			printf("Actualizo el nuevo tamaño disponible de %s ahora es %d\n",instancia->nombre_instancia,instancia->tamanio_libre);
 			//registro la INSTANCIA para esa clave si es que no esta registrado antes
 			bool _registrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor_recibido[0])== 0;}

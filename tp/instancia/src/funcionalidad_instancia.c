@@ -123,7 +123,7 @@ int recibo_sentencia(int fd_coordinador){
 		}
 
 		char* valor_recibido = malloc(sizeof(char)*long_valor);
-		if ((numbytes = recv(fd_coordinador, valor_recibido, long_clave, 0)) <= 0) {
+		if ((numbytes = recv(fd_coordinador, valor_recibido, long_valor, 0)) <= 0) {
 			if(numbytes == 0){
 				printf("Se desconecto el coordinador\n");
 			}else{
