@@ -239,7 +239,8 @@ void inicializo_estructuras(){
 	STORAGE = malloc(sizeof(char*)* CANT_ENTRADA);
 	int i = 0;
 	for(i= 0;i<CANT_ENTRADA;i++){
-		STORAGE[0] = malloc(sizeof(char) * TAMANIO_ENTRADA);
+		STORAGE[i] = malloc(sizeof(char) * TAMANIO_ENTRADA);
+		strcpy(STORAGE[i],"");
 	}
 
 	//inicializo tabla entradas
@@ -311,16 +312,17 @@ void reestablesco_archivo(char* nombre_archivo){
 		free_estruct_admin();
 		exit(1);
 	}
+	int32_t len_clave = strlen(nombre_archivo) - 4;
+	char* clave = malloc(len_clave);
+	memcpy(clave,nombre_archivo,len_clave); //copio sin el .txt
+	clave[len_clave] = '\0';
 
-	char* clave = malloc(sizeof(char)*100);
-	memcpy(clave,nombre_archivo,strlen(nombre_archivo)-4); //copio sin el .txt
-
-	char* valor = malloc(sizeof(char)*1024);
-	memcpy(valor,mmappedData,tamanio_contenido-1);//el dato dentro del archivo (osea el valor) tambien viene con \n
+	int32_t len_valor = tamanio_contenido - 1;
+	char* valor = malloc(len_valor);
+	memcpy(valor,mmappedData,len_valor);//el dato dentro del archivo (osea el valor) tambien viene con \n
+	valor[len_valor] = '\0';
 
 	int rc = munmap(mmappedData, tamanio_contenido);
-
-	printf("Clave: %s Valor: %s de tamaño: %d\n",clave,valor,tamanio_contenido);
 
 	//cargo mis estructuras
 	cargar_estructuras(clave,valor,tamanio_contenido);
@@ -331,11 +333,32 @@ void reestablesco_archivo(char* nombre_archivo){
 }
 
 void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
-	//inserto en el diccionario de entradas
+	int i = 0;
+	for(i = 0; i < CANT_ENTRADA; i++){
+		if(strcmp(STORAGE[i],"")== 0){
+			//esta vacio
+			if(tamanio_contenido < TAMANIO_ENTRADA){
+				//entra en uno solo
+				strcpy(STORAGE[i],valor);
+				printf("Cargo en la entrada numero: %d el valor: %s\n",i+1,valor);
 
-	//inserto en el storage
+				//actualizo tabla
+				//actualizo diccionario
+				break;
+			}else{
+				//no entra en uno solo, entoces los divido
+				memcpy(STORAGE[i],valor,TAMANIO_ENTRADA);
+				printf("Cargo en la entrada numero: %d el valor: %s\n",i+1,valor);
+				//actualizo tabla
+				//actualizo diccionario
 
-	//inserto en la tabla de entradas
+				memcpy(valor,valor + TAMANIO_ENTRADA,tamanio_contenido);
+				tamanio_contenido = tamanio_contenido - TAMANIO_ENTRADA;
+
+			}
+		}
+	}
+
 }
 
 t_dictionary* create_diccionarity(){
