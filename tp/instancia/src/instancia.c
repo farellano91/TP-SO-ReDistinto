@@ -17,8 +17,11 @@ int main(void) {
 	//REcibo datos de entrada
 	recibo_datos_entrada(sockfd);
 
-	//TODO: leer los archivos .txt creador a partir del dump para asi
-	//poder cargar mis estructuras administrativas
+	//Inicializo mis estructuras
+	inicializo_estructuras();
+
+	//leer los archivos .txt creador a partir del dump para asi poder cargar mis estructuras administrativas
+	reestablecer_datos();
 
 	//TODO: hilo para cada X cant de tiempo hacer DUMP
 
@@ -34,5 +37,6 @@ int main(void) {
 	}
 	//Por ahora libero la memoria que me quedo (solo hasta agregar funcionalidad posta)
 	free_algo_punt_nom();
+	free_estruct_admin();
 	return EXIT_SUCCESS;
 }

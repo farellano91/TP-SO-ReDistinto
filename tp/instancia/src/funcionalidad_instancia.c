@@ -53,11 +53,36 @@ void free_algo_punt_nom(){
 	free(NOMBRE_INSTANCIA);
 }
 
+void free_registro_tabla_entrada(t_registro_tabla_entrada* registro){
+	free(registro);
+}
+
+void free_registro_diccionario_entrada(t_registro_diccionario_entrada* registro){
+	free(registro);
+}
+
+void free_estruct_admin(){
+
+	if(!list_is_empty(TABLA_ENTRADA)){
+		list_destroy_and_destroy_elements(TABLA_ENTRADA,(void*)free_registro_tabla_entrada);
+	}
+	if(!dictionary_is_empty(DICCIONARITY_ENTRADA)){
+		dictionary_clean_and_destroy_elements(DICCIONARITY_ENTRADA,(void*)free_registro_diccionario_entrada);
+	}
+
+	int i = 0;
+	for(i= 0;i<CANT_ENTRADA;i++){
+		free(STORAGE[i]);
+	}
+	free(STORAGE);
+}
+
 void envio_resultado_al_coordinador(int sockfd,int resultado){
 
 	if(send(sockfd, &resultado, sizeof(int32_t), 0) == -1) {
 		printf("No se puede enviar el resultado al coordinador\n");
 		free_algo_punt_nom();
+		free_estruct_admin();
 		exit(1);
 	}
 	printf("Envie mi resultado correctamente\n");
@@ -74,6 +99,7 @@ void recibo_mensaje_aceptacion(int fd_coordinador){
 			printf("No se pudo recibir el resultado de la acpetacion\n");
 		}
 		free_algo_punt_nom();
+		free_estruct_admin();
 		exit(1);
 	}
 	if(resultado_aceptacion == 1){
@@ -96,6 +122,7 @@ int recibo_sentencia(int fd_coordinador){
 	if ((numbytes = recv(fd_coordinador, &tipo_operacion, sizeof(int32_t), 0)) <= 0) {
 			printf("Coordinador desconectado\n");
 			free_algo_punt_nom();
+			free_estruct_admin();
 			exit(1);
 	}
 
@@ -197,10 +224,73 @@ void envio_datos(int fd_coordinador){
 		printf("No pude enviar mis datos al coordinador\n");
 		free(bufferEnvio);
 		free_algo_punt_nom();
+		free_estruct_admin();
 		exit(1);
 	}
 	printf("Envie mi nombre correctamente\n");
 	free(bufferEnvio);
 }
 
+//con los datos de entrada que recibi, puedo inicializar mis estructuras
+void inicializo_estructuras(){
 
+	//inicializo storage
+	STORAGE = malloc(sizeof(char*)* CANT_ENTRADA);
+	int i = 0;
+	for(i= 0;i<CANT_ENTRADA;i++){
+		STORAGE[0] = malloc(sizeof(char) * TAMANIO_ENTRADA);
+	}
+
+	//inicializo tabla entradas
+	TABLA_ENTRADA = create_list();
+
+	//inicializo diccionario de entrada
+	DICCIONARITY_ENTRADA = create_diccionarity();
+}
+
+size_t getFilesize(const char* filename) {
+    struct stat st;
+    stat(filename, &st);
+    return st.st_size;
+}
+
+//leer los archivos .txt creador a partir del dump para asi poder cargar mis estructuras administrativas
+void reestablecer_datos(){
+	printf("Leo mis archivos previamente guardados si es que tengo..\n");
+	//size_t tamanio_contenido = getFilesize(PUNTO_MONTAJE);
+	FILE *fp;
+	char path[1035]; //la clave tiene como maximo 40 caracteres asi que con 1035 basta y sobra
+	int contador_archivos = 0;
+	/* Abro la carpeta. */
+	fp = popen("/bin/ls /home/utnso/instancia1/", "r");
+	if (fp == NULL) {
+		printf("Error al tratar de abrir la carpeta\n" );
+		free_algo_punt_nom();
+		free_estruct_admin();
+		exit(1);
+	}
+	/* Vemos que hay dentro de la carpeta */
+	while (fgets(path, sizeof(path)-1, fp) != NULL) {
+		printf("Tenemos el archivo :%s", path);
+		contador_archivos ++;
+
+		//Logica propia para reestablecer un archivo de nombre path
+		printf("Lo reestablecemos...\n");
+		//reestableco este archivo en particular....
+		printf("Reestablecido correctamente!\n");
+	}
+	if(contador_archivos == 0){
+		printf("NO hay nada para reestablecer\n");
+	}
+	pclose(fp);
+}
+
+t_dictionary* create_diccionarity(){
+	t_dictionary * diccionarity = dictionary_create();
+	return diccionarity;
+}
+
+t_list* create_list(){
+	t_list * list = list_create();
+	return list;
+}
