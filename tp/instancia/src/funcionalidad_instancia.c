@@ -261,14 +261,21 @@ void reestablecer_datos(){
 	FILE *fp;
 	char path[1035]; //la clave tiene como maximo 40 caracteres asi que con 1035 basta y sobra
 	int contador_archivos = 0;
+
+	char *ls_with_path = malloc(strlen("/bin/ls ")+strlen(PUNTO_MONTAJE)+1);//+1 for the null-terminator
+	strcpy(ls_with_path,"/bin/ls ");
+	strcat(ls_with_path, PUNTO_MONTAJE);
+
 	/* Abro la carpeta. */
-	fp = popen("/bin/ls /home/utnso/instancia1/", "r");
+	fp = popen(ls_with_path, "r");
 	if (fp == NULL) {
 		printf("Error al tratar de abrir la carpeta\n" );
 		free_algo_punt_nom();
 		free_estruct_admin();
+		free(ls_with_path);
 		exit(1);
 	}
+	free(ls_with_path);
 	/* Vemos que hay dentro de la carpeta */
 	while (fgets(path, sizeof(path)-1, fp) != NULL) {
 		printf("Tenemos el archivo :%s", path);
