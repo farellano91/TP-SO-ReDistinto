@@ -28,8 +28,7 @@ void get_parametros_config() {
 	// HRRN , SJF, SJFD
 	strcpy(ALGORITMO_PLANIFICACION,config_get_string_value(config, "ALGORITMO_PLANIFICACION"));
 
-	ESTIMACION_INICIAL = config_get_int_value(config,"ESTIMACION_INICIAL");
-
+	ESTIMACION_INICIAL = config_get_double_value(config,"ESTIMACION_INICIAL");
 
 	IP_CONFIG_COORDINADOR = malloc(sizeof(char) * 100);
 	strcpy(IP_CONFIG_COORDINADOR,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
@@ -71,7 +70,7 @@ bool aplico_algoritmo_primer_ingreso(){
 
 	bool sContinuarComunicacion = true;
 
-	ordeno_listas();
+	//ordeno_listas();
 
 	//Pregunto si tengo alguno en LIST_EXECUTE (si esta vacio entro ya que significa q soy el unico)
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
@@ -117,6 +116,7 @@ void recalculo_estimacion(t_Esi *esi){
 		esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
 	}
 	esi->cantSentenciasProcesadas = 0;
+	printf("Esi %d tiene ahora una estimancion de %f\n",esi->id,esi->estimacion);
 }
 
 
@@ -150,6 +150,7 @@ bool aplico_algoritmo(char clave[40]){
 		//saco de EXECUTE a BLOQUEADO
 		// sumo una sentencia mas procesada que seria el get
 		t_Esi* esi= list_get(LIST_EXECUTE, 0);
+		esi->lineaALeer --; //le resto 1 ya que quiro q cuando se desbloee vuelva a tratar de ejecutar la sentencia q lo bloqueo
 		char* clave_block = malloc(sizeof(char)*40);
 		strcpy(clave_block,clave);
 		clave_block[strlen(clave_block)] = '\0';
@@ -234,7 +235,7 @@ bool bloqueado_flag(){
 
 //Ordena la lista de ready dependiendo del algoritmo que se usa
 void ordeno_listas(){
-	if ((strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) || strcmp(ALGORITMO_PLANIFICACION,"SJF")){
+	if ((strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) || (strcmp(ALGORITMO_PLANIFICACION,"SJF")==0)){
 		order_list(LIST_READY, (void*) ordenar_por_estimacion);
 	}
 	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
@@ -260,7 +261,7 @@ void continuar_comunicacion(){
 			printf("Error al tratar de enviar el permiso a ESI\n");
 		}else{
 
-			printf("Envie permiso de ejecucion linea: %d al ESI de ID: %d\n",primer_esi->lineaALeer, primer_esi->id);
+			printf("Envie permiso de ejecucion linea: %d al ESI de ID: %d ESTIMACION: %f\n",primer_esi->lineaALeer, primer_esi->id, primer_esi->estimacion);
 		}
 	}
 
@@ -443,11 +444,11 @@ void order_list(t_list* lista, void * funcion){
 }
 
 bool ordenar_por_estimacion(t_Esi * esi_menor, t_Esi * esi) {
-	return (esi_menor->estimacion < esi->estimacion);
+	return ((esi_menor->estimacion) <= (esi->estimacion)); //agrego el = pork pasaba q para el mismo valor lo cambiaba de lugar cosa q estaba de mas
 }
 
 bool ordenar_por_prioridad(t_Esi * esi_menor, t_Esi * esi) {
-	return (get_prioridad_HRRN(esi_menor) > get_prioridad_HRRN(esi));
+	return (get_prioridad_HRRN(esi_menor) >= get_prioridad_HRRN(esi));
 }
 
 void agregar_en_bloqueados(t_Esi *esi, char* clave){

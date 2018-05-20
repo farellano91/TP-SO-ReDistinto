@@ -38,7 +38,7 @@ int32_t PUERTO_ESCUCHA;
 char* ALGORITMO_PLANIFICACION;
 //double ALPHA;
 double ALPHA;
-int32_t ESTIMACION_INICIAL;
+double ESTIMACION_INICIAL;
 
 char** CLAVES_INICIALES_BLOQUEADAS;
 
@@ -75,7 +75,7 @@ typedef struct {
 	int32_t status; //1:bloqueado 2:ok (este va a ser un flags que me servira para saber cuando tengo que mandar a bloqueado un esi cuando tenga su respuesta)
 	int32_t lineaALeer; //cada vez q le pido a un esi q haga algo, le estoy mandando un numero de linea a leer
 
-	int32_t estimacion;
+	double estimacion;
 	int32_t tiempoEnListo; //cant de sentencas q pasan mientras el esi esta en listo
 	int32_t cantSentenciasProcesadas;
 
