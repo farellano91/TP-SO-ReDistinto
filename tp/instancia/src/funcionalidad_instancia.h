@@ -49,8 +49,8 @@ t_dictionary* create_diccionarity();
 //Para tener la tabla de entradas
 typedef struct {
 	int numero_entrada;
-	int clave;
-	int tamanio_variable;
+	char* clave;
+	int tamanio_valor;
 } t_registro_tabla_entrada;
 
 t_list* TABLA_ENTRADA;
@@ -96,9 +96,16 @@ void envio_resultado_al_coordinador(int sockfd,int resultado);
 
 void recibo_mensaje_aceptacion(int fd_coordinador);
 
+void cargar_estructuras(char* clave,char* valor,int tamanio_contenido);
+
+void reestablesco_archivo(char* nombre_archivo);
 
 void reestablecer_datos();
 
 void inicializo_estructuras();
+
+t_registro_diccionario_entrada* get_new_registro_dic_entrada(int libre,int cant_operaciones);
+
+t_registro_tabla_entrada* get_new_registro_tabla_entrada(int numero_entrada,char* clave,int tamanio_valor);
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

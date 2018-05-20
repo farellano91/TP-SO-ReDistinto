@@ -54,6 +54,7 @@ void free_algo_punt_nom(){
 }
 
 void free_registro_tabla_entrada(t_registro_tabla_entrada* registro){
+	free(registro->clave);
 	free(registro);
 }
 
@@ -257,12 +258,14 @@ size_t getFilesize(const char* filename) {
 //leer los archivos .txt creador a partir del dump para asi poder cargar mis estructuras administrativas
 void reestablecer_datos(){
 	printf("Leo mis archivos previamente guardados si es que tengo..\n");
-	//size_t tamanio_contenido = getFilesize(PUNTO_MONTAJE);
 	FILE *fp;
-	char path[1035]; //la clave tiene como maximo 40 caracteres asi que con 1035 basta y sobra
+//	char nombre_archivo[100];
+	char* nombre_archivo = malloc(sizeof(char)* 100);
+	char* nombre_archivo_sin_salto = malloc(sizeof(char)* 100);
+
 	int contador_archivos = 0;
 
-	char *ls_with_path = malloc(strlen("/bin/ls ")+strlen(PUNTO_MONTAJE)+1);//+1 for the null-terminator
+	char *ls_with_path = malloc(strlen("/bin/ls ") + strlen(PUNTO_MONTAJE) + 1 );//+1 for the null-terminator
 	strcpy(ls_with_path,"/bin/ls ");
 	strcat(ls_with_path, PUNTO_MONTAJE);
 
@@ -277,19 +280,62 @@ void reestablecer_datos(){
 	}
 	free(ls_with_path);
 	/* Vemos que hay dentro de la carpeta */
-	while (fgets(path, sizeof(path)-1, fp) != NULL) {
-		printf("Tenemos el archivo :%s", path);
+	while (fgets(nombre_archivo,100, fp) != NULL) {
+		//Nota: fgets le agrega un \n al nombre de la linea q lee
+		memcpy(nombre_archivo_sin_salto,nombre_archivo,strlen(nombre_archivo)-1);
+		printf("Tenemos para reestablecer el archivo :%s\n", nombre_archivo_sin_salto);
 		contador_archivos ++;
-
-		//Logica propia para reestablecer un archivo de nombre path
-		printf("Lo reestablecemos...\n");
-		//reestableco este archivo en particular....
-		printf("Reestablecido correctamente!\n");
+		reestablesco_archivo(nombre_archivo_sin_salto);
 	}
 	if(contador_archivos == 0){
-		printf("NO hay nada para reestablecer\n");
+		printf("No hay nada para reestablecer\n");
 	}
+	free(nombre_archivo_sin_salto);
+	free(nombre_archivo);
 	pclose(fp);
+}
+
+void reestablesco_archivo(char* nombre_archivo){
+	char* path_archivo = malloc(strlen(nombre_archivo) + strlen(PUNTO_MONTAJE) + 1);
+	strcpy(path_archivo,PUNTO_MONTAJE);
+	strcat(path_archivo,nombre_archivo);
+
+	size_t tamanio_contenido = getFilesize(path_archivo);
+
+	int fd = open(path_archivo, O_RDONLY, 0);
+	void* mmappedData = mmap(NULL, tamanio_contenido, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
+	if ( mmappedData == MAP_FAILED ){
+		printf("Error al tratar de usar mmap!\n");
+		free(path_archivo);
+		free_algo_punt_nom();
+		free_estruct_admin();
+		exit(1);
+	}
+
+	char* clave = malloc(sizeof(char)*100);
+	memcpy(clave,nombre_archivo,strlen(nombre_archivo)-4); //copio sin el .txt
+
+	char* valor = malloc(sizeof(char)*1024);
+	memcpy(valor,mmappedData,tamanio_contenido-1);//el dato dentro del archivo (osea el valor) tambien viene con \n
+
+	int rc = munmap(mmappedData, tamanio_contenido);
+
+	printf("Clave: %s Valor: %s de tamaño: %d\n",clave,valor,tamanio_contenido);
+
+	//cargo mis estructuras
+	cargar_estructuras(clave,valor,tamanio_contenido);
+
+	free(clave);
+	free(valor);
+	free(path_archivo);
+}
+
+void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
+	//inserto en el diccionario de entradas
+
+	//inserto en el storage
+
+	//inserto en la tabla de entradas
 }
 
 t_dictionary* create_diccionarity(){
