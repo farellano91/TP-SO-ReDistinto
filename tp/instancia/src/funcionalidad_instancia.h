@@ -89,6 +89,8 @@ void free_parametros_config();
 //Recibo los datos para mis entradas (para armar el storage)
 void recibo_datos_entrada(int sockfd);
 
+int obtener_espacio_libre();
+
 //Envio mis datos al coordinador
 void envio_datos(int sockfd);
 

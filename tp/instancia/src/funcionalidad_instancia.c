@@ -219,7 +219,10 @@ void recibo_datos_entrada(int fd_coordinador){
 
 //esto para q el coordinador puedo crear su t_instancia
 void envio_datos(int fd_coordinador){
-	//revisar
+	//
+	int espacio_libre = obtener_espacio_libre();
+	printf("Deberia avisar que tengo %d de espacio libre solo\n",espacio_libre);
+
 	int32_t longitud_mensaje = strlen(NOMBRE_INSTANCIA) + 1;
 	void* bufferEnvio = malloc(sizeof(int32_t)+ sizeof(char)*longitud_mensaje);
 	memcpy(bufferEnvio, &longitud_mensaje,sizeof(int32_t));
@@ -236,8 +239,21 @@ void envio_datos(int fd_coordinador){
 	free(bufferEnvio);
 }
 
+int obtener_espacio_libre(){
+	int espacio_total_disponible = 0;
+
+	void _buscaEspacioLibre(char* _, t_registro_diccionario_entrada* registro) {
+		espacio_total_disponible = espacio_total_disponible + registro->tamanio_libre;
+	}
+	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_buscaEspacioLibre);
+	return espacio_total_disponible;
+}
+
 //con los datos de entrada que recibi, puedo inicializar mis estructuras
 void inicializo_estructuras(){
+
+	//inicializo diccionario de entrada
+	DICCIONARITY_ENTRADA = create_diccionarity();
 
 	//inicializo storage
 	STORAGE = malloc(sizeof(char*)* CANT_ENTRADA);
@@ -245,13 +261,15 @@ void inicializo_estructuras(){
 	for(i= 0;i<CANT_ENTRADA;i++){
 		STORAGE[i] = malloc(sizeof(char) * TAMANIO_ENTRADA); //es 100, osea 99 caractes posta
 		strcpy(STORAGE[i],"");
+
+		t_registro_diccionario_entrada* registro = get_new_registro_dic_entrada(1,0,TAMANIO_ENTRADA);
+		dictionary_put(DICCIONARITY_ENTRADA,string_itoa(i),registro);
 	}
 
 	//inicializo tabla entradas
 	TABLA_ENTRADA = create_list();
 
-	//inicializo diccionario de entrada
-	DICCIONARITY_ENTRADA = create_diccionarity();
+
 }
 
 size_t getFilesize(const char* filename) {
@@ -412,12 +430,12 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 		registro_diccionario->cant_operaciones++;
 		registro_diccionario->libre = 0;
 		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
-		printf("Actualizo en mi diccionario la entrada:%d-ocupada-operaciones:%d-tamaño libre:%d\n",numero_entrada+1,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
+		printf("Actualizo en mi diccionario la entrada:%d-ocupada-operaciones:%d-tamaño libre:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
 	}else{
 		//no existe, lo crea
 		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,1,(TAMANIO_ENTRADA - tamanio_contenido));
 		dictionary_put(DICCIONARITY_ENTRADA,key,registro_diccionario);
-		printf("Cargo en mi diccionario la entrada:%d-ocupada-operaciones:1-tamaño libre:%d\n",numero_entrada+1,registro_diccionario->tamanio_libre);
+		printf("Cargo en mi diccionario la entrada:%d-ocupada-operaciones:1-tamaño libre:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
 	}
 
 }
