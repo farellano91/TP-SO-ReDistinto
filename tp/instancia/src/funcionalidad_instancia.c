@@ -24,15 +24,19 @@ void get_parametros_config(){
 
 	IP_CONFIG_COORDINADOR = malloc(sizeof(char) * 100);
 	strcpy(IP_CONFIG_COORDINADOR,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
+	IP_CONFIG_COORDINADOR[strlen(IP_CONFIG_COORDINADOR)] = '\0';
 
 	ALGORITMO_REEMPLAZO = malloc(sizeof(char) * 100);
 	strcpy(ALGORITMO_REEMPLAZO,config_get_string_value(config, "ALGORITMO_REEMPLAZO"));
+	ALGORITMO_REEMPLAZO[strlen(ALGORITMO_REEMPLAZO)] = '\0';
 
 	PUNTO_MONTAJE = malloc(sizeof(char) * 100);
 	strcpy(PUNTO_MONTAJE,config_get_string_value(config, "PUNTO_MONTAJE"));
+	PUNTO_MONTAJE[strlen(PUNTO_MONTAJE)] = '\0';
 
 	NOMBRE_INSTANCIA = malloc(sizeof(char) * 100);
 	strcpy(NOMBRE_INSTANCIA,config_get_string_value(config, "NOMBRE_INSTANCIA"));
+	NOMBRE_INSTANCIA[strlen(NOMBRE_INSTANCIA)] = '\0';
 
 
 	config_destroy(config);
@@ -239,7 +243,7 @@ void inicializo_estructuras(){
 	STORAGE = malloc(sizeof(char*)* CANT_ENTRADA);
 	int i = 0;
 	for(i= 0;i<CANT_ENTRADA;i++){
-		STORAGE[i] = malloc(sizeof(char) * TAMANIO_ENTRADA);
+		STORAGE[i] = malloc(sizeof(char) * TAMANIO_ENTRADA); //es 100, osea 99 caractes posta
 		strcpy(STORAGE[i],"");
 	}
 
@@ -284,6 +288,7 @@ void reestablecer_datos(){
 	while (fgets(nombre_archivo,100, fp) != NULL) {
 		//Nota: fgets le agrega un \n al nombre de la linea q lee
 		memcpy(nombre_archivo_sin_salto,nombre_archivo,strlen(nombre_archivo)-1);
+		nombre_archivo_sin_salto[strlen(nombre_archivo)-1]='\0';
 		printf("Tenemos para reestablecer el archivo :%s\n", nombre_archivo_sin_salto);
 		contador_archivos ++;
 		reestablesco_archivo(nombre_archivo_sin_salto);
@@ -300,8 +305,9 @@ void reestablesco_archivo(char* nombre_archivo){
 	char* path_archivo = malloc(strlen(nombre_archivo) + strlen(PUNTO_MONTAJE) + 1);
 	strcpy(path_archivo,PUNTO_MONTAJE);
 	strcat(path_archivo,nombre_archivo);
+	path_archivo[strlen(path_archivo)] = '\0';
 
-	size_t tamanio_contenido = getFilesize(path_archivo);
+	size_t tamanio_contenido = getFilesize(path_archivo); //tamaño completo, osea "asdasd\n" => 7
 
 	int fd = open(path_archivo, O_RDONLY, 0);
 	void* mmappedData = mmap(NULL, tamanio_contenido, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
@@ -310,23 +316,33 @@ void reestablesco_archivo(char* nombre_archivo){
 		free(path_archivo);
 		free_algo_punt_nom();
 		free_estruct_admin();
+		close(fd);
 		exit(1);
 	}
 	int32_t len_clave = strlen(nombre_archivo) - 4;
-	char* clave = malloc(len_clave);
+	char* clave = malloc(len_clave + 1);
 	memcpy(clave,nombre_archivo,len_clave); //copio sin el .txt
 	clave[len_clave] = '\0';
 
 	int32_t len_valor = tamanio_contenido - 1;
-	char* valor = malloc(len_valor);
+	char* valor = malloc(len_valor + 1);
 	memcpy(valor,mmappedData,len_valor);//el dato dentro del archivo (osea el valor) tambien viene con \n
 	valor[len_valor] = '\0';
 
-	int rc = munmap(mmappedData, tamanio_contenido);
-
+	if (munmap(mmappedData, tamanio_contenido) == -1){
+		printf("Error al tratar de liberar memoria de un mmap!\n");
+		close(fd);
+		free(path_archivo);
+		free_algo_punt_nom();
+		free_estruct_admin();
+		free(clave);
+		free(valor);
+		exit(1);
+	}
 	//cargo mis estructuras
-	cargar_estructuras(clave,valor,tamanio_contenido);
+	cargar_estructuras(clave,valor,len_valor + 1);
 
+	close(fd);
 	free(clave);
 	free(valor);
 	free(path_archivo);
@@ -337,26 +353,71 @@ void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 	for(i = 0; i < CANT_ENTRADA; i++){
 		if(strcmp(STORAGE[i],"")== 0){
 			//esta vacio
-			if(tamanio_contenido < TAMANIO_ENTRADA){
+			if(tamanio_contenido <= TAMANIO_ENTRADA){
 				//entra en uno solo
 				strcpy(STORAGE[i],valor);
 				printf("Cargo en la entrada numero: %d el valor: %s\n",i+1,valor);
 
 				//actualizo tabla
+				cargo_actualizo_tabla(clave,i,tamanio_contenido);
 				//actualizo diccionario
+				cargo_actualizo_diccionario(i,tamanio_contenido);
+
 				break;
 			}else{
 				//no entra en uno solo, entoces los divido
-				memcpy(STORAGE[i],valor,TAMANIO_ENTRADA);
+				memcpy(STORAGE[i],valor,TAMANIO_ENTRADA-1);
+				STORAGE[i][TAMANIO_ENTRADA]='\0';
 				printf("Cargo en la entrada numero: %d el valor: %s\n",i+1,valor);
-				//actualizo tabla
-				//actualizo diccionario
 
 				memcpy(valor,valor + TAMANIO_ENTRADA,tamanio_contenido);
-				tamanio_contenido = tamanio_contenido - TAMANIO_ENTRADA;
+				//tamanio_contenido = tamanio_contenido - TAMANIO_ENTRADA + 1;
+				tamanio_contenido = strlen(valor) + 1;
+
+				//actualizo tabla
+				cargo_actualizo_tabla(clave,i,TAMANIO_ENTRADA);
+				//actualizo diccionario
+				cargo_actualizo_diccionario(i,TAMANIO_ENTRADA);
 
 			}
 		}
+	}
+
+}
+
+//"lista"
+void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido){
+	//busco si ya esta guardado ese numero de entrada
+	bool _porNumeroEntrada(t_registro_tabla_entrada* registro) { return (registro->numero_entrada == numero_entrada);}
+	t_registro_tabla_entrada* registro_buscado = list_find(TABLA_ENTRADA,(void*)_porNumeroEntrada);
+	if(registro_buscado != NULL){
+		//si ya esta guardado, entonces lo actualizo
+		strcpy(registro_buscado->clave,clave);
+		registro_buscado->tamanio_valor = tamanio_contenido;
+		printf("Actualizo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada+1,clave,tamanio_contenido);
+	}else{
+		//si no esta guardado, lo guardo por primera vez
+		t_registro_tabla_entrada * nuevo_registro = get_new_registro_tabla_entrada(numero_entrada,clave,tamanio_contenido);
+		list_add(TABLA_ENTRADA,nuevo_registro);
+		printf("Cargo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada+1,clave,tamanio_contenido);
+	}
+}
+
+void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
+	char * key = string_itoa(numero_entrada);
+	//buscamos si ya esta esa entrada guardada
+	if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
+		//existe la key en el diccionario
+		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+		registro_diccionario->cant_operaciones++;
+		registro_diccionario->libre = 0;
+		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
+		printf("Actualizo en mi diccionario la entrada:%d-ocupada-operaciones:%d-tamaño libre:%d\n",numero_entrada+1,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
+	}else{
+		//no existe, lo crea
+		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,1,(TAMANIO_ENTRADA - tamanio_contenido));
+		dictionary_put(DICCIONARITY_ENTRADA,key,registro_diccionario);
+		printf("Cargo en mi diccionario la entrada:%d-ocupada-operaciones:1-tamaño libre:%d\n",numero_entrada+1,registro_diccionario->tamanio_libre);
 	}
 
 }
@@ -369,4 +430,23 @@ t_dictionary* create_diccionarity(){
 t_list* create_list(){
 	t_list * list = list_create();
 	return list;
+}
+
+t_registro_diccionario_entrada* get_new_registro_dic_entrada(int libre,int cant_operaciones,int tamanio_libre){
+	t_registro_diccionario_entrada* registro_dic_entrada = malloc(sizeof(t_registro_diccionario_entrada));
+	registro_dic_entrada->cant_operaciones = cant_operaciones;
+	registro_dic_entrada->libre = libre;
+	registro_dic_entrada->tamanio_libre = tamanio_libre;
+
+	return registro_dic_entrada;
+}
+
+t_registro_tabla_entrada* get_new_registro_tabla_entrada(int numero_entrada,char* clave,int tamanio_valor){
+	t_registro_tabla_entrada* registro_tabla_entrada = malloc(sizeof(t_registro_tabla_entrada));
+	registro_tabla_entrada->numero_entrada = numero_entrada;
+	registro_tabla_entrada->tamanio_valor = tamanio_valor;
+	int32_t len_clave = strlen(clave) + 1;
+	registro_tabla_entrada->clave = malloc(sizeof(char) * len_clave);
+	strcpy(registro_tabla_entrada->clave,clave);
+	return registro_tabla_entrada;
 }

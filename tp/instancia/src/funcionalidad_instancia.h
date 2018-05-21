@@ -41,6 +41,7 @@ char** STORAGE;
 typedef struct {
 	int libre; //1:esta libre 0:esta ocupado
 	int cant_operaciones; //si esta libre es cero
+	int tamanio_libre;
 } t_registro_diccionario_entrada;
 
 t_dictionary * DICCIONARITY_ENTRADA;
@@ -105,8 +106,12 @@ void reestablecer_datos();
 
 void inicializo_estructuras();
 
-t_registro_diccionario_entrada* get_new_registro_dic_entrada(int libre,int cant_operaciones);
+t_registro_diccionario_entrada* get_new_registro_dic_entrada(int libre,int cant_operaciones,int tamanio_libre);
 
 t_registro_tabla_entrada* get_new_registro_tabla_entrada(int numero_entrada,char* clave,int tamanio_valor);
+
+void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido);
+
+void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido);
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */
