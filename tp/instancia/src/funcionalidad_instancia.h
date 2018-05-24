@@ -61,7 +61,7 @@ t_list* create_list();
 
 
 enum t_respuesta_al_coordinador {
-	FALLO_OPERACION_INSTANCIA = 5, //fallo al hacer algo
+	FALLO_OPERACION_INSTANCIA = 5, //fallo al hacer algo(cuando trata de leer una clave que tiene datos ya pizados)
 	OK_SET_INSTANCIA = 6,
 	OK_STORE_INSTANCIA = 7,
 };

@@ -72,6 +72,7 @@ typedef struct {
 typedef struct {
 	char* nombre_instancia;
 	int respuesta;
+	int tamanio_libre; //solo si la operacion es OK_SET_INSTANCIA se recibe un espacio libre actualizado
 } t_instancia_respuesta;
 
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** clave_valor);
@@ -104,7 +105,7 @@ t_Instancia* creo_instancia(int fd_instancia);
 
 t_registro_instancia* creo_registro_instancia(char* nombre_instancia, char* clave);
 
-t_instancia_respuesta* creo_instancia_respuesta(char* nombre_instancia,int respuesta);
+t_instancia_respuesta* creo_instancia_respuesta(char* nombre_instancia,int respuesta,int tamanio_libre);
 
 void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva);
 
@@ -120,6 +121,8 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea);
 
 int reciboRespuestaInstancia(int fd_instancia);
 
+int reciboTamanioLibre(int fd_instancia);
+
 void free_instancia(t_Instancia * instancia);
 
 void free_registro_instancia(t_registro_instancia* registro_instancia);
@@ -128,7 +131,7 @@ void free_instancia_respuesta(t_instancia_respuesta* instancia_respuesta);
 
 void remove_instancia(int fd_instancia);
 
-void cargo_instancia_respuesta(char * instancia_nueva,int respuesta);
+void cargo_instancia_respuesta(char * instancia_nueva,int respuesta,int tamanio_libre);
 
 bool exist_clave_registro_instancias(char * clave);
 

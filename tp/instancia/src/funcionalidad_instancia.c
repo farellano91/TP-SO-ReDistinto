@@ -84,7 +84,13 @@ void free_estruct_admin(){
 
 void envio_resultado_al_coordinador(int sockfd,int resultado){
 
-	if(send(sockfd, &resultado, sizeof(int32_t), 0) == -1) {
+	//envio mi nuevo tamaño y resultado de la operacion
+	int32_t espacio_libre = obtener_espacio_libre();
+	void* bufferEnvio = malloc(sizeof(int32_t)*2);
+	memcpy(bufferEnvio,&espacio_libre,sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t),&resultado ,sizeof(int32_t) );
+
+	if(send(sockfd, &bufferEnvio, sizeof(int32_t)*2 , 0) == -1) {
 		printf("No se puede enviar el resultado al coordinador\n");
 		free_algo_punt_nom();
 		free_estruct_admin();
@@ -219,23 +225,24 @@ void recibo_datos_entrada(int fd_coordinador){
 
 //esto para q el coordinador puedo crear su t_instancia
 void envio_datos(int fd_coordinador){
-	//
-	int espacio_libre = obtener_espacio_libre();
-	printf("Deberia avisar que tengo %d de espacio libre solo\n",espacio_libre);
+
+	int32_t espacio_libre = obtener_espacio_libre();
 
 	int32_t longitud_mensaje = strlen(NOMBRE_INSTANCIA) + 1;
-	void* bufferEnvio = malloc(sizeof(int32_t)+ sizeof(char)*longitud_mensaje);
+	void* bufferEnvio = malloc(sizeof(int32_t)*2 + sizeof(char)*longitud_mensaje);
 	memcpy(bufferEnvio, &longitud_mensaje,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),NOMBRE_INSTANCIA,longitud_mensaje);
+	memcpy(bufferEnvio + sizeof(int32_t) + longitud_mensaje,&espacio_libre,sizeof(int32_t));
 
-	if (send(fd_coordinador, bufferEnvio,sizeof(int32_t)+ sizeof(char)*longitud_mensaje, 0) == -1) {
+
+	if (send(fd_coordinador, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_mensaje, 0) == -1) {
 		printf("No pude enviar mis datos al coordinador\n");
 		free(bufferEnvio);
 		free_algo_punt_nom();
 		free_estruct_admin();
 		exit(1);
 	}
-	printf("Envie mi nombre correctamente\n");
+	printf("Envie mi nombre y tamaño libre:%d correctamente\n",espacio_libre);
 	free(bufferEnvio);
 }
 
@@ -282,7 +289,6 @@ size_t getFilesize(const char* filename) {
 void reestablecer_datos(){
 	printf("Leo mis archivos previamente guardados si es que tengo..\n");
 	FILE *fp;
-//	char nombre_archivo[100];
 	char* nombre_archivo = malloc(sizeof(char)* 100);
 	char* nombre_archivo_sin_salto = malloc(sizeof(char)* 100);
 
@@ -325,7 +331,7 @@ void reestablesco_archivo(char* nombre_archivo){
 	strcat(path_archivo,nombre_archivo);
 	path_archivo[strlen(path_archivo)] = '\0';
 
-	size_t tamanio_contenido = getFilesize(path_archivo); //tamaño completo, osea "asdasd\n" => 7
+	size_t tamanio_contenido = getFilesize(path_archivo); //tamaño completo, osea "gato" => 4
 
 	int fd = open(path_archivo, O_RDONLY, 0);
 	void* mmappedData = mmap(NULL, tamanio_contenido, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
@@ -342,8 +348,8 @@ void reestablesco_archivo(char* nombre_archivo){
 	memcpy(clave,nombre_archivo,len_clave); //copio sin el .txt
 	clave[len_clave] = '\0';
 
-	int32_t len_valor = tamanio_contenido - 1;
-	char* valor = malloc(len_valor + 1);
+	int32_t len_valor = tamanio_contenido + 1;
+	char* valor = malloc(len_valor);
 	memcpy(valor,mmappedData,len_valor);//el dato dentro del archivo (osea el valor) tambien viene con \n
 	valor[len_valor] = '\0';
 
@@ -358,7 +364,7 @@ void reestablesco_archivo(char* nombre_archivo){
 		exit(1);
 	}
 	//cargo mis estructuras
-	cargar_estructuras(clave,valor,len_valor + 1);
+	cargar_estructuras(clave,valor,len_valor);
 
 	close(fd);
 	free(clave);
@@ -374,7 +380,7 @@ void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 			if(tamanio_contenido <= TAMANIO_ENTRADA){
 				//entra en uno solo
 				strcpy(STORAGE[i],valor);
-				printf("Cargo en la entrada numero: %d el valor: %s\n",i+1,valor);
+				printf("Cargo en la entrada numero: %d el valor: %s\n",i,valor);
 
 				//actualizo tabla
 				cargo_actualizo_tabla(clave,i,tamanio_contenido);
