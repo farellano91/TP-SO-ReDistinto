@@ -82,15 +82,18 @@ void free_estruct_admin(){
 	free(STORAGE);
 }
 
+//envio mi nuevo tamaño y resultado de la operacion
 void envio_resultado_al_coordinador(int sockfd,int resultado){
+	int32_t espacio_libre = 0;
+	if(resultado == OK_SET_INSTANCIA){
+		espacio_libre = obtener_espacio_libre();
+	}
 
-	//envio mi nuevo tamaño y resultado de la operacion
-	int32_t espacio_libre = obtener_espacio_libre();
 	void* bufferEnvio = malloc(sizeof(int32_t)*2);
 	memcpy(bufferEnvio,&espacio_libre,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),&resultado ,sizeof(int32_t) );
 
-	if(send(sockfd, &bufferEnvio, sizeof(int32_t)*2 , 0) == -1) {
+	if(send(sockfd,bufferEnvio, sizeof(int32_t)*2 , 0) == -1) {
 		printf("No se puede enviar el resultado al coordinador\n");
 		free_algo_punt_nom();
 		free_estruct_admin();
@@ -196,16 +199,53 @@ int recibo_sentencia(int fd_coordinador){
 			exit(1);
 		}
 		printf("Recibi para hacer STORE clave: %s\n",clave_recibida);
-		//TODO:-----> proceso_operacion(tipo_operacion,clave_recibida,valor_recibido);
 
-		//por ahora hardcodeamos que la operacion salio bien
-		respuesta = OK_STORE_INSTANCIA;
+		//respuesta = OK_STORE_INSTANCIA;
+		respuesta = ejecuto_store(clave_recibida);
 		free(clave_recibida);
 	}
 
 	return respuesta;
 }
 
+
+int ejecuto_store(char* clave_recibida){
+
+	//si la clave-valor ya no existe en la instancia dado que se pizo: FALLO_OPERACION_INSTANCIA
+	char* valor_del_storage = get_valor_by_clave(clave_recibida);
+	if(valor_del_storage == NULL){
+		printf("ERROR: no existe la clave-valor dado que alguna de sus entradas se pizaron\n");
+		return FALLO_INSTANCIA_CLAVE_SOBREESCRITA;
+	}
+
+	printf("El valor a guardar es:%s\n",valor_del_storage);
+
+	//guardo o actualizo el .txt
+
+	//por ahora
+	free(valor_del_storage);
+	return OK_STORE_INSTANCIA;
+}
+
+char* get_valor_by_clave(char * clave_recibida){
+
+	char* valor_buscado = malloc(sizeof(char)* TAMANIO_ENTRADA* CANT_ENTRADA);
+	strcpy(valor_buscado,"");
+
+	bool _esClave(t_registro_tabla_entrada* entrada) { return strcmp(entrada->clave,clave_recibida)== 0;}
+	t_list* tabla_entrada =  list_filter(TABLA_ENTRADA,(void*) _esClave);
+
+	if(tabla_entrada!=NULL){
+		void _armoValor(t_registro_tabla_entrada* entrada) {
+			strcat(valor_buscado,STORAGE[entrada->numero_entrada]);
+		}
+		list_iterate(tabla_entrada,(void*)_armoValor);
+		valor_buscado[strlen(valor_buscado)] = '\0';
+		return valor_buscado;
+	}
+	return NULL;
+
+}
 
 void recibo_datos_entrada(int fd_coordinador){
 	int numbytes = 0;
@@ -391,10 +431,10 @@ void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 			}else{
 				//no entra en uno solo, entoces los divido
 				memcpy(STORAGE[i],valor,TAMANIO_ENTRADA-1);
-				STORAGE[i][TAMANIO_ENTRADA]='\0';
-				printf("Cargo en la entrada numero: %d el valor: %s\n",i+1,valor);
+				STORAGE[i][TAMANIO_ENTRADA-1]='\0';
+				printf("Cargo en la entrada numero: %d el valor: %s\n",i,STORAGE[i]);
 
-				memcpy(valor,valor + TAMANIO_ENTRADA,tamanio_contenido);
+				memcpy(valor,valor + TAMANIO_ENTRADA -1 ,tamanio_contenido);
 				//tamanio_contenido = tamanio_contenido - TAMANIO_ENTRADA + 1;
 				tamanio_contenido = strlen(valor) + 1;
 
@@ -418,12 +458,12 @@ void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido)
 		//si ya esta guardado, entonces lo actualizo
 		strcpy(registro_buscado->clave,clave);
 		registro_buscado->tamanio_valor = tamanio_contenido;
-		printf("Actualizo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada+1,clave,tamanio_contenido);
+		printf("Actualizo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada,clave,tamanio_contenido);
 	}else{
 		//si no esta guardado, lo guardo por primera vez
 		t_registro_tabla_entrada * nuevo_registro = get_new_registro_tabla_entrada(numero_entrada,clave,tamanio_contenido);
 		list_add(TABLA_ENTRADA,nuevo_registro);
-		printf("Cargo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada+1,clave,tamanio_contenido);
+		printf("Cargo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada,clave,tamanio_contenido);
 	}
 }
 

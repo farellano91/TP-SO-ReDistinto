@@ -270,6 +270,8 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 	limpia_destruye_elemt_lista_respuesta_instancia();
 
 	free(bufferEnvio);
+
+	//TODO controla si es FALLO_INSTANCIA_CLAVE_SOBREESCRITA limpiar como si fuera clave innacesible
 	return resultado_instancia;
 }
 
@@ -341,6 +343,8 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 
 		//limpio mi lista de instancia respuesta
 		limpia_destruye_elemt_lista_respuesta_instancia();
+
+		//TODO controla si es FALLO_INSTANCIA_CLAVE_SOBREESCRITA limpiar como si fuera clave innacesible
 		return resultado_instancia;
 }
 void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
@@ -375,8 +379,8 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	case FALLO_PLANIFICADOR:
 		strcat(registro, "OCURRIO UN ERROR CON EL PLANIFICADOR, MIRAR CONSOLA DEL PLANIFICADOR");
 		break;
-	case FALLO_INSTANCIA:
-		strcat(registro, "OCURRIO UN ERROR CON LA INSTANCIA, MIRAR CONSOLA DE INSTANCIA");
+	case FALLO_INSTANCIA_CLAVE_SOBREESCRITA:
+		strcat(registro, "OCURRIO UN ERROR CON LA INSTANCIA, LA CLAVE NO EXISTE MAS EN LA INSTANCIA DADO QUE SE SOBREESCRIBIO");
 		break;
 	case FALLA_PLANIFICADOR_DESCONECTADO:
 		strcat(registro, "FALLA: planificador desconectado");
@@ -608,8 +612,8 @@ t_Instancia* LeastSpaceUsed(char** resultado) {
 
 }
 
-t_Instancia* keyExplicit(char** resultado) {//TODO: recibir char
-	//vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
+t_Instancia* keyExplicit(char** resultado) {
+	//Recibir char vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
 	int i;
 	char valorinicialetras = 'a';
 	pthread_mutex_lock(&MUTEX_INSTANCIA);

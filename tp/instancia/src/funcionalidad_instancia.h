@@ -61,7 +61,7 @@ t_list* create_list();
 
 
 enum t_respuesta_al_coordinador {
-	FALLO_OPERACION_INSTANCIA = 5, //fallo al hacer algo(cuando trata de leer una clave que tiene datos ya pizados)
+	FALLO_INSTANCIA_CLAVE_SOBREESCRITA = 5,
 	OK_SET_INSTANCIA = 6,
 	OK_STORE_INSTANCIA = 7,
 };
@@ -89,6 +89,8 @@ void free_parametros_config();
 //Recibo los datos para mis entradas (para armar el storage)
 void recibo_datos_entrada(int sockfd);
 
+char* get_valor_by_clave(char * clave_recibida);
+
 int obtener_espacio_libre();
 
 //Envio mis datos al coordinador
@@ -115,5 +117,7 @@ t_registro_tabla_entrada* get_new_registro_tabla_entrada(int numero_entrada,char
 void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido);
 
 void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido);
+
+int ejecuto_store(char* clave_recibida);
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

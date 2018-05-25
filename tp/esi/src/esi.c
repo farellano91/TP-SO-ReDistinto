@@ -44,13 +44,13 @@ int main(int argc, char** argv) {
 		//recv de numero_linea_leer(numero de linea a leer) por parte del planificador (sabemos que los numero_linea_leers son solo int32_t)
 		if ((numbytes = recv(fd_planificador, &numero_linea_leer, sizeof(int32_t), 0))
 				<= 0) {
-
-			if (numbytes == 0) {
-				// conexión cerrada
-				printf("Se desconecto el planificador\n");
-			} else {
-				perror("ERROR: al recibir respuesta del planificador");
-			}
+//
+//			if (numbytes == 0) {
+//				// conexión cerrada
+//				printf("Se desconecto el planificador\n");
+//			} else {
+//				perror("ERROR: al recibir respuesta del planificador");
+//			}
 			close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
 			close(fd_coordinador);
 
