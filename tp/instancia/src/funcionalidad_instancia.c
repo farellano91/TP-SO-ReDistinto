@@ -214,18 +214,68 @@ int ejecuto_store(char* clave_recibida){
 	//si la clave-valor ya no existe en la instancia dado que se pizo: FALLO_OPERACION_INSTANCIA
 	char* valor_del_storage = get_valor_by_clave(clave_recibida);
 	if(valor_del_storage == NULL){
-		printf("ERROR: no existe la clave-valor dado que alguna de sus entradas se pizaron\n");
+		printf("ERROR: no existe la clave-valor dado que alguna de su entradas se reemplazo\n");
 		return FALLO_INSTANCIA_CLAVE_SOBREESCRITA;
 	}
 
 	printf("El valor a guardar es:%s\n",valor_del_storage);
 
 	//guardo o actualizo el .txt
+	char* path_archivo = malloc(strlen(clave_recibida) + 4 + strlen(PUNTO_MONTAJE) + 1);
+	strcpy(path_archivo,PUNTO_MONTAJE);
+	strcat(path_archivo,clave_recibida);
+	strcat(path_archivo,".txt");
+	path_archivo[strlen(path_archivo)] = '\0';
+
+	create_or_update_file(path_archivo,valor_del_storage);
 
 	//por ahora
+	free(path_archivo);
 	free(valor_del_storage);
 	return OK_STORE_INSTANCIA;
 }
+
+
+void create_or_update_file(char *path_archivo, char * valor_del_storage){
+
+	int32_t len_valor = strlen(valor_del_storage) +1 ;
+	//open con crear o actualizar
+	int fd = open(path_archivo,O_RDWR | O_EXCL , 0);
+
+	//mmap
+	size_t tamanio_contenido = getFilesize(path_archivo);
+	void* mmappedData = mmap(NULL, tamanio_contenido, PROT_WRITE, MAP_SHARED, fd, 0);
+	if ( mmappedData == MAP_FAILED ){
+		printf("Error al tratar de usar mmap!\n");
+		free(path_archivo);
+		free_algo_punt_nom();
+		free_estruct_admin();
+		close(fd);
+		exit(1);
+	}
+
+	//pizar dato
+	strcpy(mmappedData,"");
+	memcpy(mmappedData,valor_del_storage,len_valor);
+
+	// Write it now to disk
+	if (msync(mmappedData, len_valor, MS_SYNC) == -1)
+	{
+		perror("Could not sync the file to disk");
+	}
+
+	// Don't forget to free the mmapped memory
+	if (munmap(mmappedData, len_valor) == -1)
+	{
+		close(fd);
+		perror("Error un-mmapping the file");
+		exit(EXIT_FAILURE);
+	}
+
+	//cerrar
+	close(fd);
+}
+
 
 char* get_valor_by_clave(char * clave_recibida){
 

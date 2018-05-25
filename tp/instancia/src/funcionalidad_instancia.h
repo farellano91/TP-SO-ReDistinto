@@ -71,6 +71,8 @@ enum t_operacion {
 	STORE = 3,
 };
 
+size_t getFilesize(const char* filename);
+
 void intHandler(int dummy);
 
 void free_algo_punt_nom();
@@ -119,5 +121,7 @@ void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido)
 void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido);
 
 int ejecuto_store(char* clave_recibida);
+
+void create_or_update_file(char *path_archivo, char * valor_del_storage);
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

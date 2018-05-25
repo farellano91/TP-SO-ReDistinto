@@ -265,13 +265,15 @@ int envio_recibo_tarea_store_instancia(int32_t id_operacion, char* clave,t_Insta
 	resultado_instancia = instancia_resp->respuesta;
 	if(resultado_instancia == OK_STORE_INSTANCIA){
 		printf("Sentencia STORE realizado correctamente\n");
+	}else if(resultado_instancia == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
+		//esto significa que la clave ya no existe en la instancia, entonces la saco de mi tabla de registro instancia (INSTANCIA-CLAVE)
+		remove_registro_instancia(instancia->nombre_instancia);
 	}
 	//limpio mi lista de instancia respuesta
 	limpia_destruye_elemt_lista_respuesta_instancia();
 
 	free(bufferEnvio);
 
-	//TODO controla si es FALLO_INSTANCIA_CLAVE_SOBREESCRITA limpiar como si fuera clave innacesible
 	return resultado_instancia;
 }
 
@@ -320,12 +322,14 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 		pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
 		t_instancia_respuesta * instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 		pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
+
 		pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
 		while(instancia_resp == NULL){
 			pthread_cond_wait(&CONDICION_RECV_INSTANCIA,&MUTEX_RECV_INSTANCIA); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
 			instancia_resp = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_esNombreInstancia);
 		}
 		pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
+
 		resultado_instancia = instancia_resp->respuesta;
 		if(resultado_instancia == OK_SET_INSTANCIA){
 			printf("Sentencia SET realizado correctamente\n");
@@ -337,6 +341,9 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 			t_registro_instancia* reg = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_registrInstancia);
 			strcpy(reg->nombre_instancia,instancia_resp->nombre_instancia);
 			printf("Se registra en instancia-clave la %s con clave: %s\n",instancia_resp->nombre_instancia,clave_valor_recibido[0]);
+		}else if(resultado_instancia == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
+			//esto significa que la clave ya no existe en la instancia, entonces la saco de mi tabla de registro instancia
+			remove_registro_instancia(clave_valor_recibido[0]);
 		}
 
 		free(bufferEnvio);
@@ -344,7 +351,6 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 		//limpio mi lista de instancia respuesta
 		limpia_destruye_elemt_lista_respuesta_instancia();
 
-		//TODO controla si es FALLO_INSTANCIA_CLAVE_SOBREESCRITA limpiar como si fuera clave innacesible
 		return resultado_instancia;
 }
 void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
