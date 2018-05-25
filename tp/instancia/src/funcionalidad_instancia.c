@@ -137,14 +137,17 @@ int recibo_sentencia(int fd_coordinador){
 			printf("Coordinador desconectado\n");
 			free_algo_punt_nom();
 			free_estruct_admin();
+			close(fd_coordinador);
 			exit(1);
 	}
 
 	/*PROCESO.....*/
 	if(tipo_operacion == SET){ //SET CLAVE VALOR
+
 		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
 			printf("No se pudo recibir le tamaño de la clave\n");
 			free_algo_punt_nom();
+			close(fd_coordinador);
 			exit(1);
 		}
 
@@ -153,6 +156,7 @@ int recibo_sentencia(int fd_coordinador){
 			printf("No se pudo recibir la clave\n");
 			free(clave_recibida);
 			free_algo_punt_nom();
+			close(fd_coordinador);
 			exit(1);
 		}
 
@@ -160,6 +164,7 @@ int recibo_sentencia(int fd_coordinador){
 			printf("No se pudo recibir le tamaño del valor\n");
 			free_algo_punt_nom();
 			free(clave_recibida);
+			close(fd_coordinador);
 			exit(1);
 		}
 
@@ -173,6 +178,7 @@ int recibo_sentencia(int fd_coordinador){
 			free(valor_recibido);
 			free(clave_recibida);
 			free_algo_punt_nom();
+			close(fd_coordinador);
 			exit(1);
 		}
 
@@ -188,6 +194,7 @@ int recibo_sentencia(int fd_coordinador){
 		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
 			printf("No se pudo recibir le tamaño de la clave\n");
 			free_algo_punt_nom();
+			close(fd_coordinador);
 			exit(1);
 		}
 
@@ -196,6 +203,7 @@ int recibo_sentencia(int fd_coordinador){
 			printf("No se pudo recibir la clave\n");
 			free(clave_recibida);
 			free_algo_punt_nom();
+			close(fd_coordinador);
 			exit(1);
 		}
 		printf("Recibi para hacer STORE clave: %s\n",clave_recibida);
@@ -238,40 +246,15 @@ int ejecuto_store(char* clave_recibida){
 
 void create_or_update_file(char *path_archivo, char * valor_del_storage){
 
-	int32_t len_valor = strlen(valor_del_storage) +1 ;
 	//open con crear o actualizar
-	int fd = open(path_archivo,O_RDWR | O_EXCL , 0);
+	int fd = open(path_archivo, O_RDWR | O_CREAT | O_TRUNC, ( mode_t ) 0600);
 
-	//mmap
-	size_t tamanio_contenido = getFilesize(path_archivo);
-	void* mmappedData = mmap(NULL, tamanio_contenido, PROT_WRITE, MAP_SHARED, fd, 0);
-	if ( mmappedData == MAP_FAILED ){
-		printf("Error al tratar de usar mmap!\n");
-		free(path_archivo);
-		free_algo_punt_nom();
-		free_estruct_admin();
-		close(fd);
-		exit(1);
-	}
-
-	//pizar dato
-	strcpy(mmappedData,"");
-	memcpy(mmappedData,valor_del_storage,len_valor);
-
-	// Write it now to disk
-	if (msync(mmappedData, len_valor, MS_SYNC) == -1)
-	{
-		perror("Could not sync the file to disk");
-	}
-
-	// Don't forget to free the mmapped memory
-	if (munmap(mmappedData, len_valor) == -1)
+	if (write(fd, valor_del_storage,strlen(valor_del_storage)) == -1)
 	{
 		close(fd);
-		perror("Error un-mmapping the file");
+		perror("Error writing last byte of the file");
 		exit(EXIT_FAILURE);
 	}
-
 	//cerrar
 	close(fd);
 }
@@ -436,12 +419,14 @@ void reestablesco_archivo(char* nombre_archivo){
 	int32_t len_clave = strlen(nombre_archivo) - 4;
 	char* clave = malloc(len_clave + 1);
 	memcpy(clave,nombre_archivo,len_clave); //copio sin el .txt
-	clave[len_clave] = '\0';
+	clave[strlen(clave)] = '\0';
+
 
 	int32_t len_valor = tamanio_contenido + 1;
 	char* valor = malloc(len_valor);
-	memcpy(valor,mmappedData,len_valor);//el dato dentro del archivo (osea el valor) tambien viene con \n
-	valor[len_valor] = '\0';
+	memcpy(valor,mmappedData,len_valor);
+	valor[strlen(valor)] = '\0';
+
 
 	if (munmap(mmappedData, tamanio_contenido) == -1){
 		printf("Error al tratar de liberar memoria de un mmap!\n");
