@@ -606,5 +606,16 @@ t_list* get_only_clave(){
 
 int aplicarAlgoritmoReemplazo(char* clave_recibida, char* valor_recibido){
 
-	return 1;
+	if (strstr(ALGORITMO_REEMPLAZO, "C") != NULL) {
+
+		}
+	if (strstr(ALGORITMO_REEMPLAZO, "LRU") != NULL) {
+			printf("INFO: Algoritmo LRU\n");
+
+	}
+	if (strstr(ALGORITMO_REEMPLAZO, "BSU") != NULL) {
+			printf("INFO: Algoritmo BSU\n");
+
+	}
+	return -1;
 }
