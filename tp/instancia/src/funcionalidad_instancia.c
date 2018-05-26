@@ -132,6 +132,7 @@ int recibo_sentencia(int fd_coordinador){
 	int32_t long_valor = 0;
 	int32_t tipo_operacion = 0;
 	int32_t numbytes = 0;
+	int32_t numeroEntrada;
 	int respuesta = 0;
 
 	if ((numbytes = recv(fd_coordinador, &tipo_operacion, sizeof(int32_t), 0)) <= 0) {
@@ -184,7 +185,7 @@ int recibo_sentencia(int fd_coordinador){
 		}
 
 		printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
-		//TODO:-----> proceso_operacion(tipo_operacion,clave_recibida,valor_recibido);
+
 //		int entradas_necesarias = ( strlen(valor_recibido) + 1 ) / TAMANIO_ENTRADA;
 //		if(hay_espacio_diponible(valor_recibido)){
 //			if(son_contiguos(valor_recibido)){
@@ -206,7 +207,7 @@ int recibo_sentencia(int fd_coordinador){
 //
 //
 //		}
-
+		numeroEntrada = aplicarAlgoritmoReemplazo(clave_recibida, valor_recibido);
 		//por ahora hardcodeamos que la operacion salio bien
 		respuesta = OK_SET_INSTANCIA;
 		free(clave_recibida);
@@ -624,4 +625,10 @@ t_list* get_only_clave(){
 	}
 
 	return list_filter(TABLA_ENTRADA, (void*)_claveDiferente);
+}
+
+
+int aplicarAlgoritmoReemplazo(char* clave_recibida, char* valor_recibido){
+
+	return 1;
 }
