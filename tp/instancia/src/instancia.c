@@ -14,6 +14,8 @@ int main(void) {
 	int sockfd = conectar_coodinador();
 	saludo_inicial_coordinador(sockfd);
 
+	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
+
 	//REcibo datos de entrada
 	recibo_datos_entrada(sockfd);
 
@@ -33,8 +35,10 @@ int main(void) {
 	recibo_mensaje_aceptacion(sockfd);
 
 	while(1){
+		pthread_mutex_lock(&MUTEX_INSTANCIA);
 		int resultado = recibo_sentencia(sockfd);
 		envio_resultado_al_coordinador(sockfd,resultado);
+		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	}
 	//Por ahora libero la memoria que me quedó (solo hasta agregar funcionalidad posta)
 	free_algo_punt_nom();

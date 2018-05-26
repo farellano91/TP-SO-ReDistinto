@@ -421,13 +421,13 @@ void reestablesco_archivo(char* nombre_archivo){
 	int32_t len_clave = strlen(nombre_archivo) - 4;
 	char* clave = malloc(len_clave + 1);
 	memcpy(clave,nombre_archivo,len_clave); //copio sin el .txt
-	clave[strlen(clave)] = '\0';
+	clave[len_clave] = '\0';
 
 
 	int32_t len_valor = tamanio_contenido + 1;
 	char* valor = malloc(len_valor);
 	memcpy(valor,mmappedData,len_valor);
-	valor[strlen(valor)] = '\0';
+	valor[len_valor] = '\0';
 
 
 	if (munmap(mmappedData, tamanio_contenido) == -1){
@@ -565,6 +565,7 @@ void aumento_cant_operacion(int numero_entrada){
 void realizar_dump(){
 	while(1){
 		sleep(INTERVALO_DUMP);
+		pthread_mutex_lock(&MUTEX_INSTANCIA);
 		printf("Empieza dump....\n");
 
 		t_list* tabla_solo_claves = get_only_clave();
@@ -578,6 +579,7 @@ void realizar_dump(){
 
 		}
 		list_iterate(tabla_solo_claves,(void*)_aplicaSTORE);
+		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	}
 }
 

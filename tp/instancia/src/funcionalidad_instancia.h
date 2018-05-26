@@ -38,6 +38,8 @@ int CANT_ENTRADA;
 //Para el storage
 char** STORAGE;
 
+pthread_mutex_t MUTEX_INSTANCIA;
+
 //Para saber que entrada esta vacia o ocuapda y con x cant. de operaciones hechas
 typedef struct {
 	int libre; //1:esta libre 0:esta ocupado
