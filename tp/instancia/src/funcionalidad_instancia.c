@@ -100,6 +100,7 @@ void envio_resultado_al_coordinador(int sockfd,int resultado){
 		exit(1);
 	}
 	printf("Envie mi resultado correctamente\n");
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 }
 
 
@@ -140,7 +141,7 @@ int recibo_sentencia(int fd_coordinador){
 			close(fd_coordinador);
 			exit(1);
 	}
-
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	/*PROCESO.....*/
 	if(tipo_operacion == SET){ //SET CLAVE VALOR
 
@@ -184,6 +185,27 @@ int recibo_sentencia(int fd_coordinador){
 
 		printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
 		//TODO:-----> proceso_operacion(tipo_operacion,clave_recibida,valor_recibido);
+//		int entradas_necesarias = ( strlen(valor_recibido) + 1 ) / TAMANIO_ENTRADA;
+//		if(hay_espacio_diponible(valor_recibido)){
+//			if(son_contiguos(valor_recibido)){
+//				//guardo
+//			}else{
+//				//compacto
+//				//guardo
+//			}
+//		}else{
+//			//aplico_reemplazo()
+//			//if(hay_lugar_cont()){
+//			//}
+//			//if(son_contiguos(valor_recibido)){
+//			//guardo
+//			//}else{
+////					//compacto
+////					//guardo
+////				}
+//
+//
+//		}
 
 		//por ahora hardcodeamos que la operacion salio bien
 		respuesta = OK_SET_INSTANCIA;
