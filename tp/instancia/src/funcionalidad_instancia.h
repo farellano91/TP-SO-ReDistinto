@@ -131,4 +131,6 @@ t_list* get_only_clave();
 
 void realizar_dump();
 
+int aplicarAlgoritmoReemplazo(char* clave_recibida, char* valor_recibido);
+
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */
