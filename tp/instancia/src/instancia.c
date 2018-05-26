@@ -23,7 +23,8 @@ int main(void) {
 	//leer los archivos .txt creador a partir del dump para asi poder cargar mis estructuras administrativas
 	reestablecer_datos();
 
-	//TODO: hilo para cada X cant de tiempo hacer DUMP
+	pthread_t punteroHiloDump;
+	pthread_create(&punteroHiloDump, NULL, (void*) realizar_dump, NULL);
 
 	//Envio mis datos
 	envio_datos(sockfd);

@@ -22,6 +22,7 @@
 #include <commons/string.h>
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
+#include <pthread.h>
 
 char* IP_CONFIG_COORDINADOR;
 int PUERTO_CONFIG_COORDINADOR;
@@ -123,5 +124,7 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido);
 int ejecuto_store(char* clave_recibida);
 
 void create_or_update_file(char *path_archivo, char * valor_del_storage);
+
+void realizar_dump();
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

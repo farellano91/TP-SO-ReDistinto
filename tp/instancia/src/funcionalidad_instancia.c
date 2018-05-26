@@ -219,7 +219,7 @@ int recibo_sentencia(int fd_coordinador){
 
 int ejecuto_store(char* clave_recibida){
 
-	//si la clave-valor ya no existe en la instancia dado que se pizo: FALLO_OPERACION_INSTANCIA
+	//si la clave-valor ya no existe en la instancia dado que se pizo: FALLO_INSTANCIA_CLAVE_SOBREESCRITA
 	char* valor_del_storage = get_valor_by_clave(clave_recibida);
 	if(valor_del_storage == NULL){
 		printf("ERROR: no existe la clave-valor dado que alguna de su entradas se reemplazo\n");
@@ -548,4 +548,13 @@ t_registro_tabla_entrada* get_new_registro_tabla_entrada(int numero_entrada,char
 	registro_tabla_entrada->clave = malloc(sizeof(char) * len_clave);
 	strcpy(registro_tabla_entrada->clave,clave);
 	return registro_tabla_entrada;
+}
+
+
+void realizar_dump(){
+	while(1){
+		sleep(INTERVALO_DUMP);
+		printf("Empieza dump....\n");
+		//TODO buscar el valor y la clave y guardar todos los .txt que se necesiten
+	}
 }

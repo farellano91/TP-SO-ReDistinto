@@ -7,7 +7,7 @@ OBJS := instancia.o cliente.o funcionalidad_instancia.o
 all: instancia
 
 instancia: $(OBJS)
-	$(CC) -o instancia $(OBJS) -lcommons
+	$(CC) -o instancia $(OBJS) -lcommons -lpthread
 
 instancia.o: instancia.c cliente.h funcionalidad_instancia.h
 	$(CC) -c instancia.c
