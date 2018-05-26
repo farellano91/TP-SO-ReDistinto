@@ -271,6 +271,8 @@ char* get_valor_by_clave(char * clave_recibida){
 	if(tabla_entrada!=NULL){
 		void _armoValor(t_registro_tabla_entrada* entrada) {
 			strcat(valor_buscado,STORAGE[entrada->numero_entrada]);
+			//actualizo cant. operacion
+			aumento_cant_operacion(entrada->numero_entrada);
 		}
 		list_iterate(tabla_entrada,(void*)_armoValor);
 		valor_buscado[strlen(valor_buscado)] = '\0';
@@ -550,11 +552,52 @@ t_registro_tabla_entrada* get_new_registro_tabla_entrada(int numero_entrada,char
 	return registro_tabla_entrada;
 }
 
+void aumento_cant_operacion(int numero_entrada){
+	char * key = string_itoa(numero_entrada);
+	//buscamos si ya esta esa entrada
+	if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
+		//existe la key en el diccionario
+		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+		registro_diccionario->cant_operaciones++;
+	}
+}
 
 void realizar_dump(){
 	while(1){
 		sleep(INTERVALO_DUMP);
 		printf("Empieza dump....\n");
-		//TODO buscar el valor y la clave y guardar todos los .txt que se necesiten
+
+		t_list* tabla_solo_claves = get_only_clave();
+
+		void _aplicaSTORE(t_registro_tabla_entrada* una_entrada) {
+			int resultado = ejecuto_store(una_entrada->clave);
+			if(resultado == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
+				printf("Fallo al hacer DUMP de la clave: %s\n",una_entrada->clave);
+			}
+			printf("DUMP de la clave: %s correctamente hecho\n",una_entrada->clave);
+
+		}
+		list_iterate(tabla_solo_claves,(void*)_aplicaSTORE);
 	}
+}
+
+//retorna una tabla de entradas solo con claves diferentes
+t_list* get_only_clave(){
+	t_registro_tabla_entrada * primero = list_get(TABLA_ENTRADA,0);
+	int contador = 0;
+
+	bool _claveDiferente(t_registro_tabla_entrada * una_Entrada){
+		if((contador > 0)){
+			if(strcmp(una_Entrada->clave,primero->clave) != 0){
+				primero = una_Entrada;
+				return true;
+			}
+			return false;
+		}else{
+			contador++;
+			return true;
+		}
+	}
+
+	return list_filter(TABLA_ENTRADA, (void*)_claveDiferente);
 }

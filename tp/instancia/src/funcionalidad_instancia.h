@@ -92,6 +92,8 @@ void free_parametros_config();
 //Recibo los datos para mis entradas (para armar el storage)
 void recibo_datos_entrada(int sockfd);
 
+void aumento_cant_operacion(int numero_entrada);
+
 char* get_valor_by_clave(char * clave_recibida);
 
 int obtener_espacio_libre();
@@ -124,6 +126,8 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido);
 int ejecuto_store(char* clave_recibida);
 
 void create_or_update_file(char *path_archivo, char * valor_del_storage);
+
+t_list* get_only_clave();
 
 void realizar_dump();
 
