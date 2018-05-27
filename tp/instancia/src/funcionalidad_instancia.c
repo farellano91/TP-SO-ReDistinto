@@ -185,33 +185,10 @@ int recibo_sentencia(int fd_coordinador){
 		}
 
 		printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
-
-//		int entradas_necesarias = ( strlen(valor_recibido) + 1 ) / TAMANIO_ENTRADA;
-//		if(hay_espacio_diponible(valor_recibido)){
-//			if(son_contiguos(valor_recibido)){
-//				//guardo
-//			}else{
-//				//compacto
-//				//guardo
-//			}
-//		}else{
-//			//aplico_reemplazo()
-//			//if(hay_lugar_cont()){
-//			//}
-//			//if(son_contiguos(valor_recibido)){
-//			//guardo
-//			//}else{
-////					//compacto
-////					//guardo
-////				}
-//
-//
-//		}
-		numeroEntrada = aplicarAlgoritmoReemplazo(clave_recibida, valor_recibido);
-		//por ahora hardcodeamos que la operacion salio bien
-		respuesta = OK_SET_INSTANCIA;
-		free(clave_recibida);
+		respuesta = ejecuto_set(clave_recibida,valor_recibido);
 		free(valor_recibido);
+		free(clave_recibida);
+
 	}
 	if(tipo_operacion == STORE){ //STORE CLAVE
 		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
@@ -232,18 +209,131 @@ int recibo_sentencia(int fd_coordinador){
 		printf("Recibi para hacer STORE clave: %s\n",clave_recibida);
 
 		//respuesta = OK_STORE_INSTANCIA;
-		respuesta = ejecuto_store(clave_recibida);
+		respuesta = ejecuto_store(clave_recibida,0);
 		free(clave_recibida);
 	}
 
 	return respuesta;
 }
 
+int ejecuto_set(char* clave_recibida,char* valor_recibido){
 
-int ejecuto_store(char* clave_recibida){
+	int entrada_inicial = -1;
+	int entradas_necesarias = ( strlen(valor_recibido) + 1 ) / TAMANIO_ENTRADA;
+	int cant_espacio_disponibles = espacio_diponible(entradas_necesarias);
+	if(cant_espacio_disponibles >= entradas_necesarias){
+		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
+			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+		}else{
+			compacto();
+			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+		}
+	}else{
+		aplico_reemplazo(entradas_necesarias - cant_espacio_disponibles);//reemplaza tanta cantidad de claves como espacios necesite
+		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
+			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+		}else{
+			compacto();
+			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+		}
+	}
+	return OK_SET_INSTANCIA;
+}
+
+void compacto(){
+	//aviso al coordinador q compacten todas las instancias
+	//acomoda las entradas
+}
+
+//reemplaza tantas veces como entradas_necesarias - cant_espacio_disponibles
+void aplico_reemplazo(int cant_espacios_buscados){
+	int i;
+	if(cant_espacios_buscados > 0){
+		for(i = 0 ; i < cant_espacios_buscados; i++){
+			//numeroEntrada = aplicarAlgoritmoReemplazo(clave_recibida, valor_recibido);
+			//libero_entrada(numeroEntrada)
+		}
+
+	}
+}
+
+void guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias){
+	int i;
+	int tamanio_contenido = 0;
+	if(entradas_necesarias > 1){
+		for(i=0;i<entradas_necesarias;i++){
+
+			tamanio_contenido = strlen(valor_recibido) + 1;
+
+			if(tamanio_contenido > TAMANIO_ENTRADA){
+				memcpy(STORAGE[entrada_inicial + i],valor_recibido,TAMANIO_ENTRADA-1);
+				STORAGE[entrada_inicial][TAMANIO_ENTRADA-1]='\0';
+				memcpy(valor_recibido,valor_recibido + TAMANIO_ENTRADA -1 ,tamanio_contenido);
+			}else{
+				memcpy(STORAGE[entrada_inicial + i],valor_recibido,tamanio_contenido);
+			}
+			//actualizo tabla
+			cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,tamanio_contenido);
+			//actualizo diccionario
+			cargo_actualizo_diccionario(entrada_inicial+i,tamanio_contenido);
+		}
+	}else{
+		strcpy(STORAGE[entrada_inicial],valor_recibido);
+		//actualizo tabla
+		cargo_actualizo_tabla(clave_recibida,entrada_inicial,strlen(valor_recibido) + 1);
+		//actualizo diccionario
+		cargo_actualizo_diccionario(entrada_inicial, strlen(valor_recibido) + 1);
+	}
+
+	//ordeno tabla por numero de entrada(nos sirve para cuando buscamos claves diferentes)
+	order_tabla_by(TABLA_ENTRADA,(void*) by_numero_entrada);
+}
+
+bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro) {
+	return ((registro_menor->numero_entrada) <= (registro->numero_entrada)); //agrego el = pork pasaba q para el mismo valor lo cambiaba de lugar cosa q estaba de mas
+}
+
+void order_tabla_by(t_list* tabla, void * funcion){
+	list_sort(tabla, (void*) funcion);
+}
+
+bool son_contiguos(int entradas_necesarias, int* entrada_inicial){
+	int contiguo = 0;
+	int i;
+	for(i = 0; i< dictionary_size(DICCIONARITY_ENTRADA);i++){
+		char * key = string_itoa(i);
+		t_registro_diccionario_entrada* registro = dictionary_get(DICCIONARITY_ENTRADA,key);
+		if(registro->libre){
+			contiguo++;
+			if(contiguo==entradas_necesarias){
+				*entrada_inicial = i + 1 - entradas_necesarias;
+				return true;
+			}
+		}else{
+			contiguo = 0;
+		}
+	}
+	return false;
+
+}
+
+//me dice cuantos espacios libre hay
+int espacio_diponible(int entradas_necesarias){
+	int contador = 0;
+	void _espacioDisponible(char* _, t_registro_diccionario_entrada* diccionario) {
+		if(diccionario->libre){
+			contador++;
+		}
+	}
+	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_espacioDisponible);
+
+	return contador;
+}
+
+int ejecuto_store(char* clave_recibida,int isDUMp){
 
 	//si la clave-valor ya no existe en la instancia dado que se pizo: FALLO_INSTANCIA_CLAVE_SOBREESCRITA
-	char* valor_del_storage = get_valor_by_clave(clave_recibida);
+	char* valor_del_storage = get_valor_by_clave(clave_recibida,isDUMp);
 	if(valor_del_storage == NULL){
 		printf("ERROR: no existe la clave-valor dado que alguna de su entradas se reemplazo\n");
 		return FALLO_INSTANCIA_CLAVE_SOBREESCRITA;
@@ -283,7 +373,7 @@ void create_or_update_file(char *path_archivo, char * valor_del_storage){
 }
 
 
-char* get_valor_by_clave(char * clave_recibida){
+char* get_valor_by_clave(char * clave_recibida,int isDUmp){
 
 	char* valor_buscado = malloc(sizeof(char)* TAMANIO_ENTRADA* CANT_ENTRADA);
 	strcpy(valor_buscado,"");
@@ -294,8 +384,10 @@ char* get_valor_by_clave(char * clave_recibida){
 	if(tabla_entrada!=NULL){
 		void _armoValor(t_registro_tabla_entrada* entrada) {
 			strcat(valor_buscado,STORAGE[entrada->numero_entrada]);
-			//actualizo cant. operacion
-			aumento_cant_operacion(entrada->numero_entrada);
+			if(!isDUmp){
+				//actualizo cant. operacion
+				actualizo_cant_operaciones(entrada->numero_entrada);
+			}
 		}
 		list_iterate(tabla_entrada,(void*)_armoValor);
 		valor_buscado[strlen(valor_buscado)] = '\0';
@@ -533,18 +625,39 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 	if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
 		//existe la key en el diccionario
 		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
-		registro_diccionario->cant_operaciones++;
+		actualizo_cant_operaciones(numero_entrada);
 		registro_diccionario->libre = 0;
 		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
 		printf("Actualizo en mi diccionario la entrada:%d-ocupada-operaciones:%d-tamaño libre:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
 	}else{
 		//no existe, lo crea
-		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,1,(TAMANIO_ENTRADA - tamanio_contenido));
+		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,0,(TAMANIO_ENTRADA - tamanio_contenido));
 		dictionary_put(DICCIONARITY_ENTRADA,key,registro_diccionario);
+		actualizo_cant_operaciones(numero_entrada);
 		printf("Cargo en mi diccionario la entrada:%d-ocupada-operaciones:1-tamaño libre:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
 	}
 
 }
+
+//a la entrada del numero seteo operaciones en 0 y a las ademas entradas OCUPADAS las operaciones las sumo en +1
+void actualizo_cant_operaciones(int numero_entrada){
+	char * key = string_itoa(numero_entrada);
+	//buscamos si ya esta esa entrada
+	if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
+		//existe la key en el diccionario
+		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+		registro_diccionario->cant_operaciones = 0; //porque fue usada recien
+	}
+
+	//a las otras claves OCUPADAS les tengo q sumar 1 la cant de operaciones
+	void _cambioCantOperaciones(char* key_registro, t_registro_diccionario_entrada* diccionario) {
+		if((strcmp(key_registro,key)!=0) && (diccionario->libre == 0)){
+			diccionario->cant_operaciones++;
+		}
+	}
+	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_cambioCantOperaciones);
+}
+
 
 t_dictionary* create_diccionarity(){
 	t_dictionary * diccionarity = dictionary_create();
@@ -575,16 +688,6 @@ t_registro_tabla_entrada* get_new_registro_tabla_entrada(int numero_entrada,char
 	return registro_tabla_entrada;
 }
 
-void aumento_cant_operacion(int numero_entrada){
-	char * key = string_itoa(numero_entrada);
-	//buscamos si ya esta esa entrada
-	if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
-		//existe la key en el diccionario
-		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
-		registro_diccionario->cant_operaciones++;
-	}
-}
-
 void realizar_dump(){
 	while(1){
 		sleep(INTERVALO_DUMP);
@@ -594,7 +697,7 @@ void realizar_dump(){
 		t_list* tabla_solo_claves = get_only_clave();
 
 		void _aplicaSTORE(t_registro_tabla_entrada* una_entrada) {
-			int resultado = ejecuto_store(una_entrada->clave);
+			int resultado = ejecuto_store(una_entrada->clave,1);
 			if(resultado == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
 				printf("Fallo al hacer DUMP de la clave: %s\n",una_entrada->clave);
 			}

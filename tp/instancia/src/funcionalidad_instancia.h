@@ -43,7 +43,7 @@ pthread_mutex_t MUTEX_INSTANCIA;
 //Para saber que entrada esta vacia o ocuapda y con x cant. de operaciones hechas
 typedef struct {
 	int libre; //1:esta libre 0:esta ocupado
-	int cant_operaciones; //si esta libre es cero
+	int cant_operaciones; //solo importa si la entrada esta OCUPADA (es 0 si fue usada recien y +1 para las demas)
 	int tamanio_libre;
 } t_registro_diccionario_entrada;
 
@@ -74,6 +74,8 @@ enum t_operacion {
 	STORE = 3,
 };
 
+void actualizo_cant_operaciones(int numero_entrada);
+
 size_t getFilesize(const char* filename);
 
 void intHandler(int dummy);
@@ -96,12 +98,28 @@ void recibo_datos_entrada(int sockfd);
 
 void aumento_cant_operacion(int numero_entrada);
 
-char* get_valor_by_clave(char * clave_recibida);
+char* get_valor_by_clave(char * clave_recibida,int isDUmp);
 
 int obtener_espacio_libre();
 
 //Envio mis datos al coordinador
 void envio_datos(int sockfd);
+
+bool son_contiguos(int entradas_necesarias, int* entrada_inicial);
+
+int espacio_diponible(int entradas_necesarias);
+
+void order_tabla_by(t_list* tabla, void * funcion);
+
+bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro);
+
+void guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias);
+
+void compacto();
+
+void aplico_reemplazo(int cant_espacios_buscados);
+
+int ejecuto_set(char* clave_recibida,char* valor_recibido);
 
 int recibo_sentencia(int fd_coordinador);
 
@@ -125,7 +143,8 @@ void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido)
 
 void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido);
 
-int ejecuto_store(char* clave_recibida);
+//el flag isDump es para saber si dentro tendre q actualizar la cant_operaciones o no, ya que en caso de dump no cambia nada
+int ejecuto_store(char* clave_recibida,int isDUMp);
 
 void create_or_update_file(char *path_archivo, char * valor_del_storage);
 
