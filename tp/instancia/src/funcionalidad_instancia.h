@@ -115,6 +115,13 @@ bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tab
 
 void guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias);
 
+//busca la entrada superior que este vacia
+int get_entrada_superior_vacia(int entrada);
+
+void cambio_entrada(int entrada_desde,int entrada_hasta);
+
+void compactar_ahora();
+
 void compacto();
 
 void aplico_reemplazo(int cant_espacios_buscados);

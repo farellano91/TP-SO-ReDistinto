@@ -296,9 +296,54 @@ bool clave_existente(char * clave_recibida) {
 }
 
 void compacto(){
-	/*coming soon :)*/
 	//aviso al coordinador q compacten todas las instancias
-	//acomoda las entradas
+	//notifico_inicio_compactacion();
+	compactar_ahora();
+}
+
+void compactar_ahora(){
+	printf("Empezamos a compactar...\n");
+	int i;
+	for(i = 0 ; i <CANT_ENTRADA;i++){
+		char* key = string_itoa(i);
+		t_registro_diccionario_entrada* diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+		if(diccionario->libre == 0){
+			int entrada_superior_vacia = get_entrada_superior_vacia(i);
+			if(entrada_superior_vacia >=  0){
+				//me muevo a esa entrada
+				cambio_entrada(i,entrada_superior_vacia);
+				printf("Se mueve la entrada n°:%d al n°:%d\n",i,entrada_superior_vacia);
+			}
+		}
+	}
+	printf("Fin de la compactacion...\n");
+}
+
+//busca la entrada superior que este vacia
+int get_entrada_superior_vacia(int entrada){
+	int resultado = -1;
+	int i;
+	for(i = (entrada-1); i >= 0 ; i--){
+		char* key = string_itoa(i);
+		t_registro_diccionario_entrada* diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+		if(diccionario->libre == 1){
+			resultado = i;
+		}else{
+			break;
+		}
+	}
+	return resultado;
+}
+
+void cambio_entrada(int entrada_desde,int entrada_hasta){
+	bool _esEntrada(t_registro_tabla_entrada* registro_tabla) {
+		return (registro_tabla->numero_entrada == entrada_desde);
+	}
+	t_registro_tabla_entrada* tabla = list_find(TABLA_ENTRADA,(void*)_esEntrada);
+	cargo_actualizo_tabla(tabla->clave,entrada_hasta,tabla->tamanio_valor);
+	cargo_actualizo_diccionario(entrada_hasta,tabla->tamanio_valor);
+
+	libero_entrada(entrada_desde);
 }
 
 //reemplaza tantas veces como entradas_necesarias - cant_espacio_disponibles
@@ -758,7 +803,7 @@ void realizar_dump(){
 				if(resultado == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
 					printf("Fallo al hacer DUMP de la clave: %s\n",una_entrada->clave);
 				}
-				printf("DUMP de la clave: %s correctamente hecho\n",una_entrada->clave);
+				printf("Dump de la clave: %s correctamente hecho\n",una_entrada->clave);
 
 			}
 			list_iterate(tabla_solo_claves,(void*)_aplicaSTORE);
