@@ -387,6 +387,7 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		list_add(LIST_READY,esi);
 		recalculo_estimacion(esi);
 		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
+//		free(nodoBloqueado);
 	}else{
 		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
 	}
