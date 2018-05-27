@@ -119,6 +119,12 @@ void compacto();
 
 void aplico_reemplazo(int cant_espacios_buscados);
 
+bool clave_existente(char * clave_recibida);
+
+void libero_entrada(int numeroEntrada);
+
+void libero_entradas_by_clave(char * clave_recibida);
+
 int ejecuto_set(char* clave_recibida,char* valor_recibido);
 
 int recibo_sentencia(int fd_coordinador);

@@ -218,8 +218,20 @@ int recibo_sentencia(int fd_coordinador){
 
 int ejecuto_set(char* clave_recibida,char* valor_recibido){
 
+	//si la clave es una clave existente libero las entradas viejas
+	if(clave_existente(clave_recibida)){
+		libero_entradas_by_clave(clave_recibida);
+	}
+
+	//si la clave es nueva
 	int entrada_inicial = -1;
-	int entradas_necesarias = ( strlen(valor_recibido) + 1 ) / TAMANIO_ENTRADA;
+	int entradas_necesarias = 0;
+	if(( strlen(valor_recibido) + 1 ) <= TAMANIO_ENTRADA){
+		entradas_necesarias = 1;
+	}else{
+		entradas_necesarias =  1 + (( strlen(valor_recibido) + 1 ) / TAMANIO_ENTRADA);
+	}
+
 	int cant_espacio_disponibles = espacio_diponible(entradas_necesarias);
 	if(cant_espacio_disponibles >= entradas_necesarias){
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
@@ -240,7 +252,51 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido){
 	return OK_SET_INSTANCIA;
 }
 
+void libero_entradas_by_clave(char * clave_recibida){
+	void _porClaveLiberoEntrada(t_registro_tabla_entrada* registro) {
+		if(strcmp(registro->clave, clave_recibida) == 0){
+			libero_entrada(registro->numero_entrada);
+		}
+	}
+	list_iterate(TABLA_ENTRADA,(void*) _porClaveLiberoEntrada);
+
+}
+
+//deja libre la entrada de numero recibido y actualiza las demas estructuras
+void libero_entrada(int numeroEntrada){
+	//limpio storage
+	strcpy(STORAGE[numeroEntrada],"");
+
+	//limpio tabla de entradas
+	bool _esEntrada(t_registro_tabla_entrada* entrada) { return (entrada->numero_entrada == numeroEntrada);}
+	list_remove_and_destroy_by_condition(TABLA_ENTRADA,(void*)_esEntrada,(void*)free_registro_tabla_entrada);
+
+	//Limpio diccionario de entradas (OJO no borro solo limpio las entradas)
+	char* key = string_itoa(numeroEntrada);
+	t_registro_diccionario_entrada * diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+	diccionario->cant_operaciones = 0;
+	diccionario->libre = 1;
+	diccionario->tamanio_libre = TAMANIO_ENTRADA;
+}
+
+//busca si existe la clave en mi tabla de entradas
+bool clave_existente(char * clave_recibida) {
+	if (!list_is_empty(TABLA_ENTRADA)) {
+		bool _porClave(t_registro_tabla_entrada* registro) {
+			return (strcmp(registro->clave, clave_recibida) == 0);
+		}
+		t_registro_tabla_entrada* registro_buscado = list_find(TABLA_ENTRADA,
+				(void*) _porClave);
+		if (registro_buscado != NULL) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void compacto(){
+	/*coming soon :)*/
 	//aviso al coordinador q compacten todas las instancias
 	//acomoda las entradas
 }
@@ -256,6 +312,7 @@ void aplico_reemplazo(int cant_espacios_buscados){
 
 	}
 }
+
 
 void guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias){
 	int i;
@@ -628,13 +685,13 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 		actualizo_cant_operaciones(numero_entrada);
 		registro_diccionario->libre = 0;
 		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
-		printf("Actualizo en mi diccionario la entrada:%d-ocupada-operaciones:%d-tamaño libre:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
+		printf("Actualizo en mi diccionario la entrada:%d-ocupada-cant operaciones:%d-tamaño libre:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
 	}else{
 		//no existe, lo crea
 		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,0,(TAMANIO_ENTRADA - tamanio_contenido));
 		dictionary_put(DICCIONARITY_ENTRADA,key,registro_diccionario);
 		actualizo_cant_operaciones(numero_entrada);
-		printf("Cargo en mi diccionario la entrada:%d-ocupada-operaciones:1-tamaño libre:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
+		printf("Cargo en mi diccionario la entrada:%d-ocupada-cant operaciones:1-tamaño libre:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
 	}
 
 }
@@ -692,19 +749,22 @@ void realizar_dump(){
 	while(1){
 		sleep(INTERVALO_DUMP);
 		pthread_mutex_lock(&MUTEX_INSTANCIA);
-		printf("Empieza dump....\n");
+		//controlo si hay algo en la tabla de entrada
+		if(!list_is_empty(TABLA_ENTRADA)){
+			t_list* tabla_solo_claves = get_only_clave();
+			printf("Empieza dump....\n");
+			void _aplicaSTORE(t_registro_tabla_entrada* una_entrada) {
+				int resultado = ejecuto_store(una_entrada->clave,1);
+				if(resultado == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
+					printf("Fallo al hacer DUMP de la clave: %s\n",una_entrada->clave);
+				}
+				printf("DUMP de la clave: %s correctamente hecho\n",una_entrada->clave);
 
-		t_list* tabla_solo_claves = get_only_clave();
-
-		void _aplicaSTORE(t_registro_tabla_entrada* una_entrada) {
-			int resultado = ejecuto_store(una_entrada->clave,1);
-			if(resultado == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
-				printf("Fallo al hacer DUMP de la clave: %s\n",una_entrada->clave);
 			}
-			printf("DUMP de la clave: %s correctamente hecho\n",una_entrada->clave);
-
+			list_iterate(tabla_solo_claves,(void*)_aplicaSTORE);
+		}else{
+			printf("No hay entradas ocupadas para hacer DUMP\n");
 		}
-		list_iterate(tabla_solo_claves,(void*)_aplicaSTORE);
 		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	}
 }

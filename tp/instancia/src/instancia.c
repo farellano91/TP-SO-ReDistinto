@@ -14,8 +14,6 @@ int main(void) {
 	int sockfd = conectar_coodinador();
 	saludo_inicial_coordinador(sockfd);
 
-	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
-
 	//REcibo datos de entrada
 	recibo_datos_entrada(sockfd);
 
@@ -25,6 +23,7 @@ int main(void) {
 	//leer los archivos .txt creador a partir del dump para asi poder cargar mis estructuras administrativas
 	reestablecer_datos();
 
+	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
 	pthread_t punteroHiloDump;
 	pthread_create(&punteroHiloDump, NULL, (void*) realizar_dump, NULL);
 
