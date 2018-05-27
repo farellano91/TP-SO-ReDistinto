@@ -1,13 +1,6 @@
 SET jugador1
 SET jugador2
-SET jugador3
-SET jugador4
 GET jugador1
 GET jugador2
-GET jugador3
-GET jugador4
 STORE jugador1
 STORE jugador2
-STORE jugador2
-STORE jugador3
-STORE jugador4
