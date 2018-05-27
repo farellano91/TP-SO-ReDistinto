@@ -140,8 +140,45 @@ int com_listar (char *arg){
 }
 
 
-int com_kill (char *arg){
-	puts("Comando kill!!");
+int com_kill(char *arg) {
+
+	int id_a_borrar = atoi(arg);
+
+	t_Esi* esi_a_borrar;
+
+	t_nodoBloqueado* esi_bloqueado_a_borrar;
+
+	bool _es_el_id_a_borrar(t_Esi* un_esi) {
+		return un_esi->id == id_a_borrar;
+	}
+
+	bool _es_el_id_a_borrar_bloqueado(t_nodoBloqueado* un_esi_bloqueado) {
+		return un_esi_bloqueado->esi->id == id_a_borrar;
+	}
+
+	if((esi_a_borrar = list_find(LIST_EXECUTE, (void*) _es_el_id_a_borrar)) != NULL) {
+		esi_a_borrar->status = 3;
+		printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
+		close(esi_a_borrar->fd);
+		return 0;
+	}else if((esi_a_borrar = list_find(LIST_READY, (void*) _es_el_id_a_borrar)) != NULL) {
+           cambio_de_lista(LIST_READY, LIST_FINISHED, esi_a_borrar->id);
+		   free_recurso(esi_a_borrar->fd);
+		   printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
+		   close(esi_a_borrar->fd);
+		   return 0;
+	}else if((esi_bloqueado_a_borrar = list_find(LIST_BLOCKED, (void*) _es_el_id_a_borrar_bloqueado)) != NULL){
+		list_remove_by_condition(LIST_BLOCKED,(void*) _es_el_id_a_borrar_bloqueado);
+		agregar_en_Lista(LIST_FINISHED, esi_bloqueado_a_borrar->esi);
+		free_recurso(esi_bloqueado_a_borrar->esi->fd);
+		close(esi_bloqueado_a_borrar->esi->fd);
+		free_nodoBLoqueado(esi_bloqueado_a_borrar);
+		printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
+		return 0;
+	}else{
+		printf("El ESI con id = %d no se encuentra en el sistema\n", id_a_borrar);
+	}
+
 	return (0);
 }
 

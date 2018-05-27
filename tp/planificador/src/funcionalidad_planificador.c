@@ -135,6 +135,15 @@ bool aplico_algoritmo(char clave[40]){
 	bool sContinuarComunicacion = true;
 
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
+
+	if(muerto_flag() & (esiEjecutando != NULL)){
+		free_recurso(esiEjecutando->fd);
+		sContinuarComunicacion = false;
+		cambio_ejecutando_a_finalizado(esiEjecutando->id);
+		printf("El ESI con id = %d fue eliminado por consola", esiEjecutando->id);
+		return sContinuarComunicacion;
+	}
+
 	if(esiEjecutando != NULL){
 		esiEjecutando ->cantSentenciasProcesadas++;
 	}
@@ -231,6 +240,11 @@ void desbloquea_flag(){
 bool bloqueado_flag(){
 	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
 	return (un_esi->status == 1);
+}
+
+bool muerto_flag(){
+	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
+	return (un_esi->status == 3);
 }
 
 //Ordena la lista de ready dependiendo del algoritmo que se usa
@@ -387,7 +401,7 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		list_add(LIST_READY,esi);
 		recalculo_estimacion(esi);
 		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
-//		free(nodoBloqueado);
+		free(nodoBloqueado);
 	}else{
 		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
 	}

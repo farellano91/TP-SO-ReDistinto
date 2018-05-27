@@ -72,7 +72,7 @@ enum t_operationCode {
 typedef struct {
 	int32_t id;
 	int32_t fd;
-	int32_t status; //1:bloqueado 2:ok (este va a ser un flags que me servira para saber cuando tengo que mandar a bloqueado un esi cuando tenga su respuesta)
+	int32_t status; //1:bloqueado 2:ok 3:muerto por consola(este va a ser un flag que me servira para saber cuando tengo que mandar a bloqueado o finalizado un esi cuando tenga su respuesta)
 	int32_t lineaALeer; //cada vez q le pido a un esi q haga algo, le estoy mandando un numero de linea a leer
 
 	double estimacion;
@@ -129,10 +129,13 @@ t_esiBloqueador* get_esi_bloqueador(t_Esi* esi, char* clave);
 
 bool ordenar_por_tiempo(t_Esi * esi_menor, t_Esi * esi);
 
+void free_nodoBLoqueado(t_nodoBloqueado* nodoBloqueado);
 
 void agregar_en_Lista(t_list* lista, t_Esi *esi);
 
 void agregar_en_bloqueados(t_Esi *esi, char* clave);
+
+bool muerto_flag();
 
 bool aplico_algoritmo_ultimo();
 
