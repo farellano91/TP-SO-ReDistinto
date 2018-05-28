@@ -24,6 +24,9 @@
 #include <pthread.h>
 
 pthread_mutex_t MUTEX;
+pthread_mutex_t BLOCKED;
+pthread_mutex_t READY;
+pthread_mutex_t EXECUTE;
 pthread_cond_t CONDICION_PAUSA_PLANIFICADOR;
 
 void desbloquea_flag();

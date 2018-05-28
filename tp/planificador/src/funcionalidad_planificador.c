@@ -73,12 +73,16 @@ bool aplico_algoritmo_primer_ingreso(){
 	//ordeno_listas();
 
 	//Pregunto si tengo alguno en LIST_EXECUTE (si esta vacio entro ya que significa q soy el unico)
+	pthread_mutex_lock(&READY);
+	pthread_mutex_lock(&EXECUTE);
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
 		list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 		list_remove(LIST_READY, 0);
 	} else {
 		sContinuarComunicacion = false;
 	}
+	pthread_mutex_unlock(&READY);
+	pthread_mutex_unlock(&EXECUTE);
 	return sContinuarComunicacion;
 
 }
@@ -95,16 +99,26 @@ bool aplico_algoritmo_ultimo(){
 	pthread_mutex_unlock(&MUTEX);
 
 	bool sContinuarComunicacion = true;
+	pthread_mutex_lock(&EXECUTE);
+	pthread_mutex_lock(&READY);
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+		pthread_mutex_unlock(&READY);
 		ordeno_listas();
+		pthread_mutex_lock(&READY);
 		t_Esi* unEsiListo = list_get(LIST_READY, 0);
 		list_add(LIST_EXECUTE, unEsiListo);
 		list_remove(LIST_READY, 0);
 	}
+	pthread_mutex_unlock(&EXECUTE);
+	pthread_mutex_unlock(&READY);
 	//pregunto si hay alguien al menos
+	pthread_mutex_lock(&EXECUTE);
+	pthread_mutex_lock(&READY);
 	if (list_is_empty(LIST_EXECUTE) && list_is_empty(LIST_READY)) {
 		sContinuarComunicacion = false;
 	}
+	pthread_mutex_unlock(&EXECUTE);
+	pthread_mutex_unlock(&READY);
 	return sContinuarComunicacion;
 
 }
@@ -133,16 +147,17 @@ bool aplico_algoritmo(char clave[40]){
 	pthread_mutex_unlock(&MUTEX);
 
 	bool sContinuarComunicacion = true;
-
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
+	pthread_mutex_unlock(&EXECUTE);
 
-	if(muerto_flag() & (esiEjecutando != NULL)){
+	/*if(muerto_flag() && (esiEjecutando != NULL)){
 		free_recurso(esiEjecutando->fd);
 		sContinuarComunicacion = false;
 		cambio_ejecutando_a_finalizado(esiEjecutando->id);
 		printf("El ESI con id = %d fue eliminado por consola", esiEjecutando->id);
 		return sContinuarComunicacion;
-	}
+	}*/
 
 	if(esiEjecutando != NULL){
 		esiEjecutando ->cantSentenciasProcesadas++;
@@ -158,13 +173,17 @@ bool aplico_algoritmo(char clave[40]){
 		//Aca tengo que actualizar la estimacion inicial anterior.
 		//saco de EXECUTE a BLOQUEADO
 		// sumo una sentencia mas procesada que seria el get
+		pthread_mutex_lock(&EXECUTE);
 		t_Esi* esi= list_get(LIST_EXECUTE, 0);
+		pthread_mutex_unlock(&EXECUTE);
 		esi->lineaALeer --; //le resto 1 ya que quiro q cuando se desbloee vuelva a tratar de ejecutar la sentencia q lo bloqueo
 		char* clave_block = malloc(sizeof(char)*40);
 		strcpy(clave_block,clave);
 		clave_block[strlen(clave_block)] = '\0';
 		t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
+		pthread_mutex_lock(&BLOCKED);
 		list_add(LIST_BLOCKED,esi_bloqueado);
+		pthread_mutex_unlock(&BLOCKED);
 
 		printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s\n",esi->id,clave_block);
 		free(clave_block);
@@ -173,10 +192,14 @@ bool aplico_algoritmo(char clave[40]){
 		//Caso donde ESI se bloqueo al hacer lo que le pedi
 		desbloquea_flag(); //limpio el flag
 		//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)
+		pthread_mutex_lock(&EXECUTE);
 		list_remove(LIST_EXECUTE, 0);
 		//toma el primero de listo -> exec y lo saca de listo
+		pthread_mutex_lock(&READY);
 		list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 		list_remove(LIST_READY, 0);
+		pthread_mutex_unlock(&EXECUTE);
+		pthread_mutex_unlock(&READY);
 		//Blanqueo el Esi que pasa a ejecutando
 		BlanquearIndices();
 	}else{
@@ -186,18 +209,24 @@ bool aplico_algoritmo(char clave[40]){
 		if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
 
 			//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
+			pthread_mutex_lock(&READY);
 			t_Esi* esiReady = list_get(LIST_READY, 0);
+			pthread_mutex_unlock(&READY);
 			if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
 //				IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
 				return sContinuarComunicacion;
 			}
 			//exc -> listo
 			esiEjecutando->estimacion = esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas;//actualizo la estimacion dado que me desalojaron
+			pthread_mutex_lock(&EXECUTE);
+			pthread_mutex_lock(&READY);
 			list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
 			list_remove(LIST_EXECUTE, 0);
 			//el primero de listo va a exec
 			list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
+			pthread_mutex_unlock(&EXECUTE);
+			pthread_mutex_unlock(&READY);
 			//Blanqueo el Esi que pasa a ejecutando
 			BlanquearIndices();
 		}else{
@@ -213,12 +242,13 @@ bool aplico_algoritmo(char clave[40]){
 
 // Pongo en 0 el tiempo en listos del esi que voy a ejecutar.
 void BlanquearIndices(){
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
 	if(esiEjecutando != NULL){
 		esiEjecutando->tiempoEnListo = 0;
 		esiEjecutando->cantSentenciasProcesadas = 0;
 	}
-
+	pthread_mutex_unlock(&EXECUTE);
 }
 void ActualizarIndices(t_Esi *esi){
   esi->tiempoEnListo ++;
@@ -226,35 +256,45 @@ void ActualizarIndices(t_Esi *esi){
 }
 void ActualizarIndicesEnLista(){
 	// recorro la lista de ready y aplico funcion actualizar Indices
+	pthread_mutex_lock(&READY);
 	list_iterate(LIST_READY,(void*)ActualizarIndices );
+	pthread_mutex_unlock(&READY);
 }
 //void IncrementarLinealeer(t_Esi *esi){
 //	esi->lineaALeer++;
 //}
 
 void desbloquea_flag(){
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
 	un_esi->status = 0;
+	pthread_mutex_unlock(&EXECUTE);
 }
 
 bool bloqueado_flag(){
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
+	pthread_mutex_unlock(&EXECUTE);
 	return (un_esi->status == 1);
 }
 
 bool muerto_flag(){
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
+	pthread_mutex_unlock(&EXECUTE);
 	return (un_esi->status == 3);
 }
 
 //Ordena la lista de ready dependiendo del algoritmo que se usa
 void ordeno_listas(){
+	pthread_mutex_lock(&READY);
 	if ((strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) || (strcmp(ALGORITMO_PLANIFICACION,"SJF")==0)){
 		order_list(LIST_READY, (void*) ordenar_por_estimacion);
 	}
 	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 		order_list(LIST_READY, (void*) ordenar_por_prioridad);
 	}
+	pthread_mutex_unlock(&READY);
 }
 
 //Envia permiso de hacer una lectura a ESI
@@ -264,7 +304,7 @@ void ordeno_listas(){
  * */
 void continuar_comunicacion(){
 
-
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi * primer_esi = list_get(LIST_EXECUTE,0);
 	if(primer_esi == NULL){
 		list_remove(LIST_EXECUTE, 0);
@@ -278,7 +318,7 @@ void continuar_comunicacion(){
 			printf("Envie permiso de ejecucion linea: %d al ESI de ID: %d ESTIMACION: %f\n",primer_esi->lineaALeer, primer_esi->id, primer_esi->estimacion);
 		}
 	}
-
+	pthread_mutex_unlock(&EXECUTE);
 
 }
 
@@ -308,12 +348,18 @@ void free_esiBloqueador(t_esiBloqueador* nodoBloqueado){
 
 void remove_esi_by_fd(int32_t fd){
 	bool _esElfd(t_Esi* un_esi) { return un_esi->fd == fd;}
+	pthread_mutex_lock(&READY);
 	list_remove_and_destroy_by_condition(LIST_READY,(void*) _esElfd, free);
+	pthread_mutex_unlock(&READY);
+	pthread_mutex_lock(&EXECUTE);
 	list_remove_and_destroy_by_condition(LIST_EXECUTE,(void*) _esElfd, free);
+	pthread_mutex_unlock(&EXECUTE);
 	list_remove_and_destroy_by_condition(LIST_FINISHED,(void*) _esElfd, free);
 
 	bool _esElfdBlocked(t_nodoBloqueado* nodo_bloqueado) { return nodo_bloqueado->esi->fd == fd;}
+	pthread_mutex_lock(&BLOCKED);
 	list_remove_and_destroy_by_condition(LIST_BLOCKED,(void*) _esElfdBlocked,(void*) free_nodoBLoqueado);
+	pthread_mutex_unlock(&BLOCKED);
 
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
 	list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
@@ -325,7 +371,7 @@ void remove_esi_by_fd(int32_t fd){
 //Buscara al esi que hizo ctrl+c y lo manda a terminado ()
 void remove_esi_by_fd_finished(int32_t fd){
 	bool _esElfd(t_Esi* un_esi) { return un_esi->fd == fd;}
-
+	pthread_mutex_lock(&READY);
 	if(list_find(LIST_READY, (void*)_esElfd) != NULL){
 		t_Esi* esi_terminado = list_find(LIST_READY, (void*)_esElfd);
 		//le resto uno ya que al ingresar a listo se le sumo uno y
@@ -334,21 +380,23 @@ void remove_esi_by_fd_finished(int32_t fd){
 		list_add(LIST_FINISHED,esi_terminado);
 		list_remove_by_condition(LIST_READY,(void*) _esElfd);
 	}
-
+	pthread_mutex_unlock(&READY);
+	pthread_mutex_lock(&EXECUTE);
 	if(list_find(LIST_EXECUTE, (void*)_esElfd) != NULL){
 		list_add(LIST_FINISHED,list_find(LIST_EXECUTE, (void*)_esElfd));
 		list_remove_by_condition(LIST_EXECUTE,(void*) _esElfd);
 	}
-
+	pthread_mutex_unlock(&EXECUTE);
 
 	bool _esElfdBlocked(t_nodoBloqueado* nodo_bloqueado) { return nodo_bloqueado->esi->fd == fd;}
 
+	pthread_mutex_lock(&BLOCKED);
 	if(list_find(LIST_BLOCKED, (void*)_esElfdBlocked) != NULL){
 		t_nodoBloqueado * nodoBuscado = list_find(LIST_BLOCKED, (void*)_esElfdBlocked);
 		list_add(LIST_FINISHED,nodoBuscado->esi);
 		list_remove_by_condition(LIST_BLOCKED,(void*) _esElfdBlocked);
 	}
-
+	pthread_mutex_unlock(&BLOCKED);
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
 
 	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
@@ -390,6 +438,7 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave)==0);}
 	int32_t cant_esis_mover = 0;
 
+	pthread_mutex_lock(&BLOCKED);
 	if(list_find(LIST_BLOCKED, (void*)_esElid) != NULL){
 		cant_esis_mover = list_count_satisfying(LIST_BLOCKED, (void*)_esElid);
 	}
@@ -398,14 +447,16 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
 		t_Esi* esi = nodoBloqueado->esi;
 		esi->tiempoEnListo = 0;
+		pthread_mutex_lock(&READY);
 		list_add(LIST_READY,esi);
+		pthread_mutex_unlock(&READY);
 		recalculo_estimacion(esi);
 		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
 		free(nodoBloqueado);
 	}else{
 		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
 	}
-
+	pthread_mutex_unlock(&BLOCKED);
 
 }
 
@@ -468,7 +519,9 @@ bool ordenar_por_prioridad(t_Esi * esi_menor, t_Esi * esi) {
 
 void agregar_en_bloqueados(t_Esi *esi, char* clave){
 	t_nodoBloqueado* nodoBloqueado = get_nodo_bloqueado(esi,clave);
+	pthread_mutex_lock(&BLOCKED);
 	list_add(LIST_BLOCKED,nodoBloqueado);
+	pthread_mutex_unlock(&BLOCKED);
 }
 
 //Tanto para lista de listos como para la de finalizados.
@@ -491,14 +544,18 @@ void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int32_t id_esi){
 void cambio_ejecutando_a_finalizado(int32_t id_esi){
 
 	bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
-
 	list_remove_by_condition(LIST_EXECUTE,(void*) _esElid);
+	pthread_mutex_unlock(&EXECUTE);
 	agregar_en_Lista(LIST_FINISHED,esi_buscado);
 }
 
 void inicializo_semaforos(){
 	pthread_mutex_init(&MUTEX,NULL);
+	pthread_mutex_init(&BLOCKED,NULL);
+	pthread_mutex_init(&READY,NULL);
+	pthread_mutex_init(&EXECUTE,NULL);
 	pthread_cond_init(&CONDICION_PAUSA_PLANIFICADOR, NULL);
 
 }

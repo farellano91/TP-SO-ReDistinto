@@ -219,7 +219,9 @@ void levantar_servidor_planificador() {
 							//Respuesta al primer saludo (todo nuevo)
 							t_Esi* nuevo_esi = creo_esi(respuesta,i);
 							//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
+							pthread_mutex_lock(&READY);
 							agregar_en_Lista(LIST_READY,nuevo_esi);
+							pthread_mutex_unlock(&READY);
 							printf("ESI id: %d mando saludo: %s y se agrego a LISTA de READY\n",respuesta.id_esi,respuesta.mensaje);
 							if(aplico_algoritmo_primer_ingreso()){
 								continuar_comunicacion();
@@ -228,7 +230,15 @@ void levantar_servidor_planificador() {
 						if(respuesta.id_tipo_respuesta == 2){
 							//Respuesta de una operacion que le pedi
 							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
-							if(aplico_algoritmo(respuesta.clave)){
+							if(muerto_flag()){
+								close(i); // si ya no conversare mas con el cliente, lo cierro
+								FD_CLR(i, &master); // eliminar del conjunto maestro
+								cambio_ejecutando_a_finalizado(respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
+								free_recurso(i);
+								if(aplico_algoritmo_ultimo()){
+									continuar_comunicacion();
+								}
+							}else if(aplico_algoritmo(respuesta.clave)){
 								continuar_comunicacion();
 							}
 

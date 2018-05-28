@@ -156,29 +156,48 @@ int com_kill(char *arg) {
 		return un_esi_bloqueado->esi->id == id_a_borrar;
 	}
 
+	pthread_mutex_lock(&READY);
+	pthread_mutex_lock(&BLOCKED);
+	pthread_mutex_lock(&EXECUTE);
 	if((esi_a_borrar = list_find(LIST_EXECUTE, (void*) _es_el_id_a_borrar)) != NULL) {
 		esi_a_borrar->status = 3;
+		pthread_mutex_unlock(&EXECUTE);
+		pthread_mutex_unlock(&READY);
+		pthread_mutex_unlock(&BLOCKED);
 		printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
-		close(esi_a_borrar->fd);
 		return 0;
 	}else if((esi_a_borrar = list_find(LIST_READY, (void*) _es_el_id_a_borrar)) != NULL) {
            cambio_de_lista(LIST_READY, LIST_FINISHED, esi_a_borrar->id);
+           pthread_mutex_unlock(&READY);
+           pthread_mutex_unlock(&BLOCKED);
 		   free_recurso(esi_a_borrar->fd);
+		   pthread_mutex_unlock(&EXECUTE);
 		   printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
-		   close(esi_a_borrar->fd);
 		   return 0;
 	}else if((esi_bloqueado_a_borrar = list_find(LIST_BLOCKED, (void*) _es_el_id_a_borrar_bloqueado)) != NULL){
 		list_remove_by_condition(LIST_BLOCKED,(void*) _es_el_id_a_borrar_bloqueado);
 		agregar_en_Lista(LIST_FINISHED, esi_bloqueado_a_borrar->esi);
+		pthread_mutex_unlock(&READY);
+		pthread_mutex_unlock(&BLOCKED);
 		free_recurso(esi_bloqueado_a_borrar->esi->fd);
-		close(esi_bloqueado_a_borrar->esi->fd);
 		free_nodoBLoqueado(esi_bloqueado_a_borrar);
+		pthread_mutex_lock(&READY);
+		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+				list_remove(LIST_READY, 0);
+				pthread_mutex_unlock(&EXECUTE);
+			    continuar_comunicacion();
+		}
+		pthread_mutex_unlock(&READY);
+		pthread_mutex_unlock(&EXECUTE);
 		printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
 		return 0;
 	}else{
 		printf("El ESI con id = %d no se encuentra en el sistema\n", id_a_borrar);
 	}
-
+	pthread_mutex_unlock(&EXECUTE);
+	pthread_mutex_unlock(&READY);
+	pthread_mutex_unlock(&BLOCKED);
 	return (0);
 }
 
