@@ -192,6 +192,7 @@ int com_kill(char *arg) {
            pthread_mutex_unlock(&READY);
            pthread_mutex_unlock(&BLOCKED);
 		   free_recurso(esi_a_borrar->fd);
+		   close(esi_a_borrar->fd);
 		   pthread_mutex_unlock(&EXECUTE);
 		   printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
 		   return 0;
@@ -201,6 +202,7 @@ int com_kill(char *arg) {
 		pthread_mutex_unlock(&READY);
 		pthread_mutex_unlock(&BLOCKED);
 		free_recurso(esi_bloqueado_a_borrar->esi->fd);
+		close(esi_bloqueado_a_borrar->esi->fd);
 		free_nodoBLoqueado(esi_bloqueado_a_borrar);
 		pthread_mutex_lock(&READY);
 		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {

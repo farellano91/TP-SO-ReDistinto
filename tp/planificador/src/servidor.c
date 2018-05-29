@@ -161,10 +161,20 @@ void levantar_servidor_planificador() {
 
 		read_fds = master; // copi el conjunto maestro como temporal
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) { //se encarga de llenar en read_fds todos los fd cliente que cambiaron
-			perror("Error en select");
-			free(ALGORITMO_PLANIFICACION);
-			free_claves_iniciales();
-			exit(1);
+			//perror("Error en select");
+			//free(ALGORITMO_PLANIFICACION);
+			//free_claves_iniciales();
+			//exit(1);
+			struct stat buf;
+			for (i = 0; i <= fdmax; i++){
+				if (FD_ISSET(i, &read_fds)){
+					if (fstat(i, &buf) == -1) {
+						FD_CLR(i, &master);
+					    // fd is either closed or not accessible
+					}
+				}
+			}
+
 		}
 		// explorar conexiones existentes en busca de datos que leer
 		for (i = 0; i <= fdmax; i++) {
