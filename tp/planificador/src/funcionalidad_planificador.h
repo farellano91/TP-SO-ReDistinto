@@ -28,6 +28,7 @@ pthread_mutex_t MUTEX;
 pthread_mutex_t BLOCKED;
 pthread_mutex_t READY;
 pthread_mutex_t EXECUTE;
+pthread_mutex_t SOCKETS;
 pthread_cond_t CONDICION_PAUSA_PLANIFICADOR;
 
 void desbloquea_flag();
@@ -123,6 +124,8 @@ t_list* LIST_FINISHED;
 
 t_list* LIST_EXECUTE;
 
+t_list* LIST_SOCKETS;
+
 //lista (tabla) de t_esi_bloqueador
 t_list* LIST_ESI_BLOQUEADOR;
 
@@ -163,6 +166,8 @@ void order_list(t_list* lista, void * funcion);
 
 void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int32_t id_esi);
 
+void move_esi_from_ready_to_finished(int id);
+
 void cambio_ejecutando_a_finalizado(int32_t id_esi);
 
 void free_recurso(int32_t i);
@@ -178,4 +183,5 @@ void BlanquearIndices();
 bool ordenar_por_estimacion(t_Esi * esi_menor, t_Esi * esi);
 
 bool ordenar_por_prioridad(t_Esi * esi_menor, t_Esi * esi);
+
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

@@ -74,8 +74,26 @@ void crear_listas_globales(){
 	LIST_FINISHED = create_list();
 	LIST_EXECUTE = create_list();
 	LIST_ESI_BLOQUEADOR = create_list();
+	LIST_SOCKETS = create_list();
 
 }
+
+void cerrarSocketsMuertos(){
+
+	void _cerrarSocket(int i){
+		close(i);
+		FD_CLR(i, &master);
+	}
+
+	pthread_mutex_lock(&SOCKETS);
+
+	if(list_size(LIST_SOCKETS) > 0){
+		list_iterate(LIST_SOCKETS, (void*)_cerrarSocket);
+	}
+
+	pthread_mutex_unlock(&SOCKETS);
+}
+
 void levantar_servidor_planificador() {
 
 	//cree mis listas globales
@@ -158,22 +176,13 @@ void levantar_servidor_planificador() {
 
 	// bucle principal
 	while (1) {
-
+        cerrarSocketsMuertos();
 		read_fds = master; // copi el conjunto maestro como temporal
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) { //se encarga de llenar en read_fds todos los fd cliente que cambiaron
-			//perror("Error en select");
-			//free(ALGORITMO_PLANIFICACION);
-			//free_claves_iniciales();
-			//exit(1);
-			struct stat buf;
-			for (i = 0; i <= fdmax; i++){
-				if (FD_ISSET(i, &read_fds)){
-					if (fstat(i, &buf) == -1) {
-						FD_CLR(i, &master);
-					    // fd is either closed or not accessible
-					}
-				}
-			}
+			perror("Error en select");
+			free(ALGORITMO_PLANIFICACION);
+			free_claves_iniciales();
+			exit(1);
 
 		}
 		// explorar conexiones existentes en busca de datos que leer

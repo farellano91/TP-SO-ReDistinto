@@ -136,8 +136,10 @@ void recibirInfoCoordinador() {
 
 					//muevo de execute a block al ESI
 					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
+					pthread_mutex_lock(&EXECUTE);
 					t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
 					esi_buscado->status=1;
+					pthread_mutex_unlock(&EXECUTE);
 					printf("Marco como bloqueado al ESI ID:%d\n",id_esi);
 
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
@@ -145,10 +147,11 @@ void recibirInfoCoordinador() {
 				}else{
 					//registro la clave y continua (cargo en lis_esi_bloqueador)
 					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
+					pthread_mutex_lock(&EXECUTE);
 					t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
 					t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_buscado,clave);
 					list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
-
+					pthread_mutex_unlock(&EXECUTE);
 					printf("Registro que ahora la clave:%s lo tomo el ESI ID:%d\n",clave,id_esi);
 
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
@@ -197,10 +200,13 @@ void recibirInfoCoordinador() {
 bool clave_tomada_esi_ejecutando(char* clave){
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
 	t_esiBloqueador * esi_tomo_recurso = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave);
+	pthread_mutex_lock(&EXECUTE);
 	t_Esi * esi_ejecutando = list_get(LIST_EXECUTE,0);
 	if(esi_tomo_recurso!=NULL && esi_ejecutando != NULL ){
+		pthread_mutex_unlock(&EXECUTE);
 		return esi_tomo_recurso->esi->id == esi_ejecutando->id;
 	}
+	pthread_mutex_unlock(&EXECUTE);
 	return false;
 }
 void send_mensaje(int fdCoordinador,int tipo_respuesta){

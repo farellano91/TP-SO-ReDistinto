@@ -556,7 +556,16 @@ void inicializo_semaforos(){
 	pthread_mutex_init(&BLOCKED,NULL);
 	pthread_mutex_init(&READY,NULL);
 	pthread_mutex_init(&EXECUTE,NULL);
+	pthread_mutex_init(&SOCKETS,NULL);
 	pthread_cond_init(&CONDICION_PAUSA_PLANIFICADOR, NULL);
+}
 
+void move_esi_from_ready_to_finished(int id){
+	bool _esElid(t_Esi* un_esi) { return un_esi->id == id;}
+	pthread_mutex_lock(&READY);
+	t_Esi* esi_buscado = list_find(LIST_READY,(void*) _esElid);
+	list_remove_by_condition(LIST_READY,(void*) _esElid);
+	pthread_mutex_unlock(&READY);
+	agregar_en_Lista(LIST_FINISHED,esi_buscado);
 }
 
