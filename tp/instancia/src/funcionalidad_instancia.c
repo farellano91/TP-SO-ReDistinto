@@ -212,6 +212,9 @@ int recibo_sentencia(int fd_coordinador){
 		respuesta = ejecuto_store(clave_recibida,0);
 		free(clave_recibida);
 	}
+	if(tipo_operacion == COMPACTA){
+		compactar_ahora();
+	}
 
 	return respuesta;
 }
@@ -220,6 +223,7 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido){
 
 	//si la clave es una clave existente libero las entradas viejas
 	if(clave_existente(clave_recibida)){
+		printf("La clave existe, entonces paso a limpiar sus entradas para poder sobreescribirla\n");
 		libero_entradas_by_clave(clave_recibida);
 	}
 
@@ -237,7 +241,7 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido){
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}else{
-			compacto();
+			compacto(&entrada_inicial);
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}
 	}else{
@@ -245,7 +249,7 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido){
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}else{
-			compacto();
+			compacto(&entrada_inicial);
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}
 	}
@@ -295,10 +299,24 @@ bool clave_existente(char * clave_recibida) {
 	return false;
 }
 
-void compacto(){
-	//aviso al coordinador q compacten todas las instancias
+void compacto(int* entrada_inicial) {
+
+	//TODO:aviso al coordinador q compacten todas las instancias
 	//notifico_inicio_compactacion();
+
 	compactar_ahora();
+
+	//informa el primer vacio que tenemos
+	int i;
+	for (i = 0; i < CANT_ENTRADA; i++) {
+		char* key = string_itoa(i);
+		t_registro_diccionario_entrada* diccionario = dictionary_get(
+				DICCIONARITY_ENTRADA, key);
+		if (diccionario->libre == 1) {
+			*entrada_inicial = i;
+			break;
+		}
+	}
 }
 
 void compactar_ahora(){
@@ -310,9 +328,9 @@ void compactar_ahora(){
 		if(diccionario->libre == 0){
 			int entrada_superior_vacia = get_entrada_superior_vacia(i);
 			if(entrada_superior_vacia >=  0){
+				printf("Se mueve la entrada n°:%d al n°:%d\n",i,entrada_superior_vacia);
 				//me muevo a esa entrada
 				cambio_entrada(i,entrada_superior_vacia);
-				printf("Se mueve la entrada n°:%d al n°:%d\n",i,entrada_superior_vacia);
 			}
 		}
 	}
@@ -668,38 +686,49 @@ void reestablesco_archivo(char* nombre_archivo){
 
 void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 	int i = 0;
-	for(i = 0; i < CANT_ENTRADA; i++){
-		if(strcmp(STORAGE[i],"")== 0){
-			//esta vacio
-			if(tamanio_contenido <= TAMANIO_ENTRADA){
-				//entra en uno solo
-				strcpy(STORAGE[i],valor);
-				printf("Cargo en la entrada numero: %d el valor: %s\n",i,valor);
+	int total_entradas_necesarias = 0;
+	if(( strlen(valor) + 1 ) <= TAMANIO_ENTRADA){
+		total_entradas_necesarias = 1;
+	}else{
+		total_entradas_necesarias =  1 + (( strlen(valor) + 1 ) / TAMANIO_ENTRADA);
+	}
+	if(total_entradas_necesarias  > CANT_ENTRADA){
+		for(i = 0; i < CANT_ENTRADA; i++){
+			if(strcmp(STORAGE[i],"")== 0){
+				//esta vacio
+				if(tamanio_contenido <= TAMANIO_ENTRADA){
+					//entra en uno solo
+					strcpy(STORAGE[i],valor);
+					printf("Cargo en la entrada numero: %d el valor: %s\n",i,valor);
 
-				//actualizo tabla
-				cargo_actualizo_tabla(clave,i,tamanio_contenido);
-				//actualizo diccionario
-				cargo_actualizo_diccionario(i,tamanio_contenido);
+					//actualizo tabla
+					cargo_actualizo_tabla(clave,i,tamanio_contenido);
+					//actualizo diccionario
+					cargo_actualizo_diccionario(i,tamanio_contenido);
 
-				break;
-			}else{
-				//no entra en uno solo, entoces los divido
-				memcpy(STORAGE[i],valor,TAMANIO_ENTRADA-1);
-				STORAGE[i][TAMANIO_ENTRADA-1]='\0';
-				printf("Cargo en la entrada numero: %d el valor: %s\n",i,STORAGE[i]);
+					break;
+				}else{
+					//no entra en uno solo, entoces los divido
+					memcpy(STORAGE[i],valor,TAMANIO_ENTRADA-1);
+					STORAGE[i][TAMANIO_ENTRADA-1]='\0';
+					printf("Cargo en la entrada numero: %d el valor: %s\n",i,STORAGE[i]);
 
-				memcpy(valor,valor + TAMANIO_ENTRADA -1 ,tamanio_contenido);
-				//tamanio_contenido = tamanio_contenido - TAMANIO_ENTRADA + 1;
-				tamanio_contenido = strlen(valor) + 1;
+					memcpy(valor,valor + TAMANIO_ENTRADA -1 ,tamanio_contenido);
+					//tamanio_contenido = tamanio_contenido - TAMANIO_ENTRADA + 1;
+					tamanio_contenido = strlen(valor) + 1;
 
-				//actualizo tabla
-				cargo_actualizo_tabla(clave,i,TAMANIO_ENTRADA);
-				//actualizo diccionario
-				cargo_actualizo_diccionario(i,TAMANIO_ENTRADA);
+					//actualizo tabla
+					cargo_actualizo_tabla(clave,i,TAMANIO_ENTRADA);
+					//actualizo diccionario
+					cargo_actualizo_diccionario(i,TAMANIO_ENTRADA);
 
+				}
 			}
 		}
+	}else{
+		printf("El archivo .txt: %s necesita más entradas de las que tengo en total, imposible reestablecerlo\n",clave);
 	}
+
 
 }
 

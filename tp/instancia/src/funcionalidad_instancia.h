@@ -72,6 +72,7 @@ enum t_respuesta_al_coordinador {
 enum t_operacion {
 	SET = 2,
 	STORE = 3,
+	COMPACTA = 4,
 };
 
 void actualizo_cant_operaciones(int numero_entrada);
@@ -122,7 +123,7 @@ void cambio_entrada(int entrada_desde,int entrada_hasta);
 
 void compactar_ahora();
 
-void compacto();
+void compacto(int* entrada_inicial);
 
 void aplico_reemplazo(int cant_espacios_buscados);
 
