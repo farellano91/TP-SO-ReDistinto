@@ -135,7 +135,28 @@ int com_desbloquear (char *arg){
 }
 
 int com_listar (char *arg){
-	puts("Comando listar!!");
+
+	void _siEsLaClaveMostrarId(t_nodoBloqueado* nodo){
+		if(string_equals_ignore_case(nodo->clave, arg)){
+			printf("ESI id = %d\n", nodo->esi->id);
+		}
+	}
+
+	bool _estaLaClaveBloqueada(t_nodoBloqueado* nodo){
+		return (string_equals_ignore_case(nodo->clave, arg));
+	}
+
+	pthread_mutex_lock(&BLOCKED);
+
+	if(list_any_satisfy(LIST_BLOCKED, (void*) _estaLaClaveBloqueada)){
+		printf("Los ESIs bloqueados por la clave: %s son:\n", arg);
+		list_iterate(LIST_BLOCKED, (void*) _siEsLaClaveMostrarId);
+	}else{
+		printf("La clave %s no se encuentra bloqueada\n", arg);
+	}
+
+	pthread_mutex_unlock(&BLOCKED);
+
 	return (0);
 }
 
