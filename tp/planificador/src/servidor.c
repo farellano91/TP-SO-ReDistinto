@@ -87,8 +87,9 @@ void cerrarSocketsMuertos(){
 
 	pthread_mutex_lock(&SOCKETS);
 
-	if(list_size(LIST_SOCKETS) > 0){
+	if(!list_is_empty(LIST_SOCKETS)){
 		list_iterate(LIST_SOCKETS, (void*)_cerrarSocket);
+		list_clean(LIST_SOCKETS);
 	}
 
 	pthread_mutex_unlock(&SOCKETS);
