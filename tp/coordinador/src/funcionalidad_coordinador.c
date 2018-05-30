@@ -333,7 +333,7 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 		resultado_instancia = instancia_resp->respuesta;
 		if(resultado_instancia == OK_SET_INSTANCIA){
 			printf("Sentencia SET realizado correctamente\n");
-			//actualizo su espacio (en lista_instnacias)
+			//actualizo su espacio (en lista_instnacias solo si es SET OK)
 			instancia->tamanio_libre = instancia_resp->tamanio_libre;
 			printf("Actualizo el nuevo tamaño disponible de %s ahora es %d\n",instancia->nombre_instancia,instancia->tamanio_libre);
 			//registro la INSTANCIA para esa clave si es que no esta registrado antes
@@ -533,22 +533,28 @@ void remove_registro_instancia( char * clave){
 	}
 }
 
-//Cargo la instancia_respuesta sin repetir!
+//Cargo la instancia_respuesta sin repetir! (el tamaño solo lo tomo en cuenta del otro lado cuando es set)
 void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta,int tamanio_libre){
-	bool _existInstanciaRespuesta(t_instancia_respuesta* inst_respue) { return strcmp(inst_respue->nombre_instancia,nombre_instancia)== 0;}
-	pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
-	if( list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta) != NULL){
 
-		t_instancia_respuesta * insta_respu = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta);
-		insta_respu->respuesta = nueva_respuesta;
-		insta_respu->tamanio_libre = tamanio_libre;
-
+	if(nueva_respuesta == TODOS_COMPACTEN){
+		printf("La instancia:%s me dijo que todos deben compactar\n",nombre_instancia);
+		//TODO: envio mensaje a todas las demas instancias q tengo conectadas para q compacten
 	}else{
-		t_instancia_respuesta* instancia_respuesta = creo_instancia_respuesta(nombre_instancia,nueva_respuesta,tamanio_libre);
-		list_add(LIST_INSTANCIA_RESPUESTA,instancia_respuesta);
+		//Solo cargo el resultado si la respuesta es diferente de q todos compacten
+		bool _existInstanciaRespuesta(t_instancia_respuesta* inst_respue) { return strcmp(inst_respue->nombre_instancia,nombre_instancia)== 0;}
+		pthread_mutex_lock(&MUTEX_RECV_INSTANCIA);
+		if( list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta) != NULL){
+			t_instancia_respuesta * insta_respu = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta);
+			insta_respu->respuesta = nueva_respuesta;
+			insta_respu->tamanio_libre = tamanio_libre;
+		}else{
+			t_instancia_respuesta* instancia_respuesta = creo_instancia_respuesta(nombre_instancia,nueva_respuesta,tamanio_libre);
+			list_add(LIST_INSTANCIA_RESPUESTA,instancia_respuesta);
 
+		}
+		pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
 	}
-	pthread_mutex_unlock(&MUTEX_RECV_INSTANCIA);
+
 
 }
 

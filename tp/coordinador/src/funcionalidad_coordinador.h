@@ -152,6 +152,7 @@ enum t_respuesta_de_instancia {
 	OK_SET_INSTANCIA = 6,         //AMBOS OK DERIVAN EN SER 2 PARA AVISAR OK AL ESI
 	OK_STORE_INSTANCIA = 7,
 	ABORTA_ESI_CLAVE_INNACCESIBLE = 8, //Por instancia desconectada
+	TODOS_COMPACTEN = 13,
 };
 
 enum t_respuesta_de_planificador {

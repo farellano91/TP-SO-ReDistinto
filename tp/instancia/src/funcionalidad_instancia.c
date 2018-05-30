@@ -88,7 +88,6 @@ void envio_resultado_al_coordinador(int sockfd,int resultado){
 	if(resultado == OK_SET_INSTANCIA){
 		espacio_libre = obtener_espacio_libre();
 	}
-
 	void* bufferEnvio = malloc(sizeof(int32_t)*2);
 	memcpy(bufferEnvio,&espacio_libre,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),&resultado ,sizeof(int32_t) );
@@ -132,7 +131,6 @@ int recibo_sentencia(int fd_coordinador){
 	int32_t long_valor = 0;
 	int32_t tipo_operacion = 0;
 	int32_t numbytes = 0;
-	int32_t numeroEntrada;
 	int respuesta = 0;
 
 	if ((numbytes = recv(fd_coordinador, &tipo_operacion, sizeof(int32_t), 0)) <= 0) {
@@ -185,7 +183,7 @@ int recibo_sentencia(int fd_coordinador){
 		}
 
 		printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
-		respuesta = ejecuto_set(clave_recibida,valor_recibido);
+		respuesta = ejecuto_set(clave_recibida,valor_recibido,fd_coordinador);
 		free(valor_recibido);
 		free(clave_recibida);
 
@@ -208,18 +206,19 @@ int recibo_sentencia(int fd_coordinador){
 		}
 		printf("Recibi para hacer STORE clave: %s\n",clave_recibida);
 
-		//respuesta = OK_STORE_INSTANCIA;
-		respuesta = ejecuto_store(clave_recibida,0);
+		respuesta = ejecuto_store(clave_recibida);
 		free(clave_recibida);
 	}
 	if(tipo_operacion == COMPACTA){
 		compactar_ahora();
+		pthread_mutex_unlock(&MUTEX_INSTANCIA);
+		return EN_COMAPACTACION;
 	}
 
 	return respuesta;
 }
 
-int ejecuto_set(char* clave_recibida,char* valor_recibido){
+int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador){
 
 	//si la clave es una clave existente libero las entradas viejas
 	if(clave_existente(clave_recibida)){
@@ -241,7 +240,7 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido){
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}else{
-			compacto(&entrada_inicial);
+			compacto(&entrada_inicial,fd_coordinador);
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}
 	}else{
@@ -249,10 +248,12 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido){
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}else{
-			compacto(&entrada_inicial);
+			compacto(&entrada_inicial,fd_coordinador);
 			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}
 	}
+
+	actualizo_cant_operaciones(clave_recibida);
 	return OK_SET_INSTANCIA;
 }
 
@@ -299,10 +300,10 @@ bool clave_existente(char * clave_recibida) {
 	return false;
 }
 
-void compacto(int* entrada_inicial) {
+void compacto(int* entrada_inicial,int fd_coordinador) {
 
-	//TODO:aviso al coordinador q compacten todas las instancias
-	//notifico_inicio_compactacion();
+	//aviso al coordinador q compacten todas las instancias
+	notifico_inicio_compactacion(fd_coordinador);
 
 	compactar_ahora();
 
@@ -317,6 +318,22 @@ void compacto(int* entrada_inicial) {
 			break;
 		}
 	}
+}
+
+void notifico_inicio_compactacion(int fd_coordinador){
+	int32_t compacto = TODOS_COMPACTEN;
+	int32_t espacio_libre = 0;//envio 0 ya q el coordinador va a ignorar esto para este tipo de mensaje
+	void* bufferEnvio = malloc(sizeof(int32_t)*2);
+	memcpy(bufferEnvio,&espacio_libre,sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t),&compacto ,sizeof(int32_t) );
+
+	if(send(fd_coordinador,bufferEnvio, sizeof(int32_t)*2 , 0) == -1) {
+		printf("No se puede enviar el pedido de que todos compactan al coordinador\n");
+		free_algo_punt_nom();
+		free_estruct_admin();
+		exit(1);
+	}
+	printf("Envio solicitud de compactacion global al coordinador\n");
 }
 
 void compactar_ahora(){
@@ -358,6 +375,8 @@ void cambio_entrada(int entrada_desde,int entrada_hasta){
 		return (registro_tabla->numero_entrada == entrada_desde);
 	}
 	t_registro_tabla_entrada* tabla = list_find(TABLA_ENTRADA,(void*)_esEntrada);
+	char * valor = get_valor_by_clave(tabla->clave);
+	strcpy(STORAGE[tabla->numero_entrada],valor);
 	cargo_actualizo_tabla(tabla->clave,entrada_hasta,tabla->tamanio_valor);
 	cargo_actualizo_diccionario(entrada_hasta,tabla->tamanio_valor);
 
@@ -367,10 +386,12 @@ void cambio_entrada(int entrada_desde,int entrada_hasta){
 //reemplaza tantas veces como entradas_necesarias - cant_espacio_disponibles
 void aplico_reemplazo(int cant_espacios_buscados){
 	int i;
+	int numeroEntrada = -1;
+	printf("Tengo que reemplazar por falta de espacio\n");
 	if(cant_espacios_buscados > 0){
 		for(i = 0 ; i < cant_espacios_buscados; i++){
-			//numeroEntrada = aplicarAlgoritmoReemplazo(clave_recibida, valor_recibido);
-			//libero_entrada(numeroEntrada)
+			numeroEntrada = aplicarAlgoritmoReemplazo();
+			libero_entrada(numeroEntrada);
 		}
 
 	}
@@ -389,13 +410,18 @@ void guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,
 				memcpy(STORAGE[entrada_inicial + i],valor_recibido,TAMANIO_ENTRADA-1);
 				STORAGE[entrada_inicial][TAMANIO_ENTRADA-1]='\0';
 				memcpy(valor_recibido,valor_recibido + TAMANIO_ENTRADA -1 ,tamanio_contenido);
+				//actualizo tabla
+				cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,TAMANIO_ENTRADA);
+				//actualizo diccionario
+				cargo_actualizo_diccionario(entrada_inicial+i,TAMANIO_ENTRADA);
 			}else{
 				memcpy(STORAGE[entrada_inicial + i],valor_recibido,tamanio_contenido);
+				//actualizo tabla
+				cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,tamanio_contenido);
+				//actualizo diccionario
+				cargo_actualizo_diccionario(entrada_inicial+i,tamanio_contenido);
 			}
-			//actualizo tabla
-			cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,tamanio_contenido);
-			//actualizo diccionario
-			cargo_actualizo_diccionario(entrada_inicial+i,tamanio_contenido);
+
 		}
 	}else{
 		strcpy(STORAGE[entrada_inicial],valor_recibido);
@@ -450,15 +476,16 @@ int espacio_diponible(int entradas_necesarias){
 	return contador;
 }
 
-int ejecuto_store(char* clave_recibida,int isDUMp){
+int ejecuto_store(char* clave_recibida){
 
 	//si la clave-valor ya no existe en la instancia dado que se pizo: FALLO_INSTANCIA_CLAVE_SOBREESCRITA
-	char* valor_del_storage = get_valor_by_clave(clave_recibida,isDUMp);
+	char* valor_del_storage = get_valor_by_clave(clave_recibida);
 	if(valor_del_storage == NULL){
 		printf("ERROR: no existe la clave-valor dado que alguna de su entradas se reemplazo\n");
 		return FALLO_INSTANCIA_CLAVE_SOBREESCRITA;
 	}
 
+	actualizo_cant_operaciones(clave_recibida);
 	printf("El valor a guardar es:%s\n",valor_del_storage);
 
 	//guardo o actualizo el .txt
@@ -493,7 +520,7 @@ void create_or_update_file(char *path_archivo, char * valor_del_storage){
 }
 
 
-char* get_valor_by_clave(char * clave_recibida,int isDUmp){
+char* get_valor_by_clave(char * clave_recibida){
 
 	char* valor_buscado = malloc(sizeof(char)* TAMANIO_ENTRADA* CANT_ENTRADA);
 	strcpy(valor_buscado,"");
@@ -504,10 +531,7 @@ char* get_valor_by_clave(char * clave_recibida,int isDUmp){
 	if(tabla_entrada!=NULL){
 		void _armoValor(t_registro_tabla_entrada* entrada) {
 			strcat(valor_buscado,STORAGE[entrada->numero_entrada]);
-			if(!isDUmp){
-				//actualizo cant. operacion
-				actualizo_cant_operaciones(entrada->numero_entrada);
-			}
+
 		}
 		list_iterate(tabla_entrada,(void*)_armoValor);
 		valor_buscado[strlen(valor_buscado)] = '\0';
@@ -756,7 +780,6 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 	if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
 		//existe la key en el diccionario
 		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
-		actualizo_cant_operaciones(numero_entrada);
 		registro_diccionario->libre = 0;
 		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
 		printf("Actualizo en mi diccionario la entrada:%d-ocupada-cant operaciones:%d-tamaño libre:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
@@ -764,29 +787,34 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 		//no existe, lo crea
 		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,0,(TAMANIO_ENTRADA - tamanio_contenido));
 		dictionary_put(DICCIONARITY_ENTRADA,key,registro_diccionario);
-		actualizo_cant_operaciones(numero_entrada);
 		printf("Cargo en mi diccionario la entrada:%d-ocupada-cant operaciones:1-tamaño libre:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
 	}
 
 }
 
-//a la entrada del numero seteo operaciones en 0 y a las ademas entradas OCUPADAS las operaciones las sumo en +1
-void actualizo_cant_operaciones(int numero_entrada){
-	char * key = string_itoa(numero_entrada);
-	//buscamos si ya esta esa entrada
-	if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
-		//existe la key en el diccionario
-		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
-		registro_diccionario->cant_operaciones = 0; //porque fue usada recien
-	}
+//a la entrada con esta clave la seteo en 0 (porque se uso recien) y a las ademas entradas OCUPADAS las operaciones las sumo en +1
+void actualizo_cant_operaciones(char* clave){
+	//busco todas las entradas que corresponden a esta clave de mi TABLA DE ENTRADAS
+	void _esClave(t_registro_tabla_entrada* registro) {
+		if(strcmp(registro->clave, clave) == 0){
+			char * key = string_itoa(registro->numero_entrada);
+			//buscamos si ya esta esa entrada
+			if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
+				//existe la key en el diccionario
+				t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+				registro_diccionario->cant_operaciones = 0; //porque fue usada recien
+			}
 
-	//a las otras claves OCUPADAS les tengo q sumar 1 la cant de operaciones
-	void _cambioCantOperaciones(char* key_registro, t_registro_diccionario_entrada* diccionario) {
-		if((strcmp(key_registro,key)!=0) && (diccionario->libre == 0)){
-			diccionario->cant_operaciones++;
+			//a las otras claves OCUPADAS les tengo q sumar 1 la cant de operaciones
+			void _cambioCantOperaciones(char* key_registro, t_registro_diccionario_entrada* diccionario) {
+				if((strcmp(key_registro,key)!=0) && (diccionario->libre == 0)){
+					diccionario->cant_operaciones++;
+				}
+			}
+			dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_cambioCantOperaciones);
 		}
 	}
-	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_cambioCantOperaciones);
+	list_iterate(TABLA_ENTRADA,(void*)_esClave);
 }
 
 
@@ -828,7 +856,7 @@ void realizar_dump(){
 			t_list* tabla_solo_claves = get_only_clave();
 			printf("Empieza dump....\n");
 			void _aplicaSTORE(t_registro_tabla_entrada* una_entrada) {
-				int resultado = ejecuto_store(una_entrada->clave,1);
+				int resultado = ejecuto_store(una_entrada->clave);
 				if(resultado == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
 					printf("Fallo al hacer DUMP de la clave: %s\n",una_entrada->clave);
 				}
@@ -865,7 +893,7 @@ t_list* get_only_clave(){
 }
 
 
-int aplicarAlgoritmoReemplazo(char* clave_recibida, char* valor_recibido){
+int aplicarAlgoritmoReemplazo(){
 
 	if (strstr(ALGORITMO_REEMPLAZO, "C") != NULL) {
 
