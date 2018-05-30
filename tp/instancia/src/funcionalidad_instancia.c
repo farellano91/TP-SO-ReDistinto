@@ -209,10 +209,10 @@ int recibo_sentencia(int fd_coordinador){
 		respuesta = ejecuto_store(clave_recibida);
 		free(clave_recibida);
 	}
-	if(tipo_operacion == COMPACTA){
+	if(tipo_operacion == COMPACTACION_LOCAL){
 		compactar_ahora();
 		pthread_mutex_unlock(&MUTEX_INSTANCIA);
-		return EN_COMAPACTACION;
+		return COMPACTACION_LOCAL;
 	}
 
 	return respuesta;
@@ -321,7 +321,7 @@ void compacto(int* entrada_inicial,int fd_coordinador) {
 }
 
 void notifico_inicio_compactacion(int fd_coordinador){
-	int32_t compacto = TODOS_COMPACTEN;
+	int32_t compacto = COMPACTACION_GLOBAL;
 	int32_t espacio_libre = 0;//envio 0 ya q el coordinador va a ignorar esto para este tipo de mensaje
 	void* bufferEnvio = malloc(sizeof(int32_t)*2);
 	memcpy(bufferEnvio,&espacio_libre,sizeof(int32_t));

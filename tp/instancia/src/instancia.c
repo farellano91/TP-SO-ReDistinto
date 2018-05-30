@@ -24,8 +24,8 @@ int main(void) {
 	reestablecer_datos();
 
 	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
-	//pthread_t punteroHiloDump;
-	//pthread_create(&punteroHiloDump, NULL, (void*) realizar_dump, NULL);
+	pthread_t punteroHiloDump;
+	pthread_create(&punteroHiloDump, NULL, (void*) realizar_dump, NULL);
 
 	//Envio mis datos
 	envio_datos(sockfd);
@@ -35,7 +35,7 @@ int main(void) {
 
 	while(1){
 		int resultado = recibo_sentencia(sockfd);
-		if(resultado != EN_COMAPACTACION){
+		if(resultado != COMPACTACION_LOCAL){
 			envio_resultado_al_coordinador(sockfd,resultado);
 		}
 	}

@@ -536,9 +536,10 @@ void remove_registro_instancia( char * clave){
 //Cargo la instancia_respuesta sin repetir! (el tamaño solo lo tomo en cuenta del otro lado cuando es set)
 void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta,int tamanio_libre){
 
-	if(nueva_respuesta == TODOS_COMPACTEN){
+	if(nueva_respuesta == COMPACTACION_GLOBAL){
 		printf("La instancia:%s me dijo que todos deben compactar\n",nombre_instancia);
-		//TODO: envio mensaje a todas las demas instancias q tengo conectadas para q compacten
+		//envio mensaje a todas las demas instancias q tengo conectadas para q compacten menos a la mia
+		envio_mensaje_masivo_compactacion_instancias(nombre_instancia);
 	}else{
 		//Solo cargo el resultado si la respuesta es diferente de q todos compacten
 		bool _existInstanciaRespuesta(t_instancia_respuesta* inst_respue) { return strcmp(inst_respue->nombre_instancia,nombre_instancia)== 0;}
@@ -556,6 +557,31 @@ void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta,int t
 	}
 
 
+}
+
+void envio_mensaje_masivo_compactacion_instancias(char* nombre_instancia){
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
+	int control = 0;
+	if(!list_is_empty(LIST_INSTANCIAS)){
+		void _envioPedidoCompacta(t_Instancia* instancia) {
+			if(strcmp(instancia->nombre_instancia,nombre_instancia) != 0){
+				int32_t operacion = COMPACTACION_LOCAL;
+				if (send(instancia->fd, &operacion,sizeof(int32_t), 0) == -1) {
+					printf("No se pudo enviar pedido de compactacion local a la instancia :%s\n",instancia->nombre_instancia);
+				}else{
+					control++;
+					printf("Pedido de compactacion local envia a %s correctamente\n",instancia->nombre_instancia);
+				}
+
+			}
+		}
+		list_iterate(LIST_INSTANCIAS,(void*)_envioPedidoCompacta);
+	}
+
+	if(control == 0){
+		printf("No hay ninguna instancia para enviar pedido de compactacion local\n");
+	}
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 }
 
 bool exist_clave_registro_instancias(char * clave){

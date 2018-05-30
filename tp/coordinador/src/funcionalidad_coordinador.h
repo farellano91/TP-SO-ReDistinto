@@ -31,11 +31,18 @@ pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
 pthread_cond_t CONDICION_RECV_INSTANCIA;
 
-pthread_mutex_t MUTEX_RECV_INSTANCIA;
+pthread_mutex_t MUTEX_RECV_INSTANCIA; //para la estructura de respuesta de instancias
 
 pthread_cond_t CONDICION_INSTANCIA;
 
-pthread_mutex_t MUTEX_INSTANCIA;
+pthread_mutex_t MUTEX_INSTANCIA; //para la lista de instancias
+
+
+t_list* LIST_INSTANCIA_RESPUESTA;
+
+t_list* LIST_INSTANCIAS;
+
+t_list* LIST_REGISTRO_INSTANCIAS;
 
 //Para planificador
 int FD_PLANIFICADOR;
@@ -91,12 +98,6 @@ void free_parametros_config();
 
 void configure_logger();
 
-t_list* LIST_INSTANCIA_RESPUESTA;
-
-t_list* LIST_INSTANCIAS;
-
-t_list* LIST_REGISTRO_INSTANCIAS;
-
 t_list* create_list();
 
 void envio_datos_entrada(int fd_instancia);
@@ -131,6 +132,8 @@ void free_instancia_respuesta(t_instancia_respuesta* instancia_respuesta);
 
 void remove_instancia(int fd_instancia);
 
+void envio_mensaje_masivo_compactacion_instancias();
+
 void cargo_instancia_respuesta(char * instancia_nueva,int respuesta,int tamanio_libre);
 
 bool exist_clave_registro_instancias(char * clave);
@@ -152,7 +155,8 @@ enum t_respuesta_de_instancia {
 	OK_SET_INSTANCIA = 6,         //AMBOS OK DERIVAN EN SER 2 PARA AVISAR OK AL ESI
 	OK_STORE_INSTANCIA = 7,
 	ABORTA_ESI_CLAVE_INNACCESIBLE = 8, //Por instancia desconectada
-	TODOS_COMPACTEN = 13,
+	COMPACTACION_GLOBAL = 13, //esto es para saber q tengo q enviar pedido de compactacion al resto de instnacias
+	COMPACTACION_LOCAL = 20,
 };
 
 enum t_respuesta_de_planificador {

@@ -67,7 +67,7 @@ enum t_respuesta_al_coordinador {
 	FALLO_INSTANCIA_CLAVE_SOBREESCRITA = 5,
 	OK_SET_INSTANCIA = 6,
 	OK_STORE_INSTANCIA = 7,
-	TODOS_COMPACTEN = 13,
+	COMPACTACION_GLOBAL = 13,
 };
 
 enum t_operacion {
@@ -77,7 +77,7 @@ enum t_operacion {
 };
 
 enum t_operacion_internas {
-	EN_COMAPACTACION = 20,
+	COMPACTACION_LOCAL = 20,
 };
 
 void actualizo_cant_operaciones(char* clave);
