@@ -260,7 +260,25 @@ int com_status (char *arg){
 }
 
 int com_deadlock (char *arg){
-	puts("Comando deadlock!!");
+
+	void _buscarDeadlock(t_esiBloqueador* esiBloqueador){
+
+		void _estanEnDeadlock(t_nodoBloqueado* nodo){
+	        if(string_equals_ignore_case(nodo->clave, esiBloqueador->clave) && quiereAlgoQueElOtroTiene(esiBloqueador, nodo)){
+               printf("El ESI %d está en deadlock con el ESI %d\n", esiBloqueador->esi->id, nodo->esi->id);
+	        }
+		}
+
+		pthread_mutex_lock(&BLOCKED);
+
+        list_iterate(LIST_BLOCKED, (void*)_estanEnDeadlock);
+
+		pthread_mutex_unlock(&BLOCKED);
+
+	}
+
+	list_iterate(LIST_ESI_BLOQUEADOR, (void*)_buscarDeadlock);
+
 	return (0);
 }
 

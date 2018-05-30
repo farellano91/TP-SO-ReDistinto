@@ -184,4 +184,6 @@ bool ordenar_por_estimacion(t_Esi * esi_menor, t_Esi * esi);
 
 bool ordenar_por_prioridad(t_Esi * esi_menor, t_Esi * esi);
 
+bool quiereAlgoQueElOtroTiene(t_esiBloqueador* esiBloqueador, t_nodoBloqueado* nodo);
+
 #endif /* FUNCIONALIDAD_PLANIFICADOR_H_ */

@@ -569,3 +569,19 @@ void move_esi_from_ready_to_finished(int id){
 	agregar_en_Lista(LIST_FINISHED,esi_buscado);
 }
 
+bool quiereAlgoQueElOtroTiene(t_esiBloqueador* esiBloqueador, t_nodoBloqueado* nodo){
+
+	bool _es_el_esi1(t_nodoBloqueado* un_nodo){
+		return un_nodo->esi->id == esiBloqueador->esi->id;
+	}
+
+	bool _es_el_esi2(t_esiBloqueador* esi_bloqueador){
+		return esi_bloqueador->esi->id == nodo->esi->id;
+	}
+
+	t_nodoBloqueado* un_esi = list_find(LIST_BLOCKED, (void*) _es_el_esi1);;
+	t_esiBloqueador* otro_esi = list_find(LIST_ESI_BLOQUEADOR, (void*) _es_el_esi2);
+
+	return string_equals_ignore_case(un_esi->clave, otro_esi->clave);
+
+}
