@@ -68,6 +68,7 @@ enum t_respuesta_al_coordinador {
 	OK_SET_INSTANCIA = 6,
 	OK_STORE_INSTANCIA = 7,
 	COMPACTACION_GLOBAL = 13,
+	FALLO_CASO_BORDE = 15,
 };
 
 enum t_operacion {
@@ -113,13 +114,13 @@ void envio_datos(int sockfd);
 
 bool son_contiguos(int entradas_necesarias, int* entrada_inicial);
 
-int espacio_diponible(int entradas_necesarias);
+int espacio_diponible();
 
 void order_tabla_by(t_list* tabla, void * funcion);
 
 bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro);
 
-void guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias);
+bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias);
 
 //busca la entrada superior que este vacia
 int get_entrada_superior_vacia(int entrada);

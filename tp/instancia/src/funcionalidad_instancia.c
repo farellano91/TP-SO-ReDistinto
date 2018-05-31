@@ -220,6 +220,8 @@ int recibo_sentencia(int fd_coordinador){
 
 int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador){
 
+	bool control_final = false; //esto me sirve para saber si al final pude o no insertar lo pedido
+
 	//si la clave es una clave existente libero las entradas viejas
 	if(clave_existente(clave_recibida)){
 		printf("La clave existe, entonces paso a limpiar sus entradas para poder sobreescribirla\n");
@@ -235,26 +237,33 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador){
 		entradas_necesarias =  1 + (( strlen(valor_recibido) + 1 ) / TAMANIO_ENTRADA);
 	}
 
-	int cant_espacio_disponibles = espacio_diponible(entradas_necesarias);
+	int cant_espacio_disponibles = espacio_diponible();
 	if(cant_espacio_disponibles >= entradas_necesarias){
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
-			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+			control_final =guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}else{
 			compacto(&entrada_inicial,fd_coordinador);
-			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+			control_final =guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}
 	}else{
 		aplico_reemplazo(entradas_necesarias - cant_espacio_disponibles);//reemplaza tanta cantidad de claves como espacios necesite
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
-			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+			control_final =guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}else{
 			compacto(&entrada_inicial,fd_coordinador);
-			guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
+			control_final = guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}
 	}
 
-	actualizo_cant_operaciones(clave_recibida);
-	return OK_SET_INSTANCIA;
+	if(control_final){
+		actualizo_cant_operaciones(clave_recibida);
+		return OK_SET_INSTANCIA;
+	}else{
+		//no pude insertar a pesar de aplicar todas las tecnicas
+		return FALLO_CASO_BORDE;
+	}
+
+
 }
 
 void libero_entradas_by_clave(char * clave_recibida){
@@ -398,41 +407,52 @@ void aplico_reemplazo(int cant_espacios_buscados){
 }
 
 
-void guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias){
+bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias){
 	int i;
 	int tamanio_contenido = 0;
-	if(entradas_necesarias > 1){
-		for(i=0;i<entradas_necesarias;i++){
+	if(entradas_necesarias < espacio_diponible()){
 
-			tamanio_contenido = strlen(valor_recibido) + 1;
+		//ordeno tabla por numero de entrada(nos sirve para cuando buscamos claves diferentes)
+		order_tabla_by(TABLA_ENTRADA,(void*) by_numero_entrada);
 
-			if(tamanio_contenido > TAMANIO_ENTRADA){
-				memcpy(STORAGE[entrada_inicial + i],valor_recibido,TAMANIO_ENTRADA-1);
-				STORAGE[entrada_inicial][TAMANIO_ENTRADA-1]='\0';
-				memcpy(valor_recibido,valor_recibido + TAMANIO_ENTRADA -1 ,tamanio_contenido);
-				//actualizo tabla
-				cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,TAMANIO_ENTRADA);
-				//actualizo diccionario
-				cargo_actualizo_diccionario(entrada_inicial+i,TAMANIO_ENTRADA);
-			}else{
-				memcpy(STORAGE[entrada_inicial + i],valor_recibido,tamanio_contenido);
-				//actualizo tabla
-				cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,tamanio_contenido);
-				//actualizo diccionario
-				cargo_actualizo_diccionario(entrada_inicial+i,tamanio_contenido);
-			}
-
-		}
+		//es imposible insertar, caso borde
+		return false;
 	}else{
-		strcpy(STORAGE[entrada_inicial],valor_recibido);
-		//actualizo tabla
-		cargo_actualizo_tabla(clave_recibida,entrada_inicial,strlen(valor_recibido) + 1);
-		//actualizo diccionario
-		cargo_actualizo_diccionario(entrada_inicial, strlen(valor_recibido) + 1);
+		if(entradas_necesarias > 1){
+			for(i=0;i<entradas_necesarias;i++){
+
+				tamanio_contenido = strlen(valor_recibido) + 1;
+
+				if(tamanio_contenido > TAMANIO_ENTRADA){
+					memcpy(STORAGE[entrada_inicial + i],valor_recibido,TAMANIO_ENTRADA-1);
+					STORAGE[entrada_inicial][TAMANIO_ENTRADA-1]='\0';
+					memcpy(valor_recibido,valor_recibido + TAMANIO_ENTRADA -1 ,tamanio_contenido);
+					//actualizo tabla
+					cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,TAMANIO_ENTRADA);
+					//actualizo diccionario
+					cargo_actualizo_diccionario(entrada_inicial+i,TAMANIO_ENTRADA);
+				}else{
+					memcpy(STORAGE[entrada_inicial + i],valor_recibido,tamanio_contenido);
+					//actualizo tabla
+					cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,tamanio_contenido);
+					//actualizo diccionario
+					cargo_actualizo_diccionario(entrada_inicial+i,tamanio_contenido);
+				}
+
+			}
+		}else{
+			strcpy(STORAGE[entrada_inicial],valor_recibido);
+			//actualizo tabla
+			cargo_actualizo_tabla(clave_recibida,entrada_inicial,strlen(valor_recibido) + 1);
+			//actualizo diccionario
+			cargo_actualizo_diccionario(entrada_inicial, strlen(valor_recibido) + 1);
+		}
 	}
 
 	//ordeno tabla por numero de entrada(nos sirve para cuando buscamos claves diferentes)
 	order_tabla_by(TABLA_ENTRADA,(void*) by_numero_entrada);
+
+	return true;
 }
 
 bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro) {
@@ -464,7 +484,7 @@ bool son_contiguos(int entradas_necesarias, int* entrada_inicial){
 }
 
 //me dice cuantos espacios libre hay
-int espacio_diponible(int entradas_necesarias){
+int espacio_diponible(){
 	int contador = 0;
 	void _espacioDisponible(char* _, t_registro_diccionario_entrada* diccionario) {
 		if(diccionario->libre){

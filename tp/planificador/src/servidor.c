@@ -221,7 +221,7 @@ void levantar_servidor_planificador() {
 					if ((numbytes = recv(i, &respuesta, sizeof(respuesta), 0)) <= 0) {
 						if (numbytes == 0) {
 						// conexión cerrada
-							printf("Se fue el ESI de fd: %d\n", i);
+							printf("Error de Comunicación: Se fue ESI de fd: %d\n", i);
 						} else {
 							perror("ERROR: al recibir respuesta del ESI");
 						}

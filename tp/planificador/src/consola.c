@@ -135,14 +135,19 @@ int com_bloquear (char *arg){
 int com_desbloquear (char *arg){
 	puts("Comando desbloquear!!");
 	char* clave = arg;
+	pthread_mutex_lock(&READY);
+	pthread_mutex_lock(&EXECUTE);
 	move_esi_from_bloqueado_to_listo(clave);
 	//continua flujo si esta disponible el cpu
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
 			list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 			list_remove(LIST_READY, 0);
 			pthread_mutex_unlock(&EXECUTE);
+			pthread_mutex_unlock(&READY);
 			continuar_comunicacion();
 	}
+	pthread_mutex_unlock(&EXECUTE);
+	pthread_mutex_unlock(&READY);
 	return (0);
 }
 

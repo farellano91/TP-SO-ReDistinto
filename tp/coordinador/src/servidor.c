@@ -79,7 +79,7 @@ void recibo_lineas(int fd_esi) {
 				<= 0) {
 			if (numbytes == 0) {
 				//si el cliente se fue
-				printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
+				printf("Error de Comunicación: Se fue ESI de fd:%d!!!\n", fd_esi);
 				break;
 			}
 
@@ -91,7 +91,7 @@ void recibo_lineas(int fd_esi) {
 					<= 0) {
 				if (numbytes == 0) {
 					//si el cliente se fue
-					printf("Se fue: ESI de fd:%d, chau gato!!!\n", fd_esi);
+					printf("Error de Comunicación: Se fue ESI de fd:%d!!!\n", fd_esi);
 					break;
 				}
 			} else {
@@ -103,6 +103,11 @@ void recibo_lineas(int fd_esi) {
 					case GET:
 						clave = get_clave_recibida(fd_esi);
 						loggeo_info(1, id_esi, clave, "");
+						if(excede_tamanio(clave)){
+							loggeo_respuesta("GET",id_esi,ABORTA_ESI_ERROR_TAMANIIO_CLAVE);
+							free(clave);
+							break;
+						}
 						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta la registro sin instancia
 						if(!exist_clave_registro_instancias(clave)){
 							printf("La clave no existe en el sistema, la creamos...\n");
@@ -119,6 +124,14 @@ void recibo_lineas(int fd_esi) {
 					case SET:
 						clave_valor = get_clave_valor(fd_esi); //noc porque si metemos get_clave_valor dentro de aplicoA.. no recibe los valores posta
 						loggeo_info(2, id_esi, clave_valor[0],clave_valor[1]);
+
+						if(excede_tamanio(clave_valor[0])){
+							loggeo_respuesta("SET",id_esi,ABORTA_ESI_ERROR_TAMANIIO_CLAVE);
+							free(clave_valor[0]);
+							free(clave_valor[1]);
+							free(clave_valor);
+							break;
+						}
 
 						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
 						if(exist_clave_registro_instancias(clave_valor[0])){
@@ -158,6 +171,12 @@ void recibo_lineas(int fd_esi) {
 					case STORE:
 						clave = get_clave_recibida(fd_esi);
 						loggeo_info(3, id_esi, clave,"");
+
+						if(excede_tamanio(clave)){
+							loggeo_respuesta("STORE",id_esi,ABORTA_ESI_ERROR_TAMANIIO_CLAVE);
+							free(clave);
+							break;
+						}
 
 						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
 						if(exist_clave_registro_instancias(clave)){
@@ -208,6 +227,13 @@ void recibo_lineas(int fd_esi) {
 		}
 	}
 }
+
+
+//esto es para limitar solo a 39-> letras + 1-> \0
+bool excede_tamanio(char* clave){
+	return ((strlen(clave) + 1) > 39 );
+}
+
 
 char* get_clave_recibida(int fd_esi){
 	int leng_clave = 0;

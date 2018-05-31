@@ -397,6 +397,12 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	case FALLA_SIN_INSTANCIA_CLAVE_STORE:
 		strcat(registro, "FALLA: No existe ninguna instancia con esa clave");
 		break;
+	case ABORTA_ESI_ERROR_TAMANIIO_CLAVE:
+			strcat(registro, "SE ABORTA ESI POR CLAVE SUPERA TAMAÑO MAXIMO DE 40 CARACTERES");
+			break;
+	case FALLO_CASO_BORDE:
+			strcat(registro, "OCURRIO UN ERROR CON LA INSTANCIA, LA CLAVE NO SE INSERTO POR FALTA DE ESPACIO FINAL, CASO BORDE");
+			break;
 	default:
 		strcat(registro, " - ");
 		break;
@@ -468,7 +474,7 @@ int reciboRespuestaInstancia(int fd_instancia){
 	if ((numbytes = recv(fd_instancia, &respuestaInstacia, sizeof(int32_t), 0)) <= 0) {
 		if (numbytes == 0) {
 		// conexión cerrada
-			printf("Se fue el INSTANCIA FD: %d, nos despedimos del hilo\n",fd_instancia);
+			printf("Error de Comunicación: Se fue el INSTANCIA FD: %d\n",fd_instancia);
 
 		} else {
 			perror("ERROR: al recibir respuesta de la INSTANCIA");

@@ -157,6 +157,7 @@ enum t_respuesta_de_instancia {
 	ABORTA_ESI_CLAVE_INNACCESIBLE = 8, //Por instancia desconectada
 	COMPACTACION_GLOBAL = 13, //esto es para saber q tengo q enviar pedido de compactacion al resto de instnacias
 	COMPACTACION_LOCAL = 20,
+	FALLO_CASO_BORDE = 15,
 };
 
 enum t_respuesta_de_planificador {
@@ -171,7 +172,7 @@ enum t_respuesta_de_coordinador {
 	FALLA_ELEGIR_INSTANCIA = 10,
 	FALLA_PLANIFICADOR_DESCONECTADO = 11,
 	FALLA_SIN_INSTANCIA_CLAVE_STORE = 12,
-
+	ABORTA_ESI_ERROR_TAMANIIO_CLAVE = 14,
 };
 enum t_respuesta_al_esi {
 	ABORTA_ESI = 1,

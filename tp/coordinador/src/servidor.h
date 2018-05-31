@@ -55,6 +55,8 @@ int recibir_saludo(int fdCliente);
 
 void atender_cliente(void* idSocketCliente);
 
+bool excede_tamanio(char* clave);
+
 //Para ESI
 void recibo_lineas(int fdCliente);
 
