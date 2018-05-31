@@ -273,6 +273,37 @@ int com_kill(char *arg) {
 
 int com_status (char *arg){
 	puts("Comando status!!");
+	char* clave = arg;
+	int32_t longitud_clave = strlen(clave) + 1;
+	void* bufferEnvio = malloc(sizeof(int32_t)*2 + sizeof(char)*longitud_clave);
+	memcpy(bufferEnvio, &longitud_clave,sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t),clave,longitud_clave);
+
+	if( FD_COORDINADOR_STATUS == -1 ){
+		printf("No tengo el FD del coordinador status\n");
+		return (0);
+	}
+	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_clave, 0) == -1) {
+		printf("No se pudo enviar pedido status\n");
+		return (0);
+	}
+	printf("Envie pedido status\n");
+	int numbytes = 0;
+	int32_t respuesta = 0;
+	if ((numbytes = recv(FD_COORDINADOR_STATUS, &respuesta,sizeof(int32_t), 0)) <= 0) {
+		printf("No se pudo recibir resultado de pedido status\n");
+		return (0);
+	}else{
+		switch (respuesta) {
+			case 1:
+				printf("No existe la clave en el sistema\n");
+				break;
+			default:
+				break;
+		}
+	}
+
+	printf("Fin de pedido status\n");
 	return (0);
 }
 

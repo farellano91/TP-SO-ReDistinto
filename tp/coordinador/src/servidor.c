@@ -112,7 +112,9 @@ void recibo_lineas(int fd_esi) {
 						if(!exist_clave_registro_instancias(clave)){
 							printf("La clave no existe en el sistema, la creamos...\n");
 							t_registro_instancia* registro_nuevo = creo_registro_instancia("",clave);
+							pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 							list_add(LIST_REGISTRO_INSTANCIAS,registro_nuevo);
+							pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 						}
 						envio_tarea_planificador(1,clave,id_esi);
 						resultado_linea = recibo_resultado_planificador();
@@ -142,12 +144,14 @@ void recibo_lineas(int fd_esi) {
 							if(respuesta == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
 								resultado_linea = ABORTA_ESI_CLAVE_NO_BLOQUEADA;
 							}else{
+								pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 								bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor[0])== 0;}
 								t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+								pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 
 								if(strcmp(registro_instancia->nombre_instancia,"")==0){
 									//No hay ninguna instancia con esta clave
-									t_Instancia * instancia = busco_instancia_por_algortimo(ALGORITMO_DISTRIBUCION,clave_valor);
+									t_Instancia * instancia = busco_instancia_por_algortimo(clave_valor[0]);
 									if(instancia == NULL){
 										//error al tratar de elegir una instancia
 										resultado_linea = FALLA_ELEGIR_INSTANCIA;
@@ -181,9 +185,10 @@ void recibo_lineas(int fd_esi) {
 						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
 						if(exist_clave_registro_instancias(clave)){
 							printf("Existe la clave en el sistema\n");
+							pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 							bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
 							t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
-
+							pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 							if(strcmp(registro_instancia->nombre_instancia,"")==0){
 								//No hay ninguna instancia con esta clave
 								printf("No existe ninguna instancia que tenga esta clave\n");
@@ -192,8 +197,10 @@ void recibo_lineas(int fd_esi) {
 							}else{
 								//Existe una instancia con esa clave asignada
 								printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
+								pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 								bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
 								t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+								pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 								resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,get_instancia_by_name(registro_instancia->nombre_instancia));
 								loggeo_respuesta("STORE",id_esi,resultado_instancia);
 
@@ -299,6 +306,7 @@ void atender_cliente(void* idSocketCliente) {
 
 	enviar_saludo(fdCliente);
 	int tipo_cliente = recibir_saludo(fdCliente);
+
 	switch (tipo_cliente) {
 
 	case ESI:
@@ -306,8 +314,8 @@ void atender_cliente(void* idSocketCliente) {
 		break;
 	case PLANIFICADOR:
 		FD_PLANIFICADOR = fdCliente;
+
 		pthread_cond_wait(&CONDICION_LIBERO_PLANIFICADOR, &MUTEX); //lo detengo aca hasta q no lo usea mas
-//		exit(1); //mato al coordinador
 		break;
 	case INSTANCIA:
 		//1:Envio datos de entrada
@@ -340,6 +348,7 @@ void atender_cliente(void* idSocketCliente) {
 			break;
 		}
 	}
+
 	//FIN
 	close(fdCliente);
 	free((int *) idSocketCliente);
@@ -454,4 +463,142 @@ void levantar_servidor_coordinador() {
 	pthread_cond_destroy(&CONDICION_RECV_INSTANCIA);
 }
 
+//Que no tenga exit(1)
+void levantar_servidor_status(){
+	int sockfd; // Escuchar sobre: sock_fd, nuevas conexiones sobre: idSocketCliente
+	struct sockaddr_in my_addr;    // información sobre mi dirección
+	struct sockaddr_in their_addr; // información sobre la dirección del idSocketCliente
+	int sin_size;
+	struct sigaction sa;
+	int yes = 1;
 
+	//1° CREAMOS EL SOCKET
+	//sockfd: numero o descriptor que identifica al socket que creo
+	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+		printf("Error al abrir el socket de escucha\n");
+
+		exit(1);
+	}
+	printf("Se creo el socket status correctamente\n");
+
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+		printf("Address already in use\n");
+
+		exit(1);
+	}
+
+	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
+	my_addr.sin_port = htons(PUERTO_ESCUCHA_CONEXION_STATUS);    // short, Ordenación de bytes de la red
+	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
+	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
+
+	//2° Relacionamos los datos de my_addr <=> socket
+	if (bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr))
+			== -1) {
+		printf("Fallo el bind\n");
+
+		exit(1);
+	}
+
+	//3° Listen: se usa para dejar al socket escuchando las conexiones que se acumulan en una cola hasta que
+	//la aceptamos
+	if (listen(sockfd, BACKLOG) == -1) {
+
+		printf("Fallo el listen\n");
+		exit(1);
+	}
+	printf("Socket status escuchando!!!\n");
+
+	//-------
+	sa.sa_handler = sigchld_handler; // Eliminar procesos muertos
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+
+		exit(1);
+	}
+	//--------
+	sin_size = sizeof(struct sockaddr_in);
+
+	//4° acepta y atiende al planificador cuando pida STATUS
+	int fdNuevo = 0;
+	if ((fdNuevo = accept(sockfd,
+			(struct sockaddr *) &their_addr, &sin_size)) == -1) {
+		//printf("No se pudo conectar el planificador para manejar status\n");
+	}
+	while(1){
+		//el planificador desde la consola me envia la longitud y clave para el status y espra un paquete con [valor de clave|nombre instancia]
+		int leng_clave = 0;
+		int numbytes = 0;
+		if ((numbytes = recv(fdNuevo, &leng_clave, sizeof(int32_t), 0)) <= 0 ) {
+			//printf("No se pudo recibir el tamaño de la clave\n");
+		}else{
+			char* clave_status = malloc(sizeof(char) * leng_clave);
+			if ((numbytes = recv(fdNuevo, clave_status, sizeof(char) * leng_clave, 0)) <= 0 ) {
+				//printf("No se pudo recibir la clave\n");
+
+			}else{
+				if(clave_status != NULL){
+				printf("Planificador pide status clave: %s\n",clave_status);
+				if(exist_clave_registro_instancias(clave_status)){
+					t_registro_instancia * registro_instancia;
+					//existe la clave en el sistema
+					pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
+					bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_status)== 0;}
+					registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+					pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
+
+					if(strcmp(registro_instancia->nombre_instancia,"")==0){
+						//No hay ninguna instancia con esta clave
+						t_Instancia * instancia;
+						instancia = busco_instancia_por_algortimo(clave_status);
+						if(instancia == NULL){
+							//no tengo ninguna futura instancia para mandarlo
+							int32_t tipo = 5;
+							if (send(fdNuevo, &tipo,sizeof(int32_t), 0) == -1) {
+
+								printf("No se pudo enviar el resultado de status al planificador\n");
+
+							}
+							printf("La clave existe, pero no hay ninguna instancia futura que la pueda contener\n");
+						}else{
+							//uso el nombre de instancia
+							int32_t tipo = 4;
+							int32_t leng = strlen(instancia->nombre_instancia) +1 ;
+							void* buffer = malloc(sizeof(int32_t)*2 + leng);
+							memcpy(buffer,&tipo,sizeof(int32_t));
+							memcpy(buffer + sizeof(int32_t),&leng,sizeof(int32_t));
+							memcpy(buffer + sizeof(int32_t)*2,instancia->nombre_instancia,leng);
+							if (send(fdNuevo, &buffer,sizeof(int32_t), 0) == -1) {
+
+								printf("No se pudo enviar el resultado de status al planificador\n");
+
+							}
+							free(buffer);
+							printf("La clave existe e iria a la instancia: %s\n",instancia->nombre_instancia);
+						}
+					}else{
+						//Existe una instancia con esa clave asignada (tengo q mandar nombre de instancia y el valor tambien)
+						//TODO
+						printf("Existe la instancia: ---- que tiene la clave con valor:----\n");
+					}
+
+				}else{
+					//no existe en el sistema la clave
+					int32_t tipo = 1;
+					if (send(fdNuevo, &tipo,sizeof(int32_t), 0) == -1) {
+
+						printf("No se pudo enviar el resultado de status al planificador\n");
+
+					}
+					printf("No existe en el sistema esa clave\n");
+
+					}
+				}
+				free(clave_status);
+				printf("Resultado de status enviado\n");
+			}
+		}
+	}
+	close(fdNuevo);
+}

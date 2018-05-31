@@ -17,6 +17,9 @@ int main(void) {
 	get_parametros_config();
 	configure_logger();
 	inicializo_semaforos();
+	//status
+	pthread_t hiloStatus;
+	pthread_create(&hiloStatus, NULL, (void*) levantar_servidor_status, NULL);
 	levantar_servidor_coordinador();
 	return EXIT_SUCCESS;
 }

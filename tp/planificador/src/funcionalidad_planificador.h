@@ -31,6 +31,9 @@ pthread_mutex_t EXECUTE;
 pthread_mutex_t SOCKETS;
 pthread_cond_t CONDICION_PAUSA_PLANIFICADOR;
 
+
+int32_t FD_COORDINADOR_STATUS;
+
 void desbloquea_flag();
 
 //consulta si el flag de bloqueo esta activo, esto para saber si tengo q mandarlo a bloqueado
@@ -51,6 +54,8 @@ char** CLAVES_INICIALES_BLOQUEADAS;
 char* IP_CONFIG_COORDINADOR;
 
 int32_t PUERTO_CONFIG_COORDINADOR;
+
+int32_t PUERTO_CONFIG_COORDINADOR_STATUS;
 
 //este flag es para el caso de que la consola me deje en pausa
 bool PLANIFICADOR_EN_PAUSA;

@@ -35,6 +35,8 @@ void get_parametros_config() {
 
 	PUERTO_CONFIG_COORDINADOR = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
 
+	PUERTO_CONFIG_COORDINADOR_STATUS = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR_STATUS");
+
 	CLAVES_INICIALES_BLOQUEADAS = malloc(sizeof(char*) * 100);
 //	strcpy(CLAVES_INICIALES_BLOQUEADAS,config_get_string_value(config, "CLAVES_INICIALES_BLOQUEADAS"));
 	CLAVES_INICIALES_BLOQUEADAS = config_get_array_value(config, "CLAVES_INICIALES_BLOQUEADAS");

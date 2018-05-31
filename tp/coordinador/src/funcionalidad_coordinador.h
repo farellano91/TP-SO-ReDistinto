@@ -30,13 +30,13 @@ pthread_mutex_t MUTEX;
 pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
 pthread_cond_t CONDICION_RECV_INSTANCIA;
-
 pthread_mutex_t MUTEX_RECV_INSTANCIA; //para la estructura de respuesta de instancias
 
 pthread_cond_t CONDICION_INSTANCIA;
-
 pthread_mutex_t MUTEX_INSTANCIA; //para la lista de instancias
 
+pthread_cond_t CONDICION_REGISTRO_INSTANCIA;
+pthread_mutex_t MUTEX_REGISTRO_INSTANCIA; //para la lista de registro de INSTANCIA-CLAVE
 
 t_list* LIST_INSTANCIA_RESPUESTA;
 
@@ -50,6 +50,7 @@ int FD_PLANIFICADOR;
 t_log * LOGGER;
 
 int PUERTO_ESCUCHA_CONEXION;
+int PUERTO_ESCUCHA_CONEXION_STATUS;
 char* ALGORITMO_DISTRIBUCION;
 int32_t CANTIDAD_ENTRADAS;
 int32_t TAMANIO_ENTRADA;
@@ -63,12 +64,21 @@ typedef struct {
 
 //Variables del COODINADOR
 int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
-t_Instancia* equitativeLoad(char** resultado);
-t_Instancia*  LeastSpaceUsed(char** resultado);
-t_Instancia*  keyExplicit(char** resultado);
+t_Instancia* equitativeLoad();
+t_Instancia*  LeastSpaceUsed();
+t_Instancia*  keyExplicit(char* clave);
 //en variables del COORINADOR
 
-
+typedef struct {
+	//1: no existe clave en el sistema,
+	//2: existe sin valor (osea no hicieron set y no esta en un a instancia)
+	//3: tiene valor y esta un una instacia conociada
+	//4: la instancia es detectada con el algoritmo (como es nueva no tiene valor)
+	//5: la instancia es detectada con el algoritmo es null, osea no hay, y ademas (como es nueva no tiene valor)
+	int tipo;
+	char* valor;
+	char* nombre_instancia;
+} t_respuesta_status;
 
 //esto me sirve para armar mi tabla <nombre instancia,clave> par guardar las claves que ya se crearon
 typedef struct {
