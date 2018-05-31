@@ -410,7 +410,7 @@ void aplico_reemplazo(int cant_espacios_buscados){
 bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias){
 	int i;
 	int tamanio_contenido = 0;
-	if(entradas_necesarias < espacio_diponible()){
+	if(entradas_necesarias > espacio_diponible()){
 
 		//ordeno tabla por numero de entrada(nos sirve para cuando buscamos claves diferentes)
 		order_tabla_by(TABLA_ENTRADA,(void*) by_numero_entrada);
