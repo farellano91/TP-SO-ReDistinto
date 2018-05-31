@@ -67,14 +67,20 @@ enum t_respuesta_al_coordinador {
 	FALLO_INSTANCIA_CLAVE_SOBREESCRITA = 5,
 	OK_SET_INSTANCIA = 6,
 	OK_STORE_INSTANCIA = 7,
+	COMPACTACION_GLOBAL = 13,
 };
 
 enum t_operacion {
 	SET = 2,
 	STORE = 3,
+	COMPACTA = 4,
 };
 
-void actualizo_cant_operaciones(int numero_entrada);
+enum t_operacion_internas {
+	COMPACTACION_LOCAL = 20,
+};
+
+void actualizo_cant_operaciones(char* clave);
 
 size_t getFilesize(const char* filename);
 
@@ -98,7 +104,7 @@ void recibo_datos_entrada(int sockfd);
 
 void aumento_cant_operacion(int numero_entrada);
 
-char* get_valor_by_clave(char * clave_recibida,int isDUmp);
+char* get_valor_by_clave(char * clave_recibida);
 
 int obtener_espacio_libre();
 
@@ -122,7 +128,9 @@ void cambio_entrada(int entrada_desde,int entrada_hasta);
 
 void compactar_ahora();
 
-void compacto();
+void notifico_inicio_compactacion(int fd_coordinador);
+
+void compacto(int* entrada_inicial,int fd_coordinador);
 
 void aplico_reemplazo(int cant_espacios_buscados);
 
@@ -132,7 +140,7 @@ void libero_entrada(int numeroEntrada);
 
 void libero_entradas_by_clave(char * clave_recibida);
 
-int ejecuto_set(char* clave_recibida,char* valor_recibido);
+int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador);
 
 int recibo_sentencia(int fd_coordinador);
 
@@ -156,8 +164,7 @@ void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido)
 
 void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido);
 
-//el flag isDump es para saber si dentro tendre q actualizar la cant_operaciones o no, ya que en caso de dump no cambia nada
-int ejecuto_store(char* clave_recibida,int isDUMp);
+int ejecuto_store(char* clave_recibida);
 
 void create_or_update_file(char *path_archivo, char * valor_del_storage);
 
@@ -165,6 +172,6 @@ t_list* get_only_clave();
 
 void realizar_dump();
 
-int aplicarAlgoritmoReemplazo(char* clave_recibida, char* valor_recibido);
+int aplicarAlgoritmoReemplazo();
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

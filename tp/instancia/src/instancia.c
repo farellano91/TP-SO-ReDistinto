@@ -35,8 +35,9 @@ int main(void) {
 
 	while(1){
 		int resultado = recibo_sentencia(sockfd);
-		envio_resultado_al_coordinador(sockfd,resultado);
-
+		if(resultado != COMPACTACION_LOCAL){
+			envio_resultado_al_coordinador(sockfd,resultado);
+		}
 	}
 	//Por ahora libero la memoria que me quedó (solo hasta agregar funcionalidad posta)
 	free_algo_punt_nom();
