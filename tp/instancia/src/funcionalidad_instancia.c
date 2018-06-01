@@ -410,7 +410,7 @@ void aplico_reemplazo(int cant_espacios_buscados){
 bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias){
 	int i;
 	int tamanio_contenido = 0;
-	if(entradas_necesarias < espacio_diponible()){
+	if(entradas_necesarias > espacio_diponible()){
 
 		//ordeno tabla por numero de entrada(nos sirve para cuando buscamos claves diferentes)
 		order_tabla_by(TABLA_ENTRADA,(void*) by_numero_entrada);
@@ -697,16 +697,16 @@ void reestablesco_archivo(char* nombre_archivo){
 		close(fd);
 		exit(1);
 	}
-	int32_t len_clave = strlen(nombre_archivo) - 4;
-	char* clave = malloc(len_clave + 1);
-	memcpy(clave,nombre_archivo,len_clave); //copio sin el .txt
-	clave[len_clave] = '\0';
+	int32_t len_clave = strlen(nombre_archivo) - 4 + 1;
+	char* clave = malloc(len_clave);
+	memcpy(clave,nombre_archivo,strlen(nombre_archivo) - 4); //copio sin el .txt
+	clave[len_clave - 1] = '\0';
 
 
 	int32_t len_valor = tamanio_contenido + 1;
 	char* valor = malloc(len_valor);
-	memcpy(valor,mmappedData,len_valor);
-	valor[len_valor] = '\0';
+	memcpy(valor,mmappedData,tamanio_contenido);
+	valor[tamanio_contenido] = '\0';
 
 
 	if (munmap(mmappedData, tamanio_contenido) == -1){
@@ -722,10 +722,12 @@ void reestablesco_archivo(char* nombre_archivo){
 	//cargo mis estructuras
 	cargar_estructuras(clave,valor,len_valor);
 
-	close(fd);
+	free(path_archivo);
 	free(clave);
 	free(valor);
-	free(path_archivo);
+
+
+	close(fd);
 }
 
 void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
@@ -736,7 +738,7 @@ void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 	}else{
 		total_entradas_necesarias =  1 + (( strlen(valor) + 1 ) / TAMANIO_ENTRADA);
 	}
-	if(total_entradas_necesarias  > CANT_ENTRADA){
+	if(total_entradas_necesarias  <= CANT_ENTRADA){
 		for(i = 0; i < CANT_ENTRADA; i++){
 			if(strcmp(STORAGE[i],"")== 0){
 				//esta vacio

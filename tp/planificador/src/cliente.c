@@ -72,7 +72,38 @@ int conectar_coodinador() {
 		pthread_exit(NULL);
 	}
 
-	free(IP_CONFIG_COORDINADOR);
+	return (sockfd);
+}
+
+int conectar_coordinar_status(){
+	FD_COORDINADOR_STATUS = -1;
+	//Creamos un socket
+	int sockfd;
+	struct sockaddr_in their_addr; // información de la dirección de destino
+
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		perror("socket");
+		free(IP_CONFIG_COORDINADOR);
+		pthread_exit(NULL);
+	}
+
+	their_addr.sin_family = AF_INET;    // Ordenación de bytes de la máquina
+	their_addr.sin_port = htons(PUERTO_CONFIG_COORDINADOR_STATUS);  // short, Ordenación de bytes de la red
+	their_addr.sin_addr.s_addr = inet_addr(IP_CONFIG_COORDINADOR);  //toma la ip directo
+
+	memset(&(their_addr.sin_zero), 0, 8); // poner a cero el resto de la estructura
+
+	if (connect(sockfd, (struct sockaddr *) &their_addr,
+			sizeof(struct sockaddr)) == -1) {
+		perror("No se pudo conectar al coordinador status");
+		exit(1);
+	}
+
+	//printf("Me conecte al coordinador status \n");
+
+	//conectado al coordinador status
+	FD_COORDINADOR_STATUS = sockfd;
+
 	return (sockfd);
 }
 
@@ -83,6 +114,11 @@ void recibirInfoCoordinador() {
 	saludo_inicial_coordinador(fdCoordinador);
 
 	int numbytes = 0;
+
+
+	//me conecto al servidorpara estatus
+	pthread_t hiloCordinadorStatus;
+	pthread_create(&hiloCordinadorStatus, NULL, (void*) conectar_coordinar_status, NULL);
 
 	while (1) {
 		//recibo: ID_OPERACION,ID_ESI,LENG_CLAVE,CLAVE

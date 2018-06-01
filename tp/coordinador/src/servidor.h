@@ -38,7 +38,7 @@ typedef struct InfoCoordinador{
 
 char ** get_clave_valor(int fd_esi);
 
-t_Instancia* busco_instancia_por_algortimo(char * algoritmo,char** resultado);
+t_Instancia* busco_instancia_por_algortimo(char* clave);
 
 char* get_clave_recibida(int fd_esi);
 
@@ -48,6 +48,8 @@ int recibo_resultado_planificador();
 
 
 void levantar_servidor_coordinador();
+
+void levantar_servidor_status();
 
 void enviar_saludo(int fdCliente);
 

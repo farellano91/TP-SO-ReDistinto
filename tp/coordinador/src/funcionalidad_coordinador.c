@@ -19,7 +19,7 @@ void get_parametros_config(){
 	}
 
 	PUERTO_ESCUCHA_CONEXION = config_get_int_value(config,"PUERTO_ESCUCHA_CONEXION");
-
+	PUERTO_ESCUCHA_CONEXION_STATUS = config_get_int_value(config,"PUERTO_ESCUCHA_CONEXION_STATUS");
 	ALGORITMO_DISTRIBUCION = malloc(sizeof(char) * 100);
 	strcpy(ALGORITMO_DISTRIBUCION,config_get_string_value(config, "ALGORITMO_DISTRIBUCION"));
 
@@ -46,6 +46,8 @@ void inicializo_semaforos(){
 	pthread_mutex_init(&MUTEX,NULL);
 	pthread_mutex_init(&MUTEX_RECV_INSTANCIA,NULL);
 	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
+	pthread_mutex_init(&MUTEX_REGISTRO_INSTANCIA,NULL);
+	pthread_cond_init(&CONDICION_REGISTRO_INSTANCIA, NULL);
 	pthread_cond_init(&CONDICION_INSTANCIA, NULL);
 	pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
 	pthread_cond_init(&CONDICION_RECV_INSTANCIA, NULL);
@@ -163,17 +165,17 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
 }
 
-t_Instancia* busco_instancia_por_algortimo(char * algoritmo,char** resultado){
-	if (strstr(algoritmo, "EL") != NULL) {
-		return equitativeLoad(resultado);
+t_Instancia* busco_instancia_por_algortimo(char* clave){
+	if (strstr(ALGORITMO_DISTRIBUCION, "EL") != NULL) {
+		return equitativeLoad();
 	}
-	if (strstr(algoritmo, "LSU") != NULL) {
+	if (strstr(ALGORITMO_DISTRIBUCION, "LSU") != NULL) {
 		printf("INFO: Algoritmo LSU\n");
-		return LeastSpaceUsed(resultado);
+		return LeastSpaceUsed();
 	}
-	if (strstr(algoritmo, "INS") != NULL) {
+	if (strstr(ALGORITMO_DISTRIBUCION, "INS") != NULL) {
 		printf("INFO: Algoritmo KE\n");
-		return keyExplicit(resultado);
+		return keyExplicit(clave);
 	}
 	return NULL;
 }
@@ -337,8 +339,10 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 			instancia->tamanio_libre = instancia_resp->tamanio_libre;
 			printf("Actualizo el nuevo tamaño disponible de %s ahora es %d\n",instancia->nombre_instancia,instancia->tamanio_libre);
 			//registro la INSTANCIA para esa clave si es que no esta registrado antes
+			pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 			bool _registrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor_recibido[0])== 0;}
 			t_registro_instancia* reg = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_registrInstancia);
+			pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 			strcpy(reg->nombre_instancia,instancia_resp->nombre_instancia);
 			printf("Se registra en instancia-clave la %s con clave: %s\n",instancia_resp->nombre_instancia,clave_valor_recibido[0]);
 		}else if(resultado_instancia == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
@@ -531,12 +535,14 @@ void remove_instancia(int fd_instancia){
 
 
 void remove_registro_instancia( char * clave){
+	pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 	bool _esRegistroInstancia(t_registro_instancia* reg) { return strcmp(reg->clave,clave) == 0;}
 	t_registro_instancia* registro_inst = list_find(LIST_REGISTRO_INSTANCIAS,(void*)_esRegistroInstancia);
 	if(registro_inst != NULL){
 		printf("Sacamos de mi registro instancia - clave a la %s\n", registro_inst->nombre_instancia);
 		list_remove_and_destroy_by_condition(LIST_REGISTRO_INSTANCIAS,(void*) _esRegistroInstancia,(void*) free_registro_instancia);
 	}
+	pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 }
 
 //Cargo la instancia_respuesta sin repetir! (el tamaño solo lo tomo en cuenta del otro lado cuando es set)
@@ -592,13 +598,16 @@ void envio_mensaje_masivo_compactacion_instancias(char* nombre_instancia){
 
 bool exist_clave_registro_instancias(char * clave){
 	bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
+	pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 	if(list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia) != NULL){
+		pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 		return true;
 	}
+	pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
 	return false;
 }
 
-t_Instancia* equitativeLoad(char** resultado){
+t_Instancia* equitativeLoad(){
 	printf("Aplico Algoritmo EL\n");
 	t_Instancia* instancia;
 	pthread_mutex_lock(&MUTEX_INSTANCIA);
@@ -623,7 +632,7 @@ t_Instancia* equitativeLoad(char** resultado){
 
 }
 
-t_Instancia* LeastSpaceUsed(char** resultado) {
+t_Instancia* LeastSpaceUsed() {
 	int i;
 	t_Instancia* instancia = NULL;
 	t_Instancia* instancia_max = NULL;
@@ -656,7 +665,7 @@ t_Instancia* LeastSpaceUsed(char** resultado) {
 
 }
 
-t_Instancia* keyExplicit(char** resultado) {
+t_Instancia* keyExplicit(char* clave) {
 	//Recibir char vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
 	int i;
 	char valorinicialetras = 'a';
@@ -672,7 +681,7 @@ t_Instancia* keyExplicit(char** resultado) {
     	cantidad_letras_por_instancia = ceil(cantidad_letras_por_instancia_sinCeil);	//9
 		for (i = 0; i < cantidad_instancias; i++) {
 
-			if (resultado[1][0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115
+			if (clave[0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115
 
 				instancia = list_get(LIST_INSTANCIAS, i);
 				pthread_mutex_unlock(&MUTEX_INSTANCIA);

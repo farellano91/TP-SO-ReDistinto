@@ -288,22 +288,3 @@ void levantar_servidor_planificador() {
 	close(sockfd);
 }
 
-////paso de bloqueado a listo todos los esis que pedian esa clave
-//void move_all_esi_bloqueado_listo(char* clave){
-//
-//	bool _esElid(t_nodoBloqueado* nodoBloqueado) { return (strcmp(nodoBloqueado->clave,clave)==0);}
-//	int cant_esis_mover = 0;
-//
-//	if(list_find(LIST_BLOCKED, (void*)_esElid) != NULL){
-//		cant_esis_mover = list_count_satisfying(LIST_BLOCKED, (void*)_esElid);
-//	}
-//	int contador = 0;
-//	while (contador < cant_esis_mover){
-//		t_nodoBloqueado* nodoBloqueado = list_find(LIST_BLOCKED,(void*) _esElid);
-//		list_remove_by_condition(LIST_BLOCKED,(void*) _esElid);
-//		t_Esi* esi = nodoBloqueado->esi;
-//		list_add(LIST_READY,esi);
-//		contador++;
-//	}
-//
-//}
