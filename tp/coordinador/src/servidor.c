@@ -565,18 +565,18 @@ void levantar_servidor_status(){
 	}
 	while(1){
 		//el planificador desde la consola me envia la longitud y clave para el status y espra un paquete con [valor de clave|nombre instancia]
-		int leng_clave = 0;
+		int32_t leng_clave = 0;
 		int numbytes = 0;
 		if ((numbytes = recv(fdNuevo, &leng_clave, sizeof(int32_t), 0)) <= 0 ) {
 			//printf("No se pudo recibir el tamaño de la clave\n");
 		}else{
-			char* clave_status = malloc(sizeof(char) * leng_clave);
-			if ((numbytes = recv(fdNuevo, clave_status, sizeof(char) * leng_clave, 0)) <= 0 ) {
+			char* clave_status = malloc(leng_clave);
+			if ((numbytes = recv(fdNuevo, clave_status,leng_clave, 0)) <= 0 ) {
 				//printf("No se pudo recibir la clave\n");
 
 			}else{
 				if(clave_status != NULL){
-				printf("Planificador pide status clave: %s\n",clave_status);
+				printf("Planificador pide status clave: %s\n",(char*)clave_status);
 				if(exist_clave_registro_instancias(clave_status)){
 					t_registro_instancia * registro_instancia;
 					//existe la clave en el sistema

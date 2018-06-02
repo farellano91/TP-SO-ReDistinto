@@ -132,19 +132,38 @@ int com_bloquear (char *arg){
 int com_desbloquear (char *arg){
 	puts("Comando desbloquear!!");
 	char* clave = arg;
-	pthread_mutex_lock(&READY);
-	pthread_mutex_lock(&EXECUTE);
+
+	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
+		//Solo lo saco de la lista
+		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*)_esElidClave);
+		printf("Libero la clave:%s\n",clave);
+	}else{
+		printf("No hay clave para liberar\n");
+	}
+
 	move_esi_from_bloqueado_to_listo(clave);
 	//continua flujo si esta disponible el cpu
-	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
-			list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
-			list_remove(LIST_READY, 0);
-			pthread_mutex_unlock(&EXECUTE);
-			pthread_mutex_unlock(&READY);
-			continuar_comunicacion();
+	pthread_mutex_lock(&MUTEX);
+	pthread_mutex_lock(&READY);
+	pthread_mutex_lock(&EXECUTE);
+
+	if(!PLANIFICADOR_EN_PAUSA){
+		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+				list_remove(LIST_READY, 0);
+				pthread_mutex_unlock(&EXECUTE);
+				continuar_comunicacion();
+				pthread_mutex_unlock(&READY);
+				pthread_mutex_unlock(&MUTEX);
+				return 0;
+
+		}
 	}
 	pthread_mutex_unlock(&EXECUTE);
 	pthread_mutex_unlock(&READY);
+	pthread_mutex_unlock(&MUTEX);
 	return (0);
 }
 
@@ -272,7 +291,7 @@ int com_status (char *arg){
 	puts("Comando status!!");
 	char* clave = arg;
 	int32_t longitud_clave = strlen(clave) + 1;
-	void* bufferEnvio = malloc(sizeof(int32_t)*2 + sizeof(char)*longitud_clave);
+	void* bufferEnvio = malloc(sizeof(int32_t)*2 + longitud_clave);
 	memcpy(bufferEnvio, &longitud_clave,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),clave,longitud_clave);
 
@@ -284,6 +303,7 @@ int com_status (char *arg){
 		printf("No se pudo enviar pedido status\n");
 		return (0);
 	}
+	free(bufferEnvio);
 	int numbytes = 0;
 	int32_t respuesta = 0;
 	if ((numbytes = recv(FD_COORDINADOR_STATUS, &respuesta,sizeof(int32_t), 0)) <= 0) {
