@@ -38,6 +38,13 @@ pthread_mutex_t MUTEX_INSTANCIA; //para la lista de instancias
 pthread_cond_t CONDICION_REGISTRO_INSTANCIA;
 pthread_mutex_t MUTEX_REGISTRO_INSTANCIA; //para la lista de registro de INSTANCIA-CLAVE
 
+pthread_mutex_t MUTEX_INDEX;
+
+pthread_cond_t CONDICION_RESPUESTA_STATUS;
+pthread_mutex_t MUTEX_RESPUESTA_STATUS; //para la respuesta de la tarea STATUS
+
+char* RESPUESTA_STATUS;
+
 t_list* LIST_INSTANCIA_RESPUESTA;
 
 t_list* LIST_INSTANCIAS;
@@ -64,14 +71,13 @@ typedef struct {
 
 //Variables del COODINADOR
 int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
-t_Instancia* equitativeLoad();
+t_Instancia* equitativeLoad(int flag_reestablecer);
 t_Instancia*  LeastSpaceUsed();
 t_Instancia*  keyExplicit(char* clave);
 //en variables del COORINADOR
 
 typedef struct {
 	//1: no existe clave en el sistema,
-	//2: existe sin valor (osea no hicieron set y no esta en un a instancia)
 	//3: tiene valor y esta un una instacia conociada
 	//4: la instancia es detectada con el algoritmo (como es nueva no tiene valor)
 	//5: la instancia es detectada con el algoritmo es null, osea no hay, y ademas (como es nueva no tiene valor)
@@ -168,6 +174,7 @@ enum t_respuesta_de_instancia {
 	COMPACTACION_GLOBAL = 13, //esto es para saber q tengo q enviar pedido de compactacion al resto de instnacias
 	COMPACTACION_LOCAL = 20,
 	FALLO_CASO_BORDE = 15,
+	OK_STATUS = 16,
 };
 
 enum t_respuesta_de_planificador {
@@ -195,6 +202,7 @@ enum t_operacion {
 	GET = 1, //GET CLAVE
 	SET = 2, //SET CLAVE VALOR
 	STORE = 3, //STORE CLAVE
+	STATUS = 5, //Para pedir el VALOR de una clave
 };
 
 #endif /* FUNCIONALIDAD_COORDINADOR_H_ */

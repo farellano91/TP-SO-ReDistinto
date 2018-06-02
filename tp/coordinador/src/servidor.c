@@ -151,7 +151,7 @@ void recibo_lineas(int fd_esi) {
 
 								if(strcmp(registro_instancia->nombre_instancia,"")==0){
 									//No hay ninguna instancia con esta clave
-									t_Instancia * instancia = busco_instancia_por_algortimo(clave_valor[0]);
+									t_Instancia * instancia = busco_instancia_por_algortimo(clave_valor[0],0);
 									if(instancia == NULL){
 										//error al tratar de elegir una instancia
 										resultado_linea = FALLA_ELEGIR_INSTANCIA;
@@ -335,15 +335,22 @@ void atender_cliente(void* idSocketCliente) {
 			while(1){
 				int32_t tamanio_libre = reciboTamanioLibre(fdCliente);
 				int32_t respuesta = reciboRespuestaInstancia(fdCliente);
-				//guardamos solo si no existe, si esta, lo actualizo
-				cargo_instancia_respuesta(instancia_nueva->nombre_instancia,respuesta,tamanio_libre);
+				if(respuesta != OK_STATUS){
+					//guardamos solo si no existe, si esta, lo actualizo
+					cargo_instancia_respuesta(instancia_nueva->nombre_instancia,respuesta,tamanio_libre);
 
-				if(respuesta == ABORTA_ESI_CLAVE_INNACCESIBLE){
-					remove_instancia(fdCliente);//Si se desconecto limpio la list_instancia
+					if(respuesta == ABORTA_ESI_CLAVE_INNACCESIBLE){
+						remove_instancia(fdCliente);//Si se desconecto limpio la list_instancia
+						pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
+						break; //para salir del while y que se vaya
+					}
 					pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
-					break; //para salir del while y que se vaya
+				}else{
+					//si es status, me enviara la longitud y valor de la clave
+					cargo_respuesta_status(fdCliente);
+					pthread_cond_signal(&CONDICION_RESPUESTA_STATUS);
 				}
-				pthread_cond_signal(&CONDICION_RECV_INSTANCIA);
+
 			}
 			break;
 		}
@@ -354,6 +361,36 @@ void atender_cliente(void* idSocketCliente) {
 	free((int *) idSocketCliente);
 
 }
+
+//si es status, me enviara la longitud y valor de la clave
+void cargo_respuesta_status(int fd_instancia){
+	int32_t long_clave = 0;
+	int numbytes = 0;
+	if ((numbytes = recv(fd_instancia, &long_clave, sizeof(int32_t), 0)) <= 0) {
+		printf("No se pudo recibir le tamaño de la clave\n");
+		close(fd_instancia);
+		exit(1);
+	}
+
+	char* clave_recibida = malloc(sizeof(char)*long_clave);
+	if ((numbytes = recv(fd_instancia, clave_recibida, long_clave, 0)) <= 0) {
+		printf("No se pudo recibir la clave\n");
+		free(clave_recibida);
+		close(fd_instancia);
+		exit(1);
+	}
+
+	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
+	free(RESPUESTA_STATUS);
+	RESPUESTA_STATUS = malloc(long_clave);
+	strcpy(RESPUESTA_STATUS,clave_recibida);
+	RESPUESTA_STATUS[long_clave - 1 ] = '\0';
+	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
+
+	free(clave_recibida);
+
+}
+
 
 void intHandler(int dummy) {
 	if (dummy != 0) {
@@ -551,7 +588,7 @@ void levantar_servidor_status(){
 					if(strcmp(registro_instancia->nombre_instancia,"")==0){
 						//No hay ninguna instancia con esta clave
 						t_Instancia * instancia;
-						instancia = busco_instancia_por_algortimo(clave_status);
+						instancia = busco_instancia_por_algortimo(clave_status,1);
 						if(instancia == NULL){
 							//no tengo ninguna futura instancia para mandarlo
 							int32_t tipo = 5;
@@ -569,7 +606,7 @@ void levantar_servidor_status(){
 							memcpy(buffer,&tipo,sizeof(int32_t));
 							memcpy(buffer + sizeof(int32_t),&leng,sizeof(int32_t));
 							memcpy(buffer + sizeof(int32_t)*2,instancia->nombre_instancia,leng);
-							if (send(fdNuevo, &buffer,sizeof(int32_t), 0) == -1) {
+							if (send(fdNuevo, buffer,sizeof(int32_t), 0) == -1) {
 
 								printf("No se pudo enviar el resultado de status al planificador\n");
 
@@ -579,10 +616,26 @@ void levantar_servidor_status(){
 						}
 					}else{
 						//Existe una instancia con esa clave asignada (tengo q mandar nombre de instancia y el valor tambien)
-						//TODO
-						printf("Existe la instancia: ---- que tiene la clave con valor:----\n");
-					}
+						char * valor = envio_recibo_pedido_valor(registro_instancia,clave_status);
+						if(valor != NULL){
+							int32_t tipo = 3;
+							int32_t leng_instancia = strlen(registro_instancia->nombre_instancia) +1 ;
+							int32_t leng_valor = strlen(valor) + 1;
 
+							void* buffer = malloc(sizeof(int32_t)*3 + leng_instancia + leng_valor);
+							memcpy(buffer,&tipo,sizeof(int32_t));
+							memcpy(buffer + sizeof(int32_t),&leng_instancia,sizeof(int32_t));
+							memcpy(buffer + sizeof(int32_t)*2,registro_instancia->nombre_instancia,leng_instancia);
+							memcpy(buffer + sizeof(int32_t)*2 + leng_instancia,&leng_valor,sizeof(int32_t));
+							memcpy(buffer + sizeof(int32_t)*3 + leng_instancia,valor,leng_valor);
+							if (send(fdNuevo, buffer,sizeof(int32_t)*3 + leng_instancia + leng_valor, 0) == -1) {
+								printf("No se pudo enviar el resultado de status al planificador\n");
+							}
+							free(buffer);
+							printf("La clave existe, valor:%s en instancia:%s\n",valor,registro_instancia->nombre_instancia);
+						}
+						free(valor);
+					}
 				}else{
 					//no existe en el sistema la clave
 					int32_t tipo = 1;
@@ -602,3 +655,48 @@ void levantar_servidor_status(){
 	}
 	close(fdNuevo);
 }
+
+
+char * envio_recibo_pedido_valor(t_registro_instancia* reg_instancia,char* clave_status){
+	int32_t long_clave = strlen(clave_status) + 1;
+	int32_t id_operacion = STATUS;
+	void* bufferEnvio = malloc(sizeof(int32_t) * 2 + long_clave);
+	memcpy(bufferEnvio, &id_operacion, sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t), &long_clave, sizeof(int32_t));
+	memcpy(bufferEnvio + sizeof(int32_t)*2,clave_status,long_clave);
+
+	pthread_mutex_lock(&MUTEX_INSTANCIA);
+	bool _esInstanciaNombre(t_Instancia* instancia_buscada){
+		return (strcmp(instancia_buscada->nombre_instancia,reg_instancia->nombre_instancia) == 0);
+	}
+	t_Instancia* instancia = list_find(LIST_INSTANCIAS,(void*)_esInstanciaNombre);
+	pthread_mutex_unlock(&MUTEX_INSTANCIA);
+
+	if(instancia == NULL){
+		return "";
+	}
+	if (send(instancia->fd, bufferEnvio,sizeof(int32_t) * 2 + long_clave, 0) == -1) {
+		free(bufferEnvio);
+		return "";
+	}
+
+	printf("Se envio tarea status a la instancia para saber el valor de la clave\n");
+
+
+	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
+	while(RESPUESTA_STATUS == NULL){
+		pthread_cond_wait(&CONDICION_RESPUESTA_STATUS,&MUTEX_RESPUESTA_STATUS); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+	}
+	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
+
+	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
+	int32_t leng_respuesta = strlen(RESPUESTA_STATUS) + 1;
+	char* respuesta = malloc(leng_respuesta);
+	strcpy(respuesta,RESPUESTA_STATUS);
+	respuesta[strlen(RESPUESTA_STATUS)] = '\0';
+	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
+
+	free(bufferEnvio);
+	return respuesta;
+}
+

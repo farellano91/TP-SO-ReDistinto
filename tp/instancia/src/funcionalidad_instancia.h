@@ -69,12 +69,14 @@ enum t_respuesta_al_coordinador {
 	OK_STORE_INSTANCIA = 7,
 	COMPACTACION_GLOBAL = 13,
 	FALLO_CASO_BORDE = 15,
+	OK_STATUS = 16,
 };
 
 enum t_operacion {
 	SET = 2,
 	STORE = 3,
 	COMPACTA = 4,
+	STATUS = 5,
 };
 
 enum t_operacion_internas {

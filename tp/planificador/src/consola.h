@@ -29,5 +29,7 @@
 
 void levantar_consola();
 
+char* recibo_instancia();
 
+char* recibo_valor();
 #endif /* CONSOLA_H_ */
