@@ -126,7 +126,96 @@ int com_continuar (char *arg){
 
 int com_bloquear (char *arg){
   puts("Comando bloquear ingresado!!");
+  char** split = string_split(arg, "");
+  char* clave = split[0];
+  int esi_id = atoi(split[1]);
+  t_Esi* esi_ready;
+  t_Esi* esi_ejecucion;
+  pthread_mutex_lock(&EXECUTE);
+  pthread_mutex_lock(&READY);
+  pthread_mutex_lock(&BLOCKED);
+
+  bool _esElid(t_Esi* un_esi) { return un_esi->id == esi_id;}
+
+	  esi_ready = buscar_esi_en_ready(esi_id);
+	  esi_ejecucion = buscar_esi_en_ejecucion(esi_id);
+
+	  if(clave_esta_bloqueada(clave)){
+
+	  if(esi_ready != NULL){
+		 t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_ready,clave);
+		 list_remove_by_condition(LIST_READY, (void*)_esElid);
+		 list_add(LIST_BLOCKED,esi_bloqueado);
+		 return 1;
+	  }
+	  else if(esi_ejecucion != NULL){
+			 t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_ejecucion,clave);
+			 list_add(LIST_BLOCKED,esi_bloqueado);
+			 list_remove(LIST_EXECUTE, 0);
+				if (!list_is_empty(LIST_READY)) {
+					  list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+				      list_remove(LIST_READY, 0);
+					  continuar_comunicacion();
+					  return 1;
+				}
+
+	  }
+	  else{
+			t_Esi* un_esi = malloc(sizeof(t_Esi));
+			un_esi->id = 0;
+			un_esi->fd = 0;
+			t_esiBloqueador* esi_bloqueado = get_esi_bloqueador(un_esi,clave);
+			list_add(LIST_ESI_BLOQUEADOR,esiBLo);
+			printf("Se cargo la clave:%s bloqueada INICIALMENTE\n", clave);
+	  }
+
+	  }else{
+		  if(esi_ready != NULL){
+			  t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_ready, clave);
+			  list_remove_by_condition(LIST_READY, (void*)_esElid);
+			  list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
+				 return 1;
+		  }else if(esi_ejecucion != NULL){
+			     t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_ejecucion, clave);
+				 list_remove_by_condition(LIST_READY, (void*)_esElid);
+				 list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
+				 return 1;
+		  }
+	  }
   return (0);
+}
+
+bool clave_esta_bloqueada(char* clave){
+
+	bool _es_la_clave(t_esiBloqueador* esi){
+		return string_equals_ignore_case(esi->clave, clave);
+	}
+
+	return list_any_satisfy(LIST_ESI_BLOQUEADOR, (void*)_es_la_clave);
+}
+
+t_Esi* buscar_esi_en_ejecucion(int id_buscado){
+
+	  t_Esi* esi = (t_Esi*)list_get(LIST_EXECUTE, 0);
+	  if((esi != NULL) && (esi->id == id_buscado)){
+		  pthread_mutex_unlock(&EXECUTE);
+		  return esi;
+	  }
+
+	  return NULL;
+}
+
+t_Esi* buscar_esi_en_ready(int id_buscado){
+
+	  t_Esi* esi = NULL;
+	  for(int i = 0; i < list_size(LIST_READY); i++){
+		  t_Esi* esi = (t_Esi*)list_get(LIST_READY, i);
+		  if(esi->id == id_buscado){
+			i = list_size(LIST_READY);
+		  }
+	  }
+
+	  return esi;
 }
 
 int com_desbloquear (char *arg){
