@@ -214,6 +214,53 @@ int recibo_sentencia(int fd_coordinador){
 		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 		return COMPACTACION_LOCAL;
 	}
+	if(tipo_operacion == STATUS){
+		 //STATUS CLAVE
+		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
+			printf("No se pudo recibir le tamaño de la clave\n");
+			free_algo_punt_nom();
+			close(fd_coordinador);
+			exit(1);
+		}
+
+		char* clave_recibida = malloc(sizeof(char)*long_clave);
+		if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
+			printf("No se pudo recibir la clave\n");
+			free(clave_recibida);
+			free_algo_punt_nom();
+			close(fd_coordinador);
+			exit(1);
+		}
+		printf("Recibi para hacer STATUS clave: %s\n",clave_recibida);
+
+
+		//envio respuesta
+		int32_t espacio_libre = 0;
+		int32_t resultado = OK_STATUS;
+		char* valor = get_valor_by_clave(clave_recibida);
+		int32_t leng_valor = strlen(valor) + 1 ;
+
+		void* bufferEnvio = malloc(sizeof(int32_t)*3 +leng_valor );
+		memcpy(bufferEnvio,&espacio_libre,sizeof(int32_t));
+		memcpy(bufferEnvio + sizeof(int32_t),&resultado ,sizeof(int32_t) );
+		memcpy(bufferEnvio + sizeof(int32_t)*2,&leng_valor ,sizeof(int32_t) );
+		memcpy(bufferEnvio + sizeof(int32_t)*3,valor,leng_valor);
+
+		if(send(fd_coordinador,bufferEnvio,sizeof(int32_t)*3 +leng_valor , 0) == -1) {
+			printf("No se puede enviar el resultado del status al coordinador\n");
+			free_algo_punt_nom();
+			free_estruct_admin();
+			exit(1);
+		}else{
+			printf("El valor de la clave %s es %s\n",clave_recibida,valor);
+		}
+
+		free(clave_recibida);
+		free(bufferEnvio);
+
+		pthread_mutex_unlock(&MUTEX_INSTANCIA);
+		return OK_STATUS;
+	}
 
 	return respuesta;
 }

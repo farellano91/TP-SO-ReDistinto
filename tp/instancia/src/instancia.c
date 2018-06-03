@@ -35,7 +35,7 @@ int main(void) {
 
 	while(1){
 		int resultado = recibo_sentencia(sockfd);
-		if(resultado != COMPACTACION_LOCAL){
+		if(resultado != COMPACTACION_LOCAL && resultado != OK_STATUS){
 			envio_resultado_al_coordinador(sockfd,resultado);
 		}
 	}

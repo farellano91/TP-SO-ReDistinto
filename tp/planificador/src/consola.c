@@ -126,28 +126,44 @@ int com_continuar (char *arg){
 
 int com_bloquear (char *arg){
   puts("Comando bloquear ingresado!!");
-
-  char* clave = arg;
-
   return (0);
 }
 
 int com_desbloquear (char *arg){
 	puts("Comando desbloquear!!");
 	char* clave = arg;
-	pthread_mutex_lock(&READY);
-	pthread_mutex_lock(&EXECUTE);
+
+	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
+		//Solo lo saco de la lista
+		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*)_esElidClave);
+		printf("Libero la clave:%s\n",clave);
+	}else{
+		printf("No hay clave para liberar\n");
+	}
+
 	move_esi_from_bloqueado_to_listo(clave);
 	//continua flujo si esta disponible el cpu
-	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
-			list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
-			list_remove(LIST_READY, 0);
-			pthread_mutex_unlock(&EXECUTE);
-			pthread_mutex_unlock(&READY);
-			continuar_comunicacion();
+	pthread_mutex_lock(&MUTEX);
+	pthread_mutex_lock(&READY);
+	pthread_mutex_lock(&EXECUTE);
+
+	if(!PLANIFICADOR_EN_PAUSA){
+		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+				list_remove(LIST_READY, 0);
+				pthread_mutex_unlock(&EXECUTE);
+				continuar_comunicacion();
+				pthread_mutex_unlock(&READY);
+				pthread_mutex_unlock(&MUTEX);
+				return 0;
+
+		}
 	}
 	pthread_mutex_unlock(&EXECUTE);
 	pthread_mutex_unlock(&READY);
+	pthread_mutex_unlock(&MUTEX);
 	return (0);
 }
 
@@ -169,7 +185,7 @@ int com_listar (char *arg){
 		printf("Los ESIs bloqueados por la clave: %s son:\n", arg);
 		list_iterate(LIST_BLOCKED, (void*) _siEsLaClaveMostrarId);
 	}else{
-		printf("La clave %s no se encuentra bloqueada\n", arg);
+		printf("No hay ningun ESI bloqueado para esa clave\n");
 	}
 
 	pthread_mutex_unlock(&BLOCKED);
@@ -275,7 +291,7 @@ int com_status (char *arg){
 	puts("Comando status!!");
 	char* clave = arg;
 	int32_t longitud_clave = strlen(clave) + 1;
-	void* bufferEnvio = malloc(sizeof(int32_t)*2 + sizeof(char)*longitud_clave);
+	void* bufferEnvio = malloc(sizeof(int32_t) + longitud_clave);
 	memcpy(bufferEnvio, &longitud_clave,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),clave,longitud_clave);
 
@@ -283,28 +299,77 @@ int com_status (char *arg){
 		printf("No tengo el FD del coordinador status\n");
 		return (0);
 	}
-	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_clave, 0) == -1) {
+	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t) + longitud_clave, 0) == -1) {
 		printf("No se pudo enviar pedido status\n");
 		return (0);
 	}
-	printf("Envie pedido status\n");
+	free(bufferEnvio);
 	int numbytes = 0;
 	int32_t respuesta = 0;
 	if ((numbytes = recv(FD_COORDINADOR_STATUS, &respuesta,sizeof(int32_t), 0)) <= 0) {
 		printf("No se pudo recibir resultado de pedido status\n");
 		return (0);
 	}else{
+		char* nombre_instancia;
+		char* valor;
 		switch (respuesta) {
-			case 1:
-				printf("No existe la clave en el sistema\n");
+			case 1://1: no existe clave en el sistema,
+				printf("Valor: No existe la clave en el sistema\n");
+				printf("Instancia: No existe la clave en el sistema\n");
+
+				break;
+			case 3://3: tiene valor y esta un una instacia conociada
+				nombre_instancia = recibo_instancia();
+				valor = recibo_valor();
+				printf("Valor: %s\n",valor);
+				printf("Instancia: %s\n",nombre_instancia);
+				free(nombre_instancia);
+				free(valor);
+				break;
+			case 4://4: la instancia es detectada con el algoritmo (como es nueva no tiene valor)
+				nombre_instancia = recibo_instancia();
+				printf("Valor: - \n");
+				printf("Instancia elegida por algoritmo: %s\n",nombre_instancia);
+				free(nombre_instancia);
+				break;
+			case 5://5: la instancia es detectada con el algoritmo es null, osea no hay, y ademas (como es nueva no tiene valor)
+				printf("Valor: -\n");
+				printf("Instancia elegida por algoritmo: - \n");
+
 				break;
 			default:
 				break;
 		}
+		com_listar(clave);
 	}
-
-	printf("Fin de pedido status\n");
 	return (0);
+}
+
+char* recibo_instancia(){
+	int numbytes = 0;
+	int32_t longitud = 0;
+	if ((numbytes = recv(FD_COORDINADOR_STATUS, &longitud, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir la longitud del nombre de la instancia para el status\n");
+	}
+	char* instancia = malloc(sizeof(char) * longitud);
+	if ((numbytes = recv(FD_COORDINADOR_STATUS, instancia, longitud, 0)) == -1) {
+		printf("No se pudo recibir nombre de la instancia para el status\n");
+
+	}
+	return instancia;
+}
+
+char* recibo_valor(){
+	int numbytes = 0;
+	int32_t longitud = 0;
+	if ((numbytes = recv(FD_COORDINADOR_STATUS, &longitud, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir la longitud del valor para el status\n");
+	}
+	char* valor = malloc(sizeof(char) * longitud);
+	if ((numbytes = recv(FD_COORDINADOR_STATUS, valor, longitud, 0)) == -1) {
+		printf("No se pudo recibir valor para el status\n");
+	}
+	return valor;
 }
 
 int com_deadlock (char *arg){

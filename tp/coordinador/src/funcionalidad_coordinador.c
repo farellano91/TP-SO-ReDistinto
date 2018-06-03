@@ -43,6 +43,7 @@ void configure_logger() {
 }
 
 void inicializo_semaforos(){
+	pthread_mutex_init(&MUTEX_INDEX,NULL);
 	pthread_mutex_init(&MUTEX,NULL);
 	pthread_mutex_init(&MUTEX_RECV_INSTANCIA,NULL);
 	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
@@ -165,9 +166,9 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 
 }
 
-t_Instancia* busco_instancia_por_algortimo(char* clave){
+t_Instancia* busco_instancia_por_algortimo(char* clave,int flag_reestablecer){
 	if (strstr(ALGORITMO_DISTRIBUCION, "EL") != NULL) {
-		return equitativeLoad();
+		return equitativeLoad(flag_reestablecer);
 	}
 	if (strstr(ALGORITMO_DISTRIBUCION, "LSU") != NULL) {
 		printf("INFO: Algoritmo LSU\n");
@@ -500,7 +501,7 @@ int reciboTamanioLibre(int fd_instancia){
 		//aca es si se desconecto la instancia, cosa q manejara el reciboResultadoInstancia
 		tamanioLibre = 0;
 	}else{
-		printf("Recibimos nuevo tamaño de Instancia FD: %d\n", fd_instancia);
+		//printf("Recibimos nuevo tamaño de Instancia FD: %d\n", fd_instancia);
 
 	}
 	return tamanioLibre;
@@ -607,10 +608,13 @@ bool exist_clave_registro_instancias(char * clave){
 	return false;
 }
 
-t_Instancia* equitativeLoad(){
+t_Instancia* equitativeLoad(int flag_reestablecer){
 	printf("Aplico Algoritmo EL\n");
 	t_Instancia* instancia;
+	int index_anterior = 0;
+	pthread_mutex_lock(&MUTEX_INDEX);
 	pthread_mutex_lock(&MUTEX_INSTANCIA);
+	if(flag_reestablecer){index_anterior = INDEX;}
 	if((INDEX == list_size(LIST_INSTANCIAS)) || (INDEX > list_size(LIST_INSTANCIAS)) ){
 		INDEX = 0;
 		instancia = list_get(LIST_INSTANCIAS,INDEX);//ojo q list_get si no encuentra nada retorna NULL
@@ -623,13 +627,16 @@ t_Instancia* equitativeLoad(){
 			INDEX = 0;
 	}
 	if(instancia != NULL){//pregunto si efectivamente hay algo
+		if(flag_reestablecer){INDEX = index_anterior;}
 		pthread_mutex_unlock(&MUTEX_INSTANCIA);
+		pthread_mutex_unlock(&MUTEX_INDEX);
 		return instancia;
 	}
 	printf("Error al tratar de elegir una instancia\n");
+	if(flag_reestablecer){INDEX = index_anterior;}
 	pthread_mutex_unlock(&MUTEX_INSTANCIA);
+	pthread_mutex_unlock(&MUTEX_INDEX);
 	return NULL;
-
 }
 
 t_Instancia* LeastSpaceUsed() {

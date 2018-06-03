@@ -28,8 +28,8 @@
 #include "funcionalidad_planificador.h"
 
 void levantar_consola();
-bool es_el_mismo_esi(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador);
-bool tiene_lo_que_quiere(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador);
-t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados);
 
+char* recibo_instancia();
+
+char* recibo_valor();
 #endif /* CONSOLA_H_ */
