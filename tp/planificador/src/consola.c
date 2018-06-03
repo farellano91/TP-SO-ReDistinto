@@ -490,50 +490,53 @@ bool tiene_lo_que_quiere(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bl
 	return string_equals_ignore_case(nodo_bloqueado->clave, esi_bloqueador->clave);
 }
 
-t_list* get_esis_en_deadlock(t_list* bloqueadores, t_list* bloqueados, int** matriz_peticiones, int** matriz_recursos_asignados/*, int* recursos_disponibles*/)
+t_list* get_esis_en_deadlock(t_list* bloqueadores, t_list* bloqueados)
 {
 	t_list* no_puede_ejecutar = list_create();
 
 	if((list_size(bloqueados)) > 1)
 	{
-		int cant_esis, cant_claves;
+		int cant_esis, cant_claves, i, j;
 		bool tiene_claves_tomadas = false;
 		cant_esis = list_size(bloqueados);
 		cant_claves = list_size(bloqueadores);
 		int posible_deadlock[cant_esis];
-		int i = 0, j, k;
-		int tamanio = list_size(bloqueadores);
+		t_nodoBloqueado* nodo_bloqueado_aux;
+		t_esiBloqueador* esi_bloqueador_aux;
 
 		for(i = 0; i < cant_esis; i++){
 
 			posible_deadlock[i] = 1;
 		}
 
-
-		for(i = 0; i < cant_esis; i++){
-
-			tiene_claves_tomadas = false;
-			for(j = 0; j < cant_claves; j++){
-
-				if(matriz_recursos_asignados[i][j])
+		for (i = 0; i < cant_esis; i++) {
+			nodo_bloqueado_aux = (t_nodoBloqueado*) list_get(bloqueados, i);
+			for (j = 0; j < cant_claves; j++) {
+				esi_bloqueador_aux = (t_esiBloqueador*) list_get(bloqueadores, j);
+				if (es_el_mismo_esi(nodo_bloqueado_aux, esi_bloqueador_aux)) {
 					tiene_claves_tomadas = true;
+					j = cant_claves;
+				}
 			}
-
-			if(!tiene_claves_tomadas)
+			if (!tiene_claves_tomadas)
 				posible_deadlock[i] = 0;
 		}
 
-		for(i = 0; i < cant_esis; i++){
-
-			if(posible_deadlock[i])
-			{
-				list_add(no_puede_ejecutar,list_get(bloqueados,i));
+		for (i = 0; i < cant_esis; i++) {
+			if (posible_deadlock[i]) {
+				nodo_bloqueado_aux = (t_nodoBloqueado*) list_get(bloqueados, i);
+				for (j = 0; j < cant_claves; j++) {
+					esi_bloqueador_aux = (t_esiBloqueador*) list_get(bloqueadores, j);
+					if (tiene_lo_que_quiere(nodo_bloqueado_aux, esi_bloqueador_aux)) {
+						list_add(no_puede_ejecutar, list_get(bloqueados, i));
+						j = cant_claves;
+					}
+				}
 			}
 		}
-
 	}
 
-		return no_puede_ejecutar;
+	return no_puede_ejecutar;
 }
 
 t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados){
@@ -545,7 +548,7 @@ t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados){
 
     	t_list* esis_aux = list_create();
 
-    	t_list* claves_aux=list_create();
+    	t_list* claves_aux = list_create();
 
         list_add_all(esis_aux,bloqueados);
 
@@ -572,7 +575,7 @@ t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados){
     	if((asignados) && (peticiones))
     	{
 
-        	esis_en_deadlock = get_esis_en_deadlock(claves_aux,esis_aux,matriz_peticiones,matriz_recursos_asignados/*,recursos_disponibles*/);
+        	esis_en_deadlock = get_esis_en_deadlock(claves_aux,esis_aux);
 
     		if(list_size(esis_en_deadlock) > 1)
 			{
