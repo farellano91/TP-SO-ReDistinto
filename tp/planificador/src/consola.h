@@ -29,7 +29,10 @@
 
 void levantar_consola();
 
+t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados);
+
 char* recibo_instancia();
 
 char* recibo_valor();
+
 #endif /* CONSOLA_H_ */

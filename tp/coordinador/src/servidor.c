@@ -367,28 +367,25 @@ void cargo_respuesta_status(int fd_instancia){
 	int32_t long_clave = 0;
 	int numbytes = 0;
 	if ((numbytes = recv(fd_instancia, &long_clave, sizeof(int32_t), 0)) <= 0) {
-		printf("No se pudo recibir le tamaño de la clave\n");
+		printf("No se pudo recibir le tamaño del valor de la clave para status\n");
 		close(fd_instancia);
-		exit(1);
+	}else{
+		char* clave_recibida = malloc(long_clave);
+		if ((numbytes = recv(fd_instancia, clave_recibida, long_clave, 0)) <= 0) {
+			printf("No se pudo recibir el valor de la clave para status\n");
+			free(clave_recibida);
+			close(fd_instancia);
+
+		}else{
+			pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
+			free(RESPUESTA_STATUS);
+			RESPUESTA_STATUS = malloc(long_clave);
+			strcpy(RESPUESTA_STATUS,clave_recibida);
+			RESPUESTA_STATUS[long_clave - 1 ] = '\0';
+			pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
+			free(clave_recibida);
+		}
 	}
-
-	char* clave_recibida = malloc(sizeof(char)*long_clave);
-	if ((numbytes = recv(fd_instancia, clave_recibida, long_clave, 0)) <= 0) {
-		printf("No se pudo recibir la clave\n");
-		free(clave_recibida);
-		close(fd_instancia);
-		exit(1);
-	}
-
-	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
-	free(RESPUESTA_STATUS);
-	RESPUESTA_STATUS = malloc(long_clave);
-	strcpy(RESPUESTA_STATUS,clave_recibida);
-	RESPUESTA_STATUS[long_clave - 1 ] = '\0';
-	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
-
-	free(clave_recibida);
-
 }
 
 
@@ -509,6 +506,10 @@ void levantar_servidor_status(){
 	struct sigaction sa;
 	int yes = 1;
 
+	RESPUESTA_STATUS = malloc(sizeof(char)*2);
+	strcpy(RESPUESTA_STATUS,"");
+	RESPUESTA_STATUS[1]='\0';
+
 	//1° CREAMOS EL SOCKET
 	//sockfd: numero o descriptor que identifica al socket que creo
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
@@ -565,13 +566,13 @@ void levantar_servidor_status(){
 	}
 	while(1){
 		//el planificador desde la consola me envia la longitud y clave para el status y espra un paquete con [valor de clave|nombre instancia]
-		int leng_clave = 0;
+		int32_t leng_clave = 0;
 		int numbytes = 0;
 		if ((numbytes = recv(fdNuevo, &leng_clave, sizeof(int32_t), 0)) <= 0 ) {
 			//printf("No se pudo recibir el tamaño de la clave\n");
 		}else{
-			char* clave_status = malloc(sizeof(char) * leng_clave);
-			if ((numbytes = recv(fdNuevo, clave_status, sizeof(char) * leng_clave, 0)) <= 0 ) {
+			char* clave_status = malloc(leng_clave);
+			if ((numbytes = recv(fdNuevo, clave_status,leng_clave, 0)) <= 0 ) {
 				//printf("No se pudo recibir la clave\n");
 
 			}else{
@@ -606,7 +607,7 @@ void levantar_servidor_status(){
 							memcpy(buffer,&tipo,sizeof(int32_t));
 							memcpy(buffer + sizeof(int32_t),&leng,sizeof(int32_t));
 							memcpy(buffer + sizeof(int32_t)*2,instancia->nombre_instancia,leng);
-							if (send(fdNuevo, buffer,sizeof(int32_t), 0) == -1) {
+							if (send(fdNuevo, buffer,sizeof(int32_t)*2 + leng, 0) == -1) {
 
 								printf("No se pudo enviar el resultado de status al planificador\n");
 
@@ -675,6 +676,12 @@ char * envio_recibo_pedido_valor(t_registro_instancia* reg_instancia,char* clave
 	if(instancia == NULL){
 		return "";
 	}
+
+	//limpio la respuesta
+	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
+	strcpy(RESPUESTA_STATUS,"");
+	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
+
 	if (send(instancia->fd, bufferEnvio,sizeof(int32_t) * 2 + long_clave, 0) == -1) {
 		free(bufferEnvio);
 		return "";
@@ -684,16 +691,19 @@ char * envio_recibo_pedido_valor(t_registro_instancia* reg_instancia,char* clave
 
 
 	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
-	while(RESPUESTA_STATUS == NULL){
+	while(strcmp(RESPUESTA_STATUS,"")==0){
 		pthread_cond_wait(&CONDICION_RESPUESTA_STATUS,&MUTEX_RESPUESTA_STATUS); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
 	}
 	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
+
 
 	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
 	int32_t leng_respuesta = strlen(RESPUESTA_STATUS) + 1;
 	char* respuesta = malloc(leng_respuesta);
 	strcpy(respuesta,RESPUESTA_STATUS);
 	respuesta[strlen(RESPUESTA_STATUS)] = '\0';
+
+	strcpy(RESPUESTA_STATUS,"");
 	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
 
 	free(bufferEnvio);

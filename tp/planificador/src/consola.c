@@ -221,19 +221,38 @@ t_Esi* buscar_esi_en_ready(int id_buscado){
 int com_desbloquear (char *arg){
 	puts("Comando desbloquear!!");
 	char* clave = arg;
-	pthread_mutex_lock(&READY);
-	pthread_mutex_lock(&EXECUTE);
+
+	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
+		//Solo lo saco de la lista
+		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*)_esElidClave);
+		printf("Libero la clave:%s\n",clave);
+	}else{
+		printf("No hay clave para liberar\n");
+	}
+
 	move_esi_from_bloqueado_to_listo(clave);
 	//continua flujo si esta disponible el cpu
-	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
-			list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
-			list_remove(LIST_READY, 0);
-			pthread_mutex_unlock(&EXECUTE);
-			pthread_mutex_unlock(&READY);
-			continuar_comunicacion();
+	pthread_mutex_lock(&MUTEX);
+	pthread_mutex_lock(&READY);
+	pthread_mutex_lock(&EXECUTE);
+
+	if(!PLANIFICADOR_EN_PAUSA){
+		if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+				list_remove(LIST_READY, 0);
+				pthread_mutex_unlock(&EXECUTE);
+				continuar_comunicacion();
+				pthread_mutex_unlock(&READY);
+				pthread_mutex_unlock(&MUTEX);
+				return 0;
+
+		}
 	}
 	pthread_mutex_unlock(&EXECUTE);
 	pthread_mutex_unlock(&READY);
+	pthread_mutex_unlock(&MUTEX);
 	return (0);
 }
 
@@ -255,7 +274,7 @@ int com_listar (char *arg){
 		printf("Los ESIs bloqueados por la clave: %s son:\n", arg);
 		list_iterate(LIST_BLOCKED, (void*) _siEsLaClaveMostrarId);
 	}else{
-		printf("La clave %s no se encuentra tomada o no existe\n", arg);
+		printf("No hay ningun ESI bloqueado para esa clave\n");
 	}
 
 	pthread_mutex_unlock(&BLOCKED);
@@ -289,8 +308,8 @@ int com_kill(char *arg) {
 		esi_a_borrar->status = 3;
 
 		pthread_mutex_unlock(&EXECUTE);
-		pthread_mutex_unlock(&READY);
 		pthread_mutex_unlock(&BLOCKED);
+		pthread_mutex_unlock(&READY);
 
 		printf("El ESI con id = %d fue eliminado\n", id_a_borrar);
 
@@ -298,9 +317,9 @@ int com_kill(char *arg) {
 
 	}else if((esi_a_borrar = list_find(LIST_READY, (void*) _es_el_id_a_borrar)) != NULL) {
 
-		   pthread_mutex_unlock(&READY);
-           pthread_mutex_unlock(&BLOCKED);
            pthread_mutex_unlock(&EXECUTE);
+           pthread_mutex_unlock(&BLOCKED);
+		   pthread_mutex_unlock(&READY);
 
            move_esi_from_ready_to_finished(esi_a_borrar->id);
 		   free_recurso(esi_a_borrar->fd);
@@ -318,8 +337,8 @@ int com_kill(char *arg) {
 		list_remove_by_condition(LIST_BLOCKED,(void*) _es_el_id_a_borrar_bloqueado);
 		agregar_en_Lista(LIST_FINISHED, esi_bloqueado_a_borrar->esi);
 
-		pthread_mutex_unlock(&READY);
 		pthread_mutex_unlock(&BLOCKED);
+		pthread_mutex_unlock(&READY);
 
 		int fd = esi_bloqueado_a_borrar->esi->fd;
 		free_recurso(esi_bloqueado_a_borrar->esi->fd);
@@ -351,8 +370,8 @@ int com_kill(char *arg) {
 	}
 
 	pthread_mutex_unlock(&EXECUTE);
-	pthread_mutex_unlock(&READY);
 	pthread_mutex_unlock(&BLOCKED);
+	pthread_mutex_unlock(&READY);
 
 	return (0);
 }
@@ -361,7 +380,7 @@ int com_status (char *arg){
 	puts("Comando status!!");
 	char* clave = arg;
 	int32_t longitud_clave = strlen(clave) + 1;
-	void* bufferEnvio = malloc(sizeof(int32_t)*2 + sizeof(char)*longitud_clave);
+	void* bufferEnvio = malloc(sizeof(int32_t) + longitud_clave);
 	memcpy(bufferEnvio, &longitud_clave,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),clave,longitud_clave);
 
@@ -369,10 +388,11 @@ int com_status (char *arg){
 		printf("No tengo el FD del coordinador status\n");
 		return (0);
 	}
-	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_clave, 0) == -1) {
+	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t) + longitud_clave, 0) == -1) {
 		printf("No se pudo enviar pedido status\n");
 		return (0);
 	}
+	free(bufferEnvio);
 	int numbytes = 0;
 	int32_t respuesta = 0;
 	if ((numbytes = recv(FD_COORDINADOR_STATUS, &respuesta,sizeof(int32_t), 0)) <= 0) {
@@ -443,23 +463,22 @@ char* recibo_valor(){
 
 int com_deadlock (char *arg){
 
-	void _buscarDeadlock(t_esiBloqueador* esiBloqueador){
-
-		void _estanEnDeadlock(t_nodoBloqueado* nodo){
-	        if(string_equals_ignore_case(nodo->clave, esiBloqueador->clave) && quiereAlgoQueElOtroTiene(esiBloqueador, nodo)){
-               printf("El ESI %d está en deadlock con el ESI %d\n", esiBloqueador->esi->id, nodo->esi->id);
-	        }
-		}
-
-		pthread_mutex_lock(&BLOCKED);
-
-        list_iterate(LIST_BLOCKED, (void*)_estanEnDeadlock);
-
-		pthread_mutex_unlock(&BLOCKED);
-
+	void _imprimir_id(t_nodoBloqueado* nodo){
+		printf("ESI id = %d\n", nodo->esi->id);
 	}
 
-	list_iterate(LIST_ESI_BLOQUEADOR, (void*)_buscarDeadlock);
+	pthread_mutex_lock(&BLOCKED);
+
+    t_list* lista = buscar_deadlock(LIST_ESI_BLOQUEADOR, LIST_BLOCKED);
+
+    if(lista != NULL){
+       puts("Deadlock detectado. Los ESIs implicados son:");
+       list_iterate(lista, (void*)_imprimir_id);
+    }else{
+    	puts("No se ha detectado un deadlock");
+    }
+
+    pthread_mutex_unlock(&BLOCKED);
 
 	return (0);
 }
@@ -492,4 +511,266 @@ void levantar_consola() {
 
 }
 
+int** inicializar_matriz(int cant_filas, int cant_columnas)
+{
+	int i = 0, j = 0;
+
+	int ** matriz = malloc(cant_filas * sizeof(int));
+	for(j = 0; j < cant_filas; j++)
+	{
+		matriz[j] = malloc(cant_columnas * sizeof(int));
+	}
+	for(i = 0; i < cant_filas; i++)
+	{
+		for(j = 0; j < cant_columnas; j++)
+		{
+			matriz[i][j] = 0;
+		}
+	}
+	return matriz;
+}
+
+void mostrar_matriz(int** matriz,int filas, int columnas)
+{
+	int i, j;
+	for(i = 0; i < filas; i++)
+	{
+		printf("ESI %d     ",i+1);
+		for(j = 0; j < columnas; j++)
+		{
+			printf(" %d ",matriz[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	printf("\n");
+}
+
+bool es_el_mismo_esi(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador){
+	return nodo_bloqueado->esi->id == esi_bloqueador->esi->id;
+}
+
+bool tiene_lo_que_quiere(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador){
+	return string_equals_ignore_case(nodo_bloqueado->clave, esi_bloqueador->clave);
+}
+
+bool generar_matriz_peticiones(t_list* bloqueadores, t_list* bloqueados, int ** matriz)
+{
+
+	t_esiBloqueador* esi_bloqueador_aux;
+	t_nodoBloqueado* nodo_bloqueado_aux;
+
+	int i,j,cant_claves,cant_esis;
+
+	cant_claves = list_size(bloqueadores);
+
+	cant_esis = list_size(bloqueados);
+
+	i = 0;
+
+	if(cant_esis > 1)
+	{
+
+		while(i < cant_esis)
+		{
+			nodo_bloqueado_aux = (t_nodoBloqueado*) list_get(bloqueados, i);
+			j = 0;
+			while(j < cant_claves)
+			{
+				esi_bloqueador_aux = (t_esiBloqueador*) list_get(bloqueadores, j);
+				if(tiene_lo_que_quiere(nodo_bloqueado_aux, esi_bloqueador_aux))
+				{
+					matriz[i][j]=1;
+					j=cant_claves;
+				}
+
+					j++;
+			}
+			i++;
+		}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+bool generar_matriz_asignados(t_list* bloqueadores, t_list* bloqueados, int** matriz) {
+
+	t_esiBloqueador* esi_bloqueador_aux;
+	t_nodoBloqueado* nodo_bloqueado_aux;
+
+	int i = 0, j = 0, cant_claves, cant_esis;
+
+	cant_claves = list_size(bloqueadores);
+
+	cant_esis = list_size(bloqueados);
+
+	if (cant_esis > 1) {
+
+		while (i < cant_esis) {
+
+			nodo_bloqueado_aux = (t_nodoBloqueado*) list_get(bloqueados, i);
+
+			j = 0;
+			while (j < cant_claves) {
+				esi_bloqueador_aux = (t_esiBloqueador*) list_get(bloqueadores, j);
+				if (es_el_mismo_esi(nodo_bloqueado_aux, esi_bloqueador_aux)) {
+					matriz[i][j] = 1;
+				}
+				j++;
+			}
+			i++;
+		}
+
+		return true;
+	} else {
+
+		return false;
+	}
+}
+
+void liberar_matriz(int** matriz,int c)
+{
+	int i=0;
+	for(i=0;i<c;i++)
+	{
+		free(matriz[i]);
+	}
+	free(matriz);
+}
+
+t_list* get_esis_en_deadlock(t_list* bloqueadores, t_list* bloqueados)
+{
+	t_list* no_puede_ejecutar = list_create();
+
+	if((list_size(bloqueados)) > 1)
+	{
+		int cant_esis, cant_claves, i, j;
+		bool tiene_claves_tomadas = false;
+		cant_esis = list_size(bloqueados);
+		cant_claves = list_size(bloqueadores);
+		int posible_deadlock[cant_esis];
+		t_nodoBloqueado* nodo_bloqueado_aux;
+		t_esiBloqueador* esi_bloqueador_aux;
+
+		for(i = 0; i < cant_esis; i++){
+
+			posible_deadlock[i] = 1;
+		}
+
+		for (i = 0; i < cant_esis; i++) {
+			nodo_bloqueado_aux = (t_nodoBloqueado*) list_get(bloqueados, i);
+			for (j = 0; j < cant_claves; j++) {
+				esi_bloqueador_aux = (t_esiBloqueador*) list_get(bloqueadores, j);
+				if (es_el_mismo_esi(nodo_bloqueado_aux, esi_bloqueador_aux)) {
+					tiene_claves_tomadas = true;
+					j = cant_claves;
+				}
+			}
+			if (!tiene_claves_tomadas)
+				posible_deadlock[i] = 0;
+		}
+
+		for (i = 0; i < cant_esis; i++) {
+			if (posible_deadlock[i]) {
+				nodo_bloqueado_aux = (t_nodoBloqueado*) list_get(bloqueados, i);
+				for (j = 0; j < cant_claves; j++) {
+					esi_bloqueador_aux = (t_esiBloqueador*) list_get(bloqueadores, j);
+					if (tiene_lo_que_quiere(nodo_bloqueado_aux, esi_bloqueador_aux)) {
+						list_add(no_puede_ejecutar, list_get(bloqueados, i));
+						j = cant_claves;
+					}
+				}
+			}
+		}
+	}
+
+	return no_puede_ejecutar;
+}
+
+t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados){
+
+	t_list* esis_en_deadlock = NULL;
+
+    if(list_size(bloqueados) > 1)
+    {
+
+    	t_list* esis_aux = list_create();
+
+    	t_list* claves_aux = list_create();
+
+        list_add_all(esis_aux,bloqueados);
+
+        list_add_all(claves_aux,bloqueadores);
+
+    	int** matriz_peticiones = inicializar_matriz(list_size(bloqueados), list_size(bloqueadores));
+
+		bool peticiones = generar_matriz_peticiones(claves_aux, esis_aux,matriz_peticiones);
+
+    	int** matriz_recursos_asignados  = inicializar_matriz(list_size(bloqueados), list_size(bloqueadores));
+
+    	bool asignados = generar_matriz_asignados(claves_aux, esis_aux,matriz_recursos_asignados);
+
+    	puts("Matriz de Peticiones");
+    	puts("");
+
+        mostrar_matriz(matriz_peticiones, list_size(bloqueados), list_size(bloqueadores));
+
+        puts("Matriz de recursos asignados");
+        puts("");
+
+        mostrar_matriz(matriz_recursos_asignados, list_size(bloqueados), list_size(bloqueadores));
+
+    	if((asignados) && (peticiones))
+    	{
+
+        	esis_en_deadlock = get_esis_en_deadlock(claves_aux,esis_aux);
+
+    		if(list_size(esis_en_deadlock) > 1)
+			{
+
+    			liberar_matriz(matriz_peticiones,list_size(bloqueados));
+
+    			liberar_matriz(matriz_recursos_asignados,list_size(bloqueados));
+
+    			list_destroy(claves_aux);
+
+    			list_destroy(esis_aux);
+
+    			printf("CANTIDAD DE ESIS EN DEADLOCK: %d\n", list_size(esis_en_deadlock));
+
+    			return esis_en_deadlock;
+			}
+
+        	else
+
+        	{
+
+    			list_destroy(claves_aux);
+    			list_destroy(esis_aux);
+        		if(list_size(esis_en_deadlock) > 0){
+        			list_clean(esis_en_deadlock);
+        		}
+        	}
+
+    	}
+
+    	else
+
+    	{
+
+			list_destroy(claves_aux);
+			list_destroy(esis_aux);
+
+    	}
+
+    }
+
+    return esis_en_deadlock;
+
+}
 
