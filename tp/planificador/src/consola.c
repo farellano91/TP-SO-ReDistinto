@@ -185,7 +185,7 @@ int com_listar (char *arg){
 		printf("Los ESIs bloqueados por la clave: %s son:\n", arg);
 		list_iterate(LIST_BLOCKED, (void*) _siEsLaClaveMostrarId);
 	}else{
-		printf("La clave %s no se encuentra tomada o no existe\n", arg);
+		printf("No hay ningun ESI bloqueado para esa clave\n");
 	}
 
 	pthread_mutex_unlock(&BLOCKED);
@@ -291,7 +291,7 @@ int com_status (char *arg){
 	puts("Comando status!!");
 	char* clave = arg;
 	int32_t longitud_clave = strlen(clave) + 1;
-	void* bufferEnvio = malloc(sizeof(int32_t)*2 + longitud_clave);
+	void* bufferEnvio = malloc(sizeof(int32_t) + longitud_clave);
 	memcpy(bufferEnvio, &longitud_clave,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),clave,longitud_clave);
 
@@ -299,7 +299,7 @@ int com_status (char *arg){
 		printf("No tengo el FD del coordinador status\n");
 		return (0);
 	}
-	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_clave, 0) == -1) {
+	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t) + longitud_clave, 0) == -1) {
 		printf("No se pudo enviar pedido status\n");
 		return (0);
 	}

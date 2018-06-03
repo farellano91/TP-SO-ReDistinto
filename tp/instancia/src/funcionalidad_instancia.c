@@ -251,6 +251,8 @@ int recibo_sentencia(int fd_coordinador){
 			free_algo_punt_nom();
 			free_estruct_admin();
 			exit(1);
+		}else{
+			printf("El valor de la clave %s es %s\n",clave_recibida,valor);
 		}
 
 		free(clave_recibida);
