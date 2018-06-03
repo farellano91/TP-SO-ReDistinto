@@ -455,7 +455,7 @@ bool aplico_reemplazo(int cant_espacios_buscados){
 				return false;
 			}else{
 				libero_entrada(numeroEntrada);
-
+				printf("Libera la entrada atomica NUMERO: %d\n",numeroEntrada);
 			}
 		}
 	}
@@ -1027,6 +1027,9 @@ t_list* filtrar_atomico(){
 			if(list_any_satisfy(lista_filtrada,(void*)_estaCargado)){
 				//remuevo
 				list_remove_by_condition(lista_filtrada,(void*)_estaCargado);
+			}else{
+				//agrego
+				list_add(lista_filtrada,registro);
 			}
 		}else{
 			//agrego
