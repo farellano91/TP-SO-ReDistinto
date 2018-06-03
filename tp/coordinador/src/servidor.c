@@ -607,7 +607,7 @@ void levantar_servidor_status(){
 							memcpy(buffer,&tipo,sizeof(int32_t));
 							memcpy(buffer + sizeof(int32_t),&leng,sizeof(int32_t));
 							memcpy(buffer + sizeof(int32_t)*2,instancia->nombre_instancia,leng);
-							if (send(fdNuevo, buffer,sizeof(int32_t), 0) == -1) {
+							if (send(fdNuevo, buffer,sizeof(int32_t)*2 + leng, 0) == -1) {
 
 								printf("No se pudo enviar el resultado de status al planificador\n");
 
