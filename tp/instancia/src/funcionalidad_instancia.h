@@ -24,6 +24,8 @@
 #include <commons/collections/dictionary.h>
 #include <pthread.h>
 
+int PUNTERO_DIRECCION_CIRCULAR;
+
 char* IP_CONFIG_COORDINADOR;
 int PUERTO_CONFIG_COORDINADOR;
 char* ALGORITMO_REEMPLAZO;
@@ -135,7 +137,7 @@ void notifico_inicio_compactacion(int fd_coordinador);
 
 void compacto(int* entrada_inicial,int fd_coordinador);
 
-void aplico_reemplazo(int cant_espacios_buscados);
+bool aplico_reemplazo(int cant_espacios_buscados);
 
 bool clave_existente(char * clave_recibida);
 
@@ -174,6 +176,14 @@ void create_or_update_file(char *path_archivo, char * valor_del_storage);
 t_list* get_only_clave();
 
 void realizar_dump();
+
+t_list* filtrar_atomico();
+
+int algoritmoCircular(t_list* listaFiltradaAtomica);
+
+int algoritmoLeastRecentlyUsed(t_list* listaFiltradaAtomica);
+
+int algoritmoBiggestSpaceUsed(t_list* listaFiltradaAtomica);
 
 int aplicarAlgoritmoReemplazo();
 
