@@ -24,8 +24,8 @@ int main(void) {
 	reestablecer_datos();
 
 	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
-	//pthread_t punteroHiloDump;
-	//pthread_create(&punteroHiloDump, NULL, (void*) realizar_dump, NULL);
+	pthread_t punteroHiloDump;
+	pthread_create(&punteroHiloDump, NULL, (void*) realizar_dump, NULL);
 
 	//Envio mis datos
 	envio_datos(sockfd);
