@@ -457,6 +457,14 @@ void mostrar_matriz(int** matriz,int filas, int columnas)
 	printf("\n");
 }
 
+bool es_el_mismo_esi(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador){
+	return nodo_bloqueado->esi->id == esi_bloqueador->esi->id;
+}
+
+bool tiene_lo_que_quiere(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador){
+	return string_equals_ignore_case(nodo_bloqueado->clave, esi_bloqueador->clave);
+}
+
 bool generar_matriz_peticiones(t_list* bloqueadores, t_list* bloqueados, int ** matriz)
 {
 
@@ -544,15 +552,6 @@ void liberar_matriz(int** matriz,int c)
 		free(matriz[i]);
 	}
 	free(matriz);
-}
-
-
-bool es_el_mismo_esi(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador){
-	return nodo_bloqueado->esi->id == esi_bloqueador->esi->id;
-}
-
-bool tiene_lo_que_quiere(t_nodoBloqueado* nodo_bloqueado,t_esiBloqueador* esi_bloqueador){
-	return string_equals_ignore_case(nodo_bloqueado->clave, esi_bloqueador->clave);
 }
 
 t_list* get_esis_en_deadlock(t_list* bloqueadores, t_list* bloqueados)
