@@ -293,7 +293,9 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador){
 			control_final =guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}
 	}else{
-		aplico_reemplazo(entradas_necesarias - cant_espacio_disponibles);//reemplaza tanta cantidad de claves como espacios necesite
+		if(!aplico_reemplazo(entradas_necesarias - cant_espacio_disponibles)){//reemplaza tanta cantidad de claves como espacios necesite
+			return FALLO_CASO_BORDE;//caso donde no hay ninguna entrada para liberar
+		}
 		if(son_contiguos(entradas_necesarias,&entrada_inicial)){
 			control_final =guardo_valor(entrada_inicial,clave_recibida,valor_recibido,entradas_necesarias);
 		}else{
@@ -338,6 +340,23 @@ void libero_entrada(int numeroEntrada){
 	diccionario->cant_operaciones = 0;
 	diccionario->libre = 1;
 	diccionario->tamanio_libre = TAMANIO_ENTRADA;
+}
+
+
+void delete_file_dump(int numeroEntrada){
+	bool _esEntrada(t_registro_tabla_entrada* entrada) { return (entrada->numero_entrada == numeroEntrada);}
+	t_registro_tabla_entrada* registro = list_find(TABLA_ENTRADA,(void*)_esEntrada);
+	int ret;
+	char * path = malloc(strlen(PUNTO_MONTAJE) +strlen(registro->clave) + strlen(".txt") + 1 );//+1 for the null-terminator
+	strcpy(path,PUNTO_MONTAJE);
+	strcat(path, registro->clave);
+	strcat(path, ".txt");
+	ret = remove(path);
+
+	if(ret == 0) {
+	  printf("Borramos el archivo del path:%s \n",path);
+	}
+	free(path);
 }
 
 //busca si existe la clave en mi tabla de entradas
@@ -440,17 +459,27 @@ void cambio_entrada(int entrada_desde,int entrada_hasta){
 }
 
 //reemplaza tantas veces como entradas_necesarias - cant_espacio_disponibles
-void aplico_reemplazo(int cant_espacios_buscados){
+bool aplico_reemplazo(int cant_espacios_buscados){
 	int i;
 	int numeroEntrada = -1;
 	printf("Tengo que reemplazar por falta de espacio\n");
 	if(cant_espacios_buscados > 0){
 		for(i = 0 ; i < cant_espacios_buscados; i++){
 			numeroEntrada = aplicarAlgoritmoReemplazo();
-			libero_entrada(numeroEntrada);
-		}
+			//controlar q el numeroEntrada sea != -1
+			if(numeroEntrada == -1){
+				//no hay ninguna entrada atomica para reemplazar
+				return false;
+			}else{
 
+				//borra el .txt que estaba
+				delete_file_dump(numeroEntrada);
+				libero_entrada(numeroEntrada);
+				printf("Libera la entrada atomica NUMERO: %d\n",numeroEntrada);
+			}
+		}
 	}
+	return true;
 }
 
 
@@ -659,6 +688,8 @@ int obtener_espacio_libre(){
 
 //con los datos de entrada que recibi, puedo inicializar mis estructuras
 void inicializo_estructuras(){
+
+	PUNTERO_DIRECCION_CIRCULAR = -1;
 
 	//inicializo diccionario de entrada
 	DICCIONARITY_ENTRADA = create_diccionarity();
@@ -964,16 +995,97 @@ t_list* get_only_clave(){
 
 int aplicarAlgoritmoReemplazo(){
 
+	t_list* listaEntradasAtomicas = filtrar_atomico();
+	int respuesta = -1 ;
+	if(list_is_empty(listaEntradasAtomicas)){
+		return respuesta;
+	}
 	if (strstr(ALGORITMO_REEMPLAZO, "C") != NULL) {
-
-		}
+		printf("INFO: Algoritmo Circular\n");
+		respuesta = algoritmoCircular(listaEntradasAtomicas);
+	}
 	if (strstr(ALGORITMO_REEMPLAZO, "LRU") != NULL) {
-			printf("INFO: Algoritmo LRU\n");
-
+		printf("INFO: Algoritmo LRU\n");
+		respuesta = algoritmoLeastRecentlyUsed(listaEntradasAtomicas);
 	}
 	if (strstr(ALGORITMO_REEMPLAZO, "BSU") != NULL) {
-			printf("INFO: Algoritmo BSU\n");
-
+		printf("INFO: Algoritmo BSU\n");
+		respuesta = algoritmoBiggestSpaceUsed(listaEntradasAtomicas);
 	}
-	return -1;
+
+	free(listaEntradasAtomicas);
+	return respuesta;
 }
+
+
+int algoritmoLeastRecentlyUsed(t_list* listaFiltradaAtomica) {
+	int operaciones_max = 0;
+	int resultado_entrada = 0;
+
+	void _buscoMaximo(t_registro_tabla_entrada* registro) {
+		char* key = string_itoa(registro->numero_entrada);
+		t_registro_diccionario_entrada *  registroDiccionario = dictionary_get(DICCIONARITY_ENTRADA, key);
+		if (operaciones_max < registroDiccionario->cant_operaciones) {
+			operaciones_max = registroDiccionario->cant_operaciones;
+			resultado_entrada = registro->numero_entrada;
+		}
+	}
+	list_iterate(listaFiltradaAtomica,(void*) _buscoMaximo);
+	return resultado_entrada;
+}
+
+
+t_list* filtrar_atomico(){
+	t_list * lista_filtrada = create_list();
+	void _buscoAtomico(t_registro_tabla_entrada* registro) {
+
+		bool _estaCargado(t_registro_tabla_entrada* reg){
+			return (strcmp(reg->clave,registro->clave) == 0);
+		}
+
+		if(list_size(lista_filtrada) > 0){
+			if(list_any_satisfy(lista_filtrada,(void*)_estaCargado)){
+				//remuevo
+				list_remove_by_condition(lista_filtrada,(void*)_estaCargado);
+			}else{
+				//agrego
+				list_add(lista_filtrada,registro);
+			}
+		}else{
+			//agrego
+			list_add(lista_filtrada,registro);
+		}
+	}
+	list_iterate(TABLA_ENTRADA,(void*) _buscoAtomico);
+	return lista_filtrada;
+}
+
+
+int algoritmoBiggestSpaceUsed(t_list* listaFiltradaAtomica) {
+	//el que tiene tamanio libre minimo es el mas grande
+	int tamanio_libre_min = TAMANIO_ENTRADA;
+	int resultado_entrada = 0;
+
+	void _buscoMaxEspacio(t_registro_tabla_entrada* registro) {
+		char* key = string_itoa(registro->numero_entrada);
+		t_registro_diccionario_entrada *  registroDiccionario = dictionary_get(DICCIONARITY_ENTRADA, key);
+		if (tamanio_libre_min > registroDiccionario->tamanio_libre) {
+			tamanio_libre_min = registroDiccionario->tamanio_libre;
+			resultado_entrada = registro->numero_entrada;
+		}
+	}
+	list_iterate(listaFiltradaAtomica,(void*) _buscoMaxEspacio);
+	return resultado_entrada;
+}
+
+
+int algoritmoCircular(t_list* listaFiltradaAtomica) {
+	if (PUNTERO_DIRECCION_CIRCULAR < list_size(listaFiltradaAtomica)) {
+		return PUNTERO_DIRECCION_CIRCULAR++;
+	} else {
+		PUNTERO_DIRECCION_CIRCULAR = -1;
+		return 0;//retorna el primero
+	}
+	return PUNTERO_DIRECCION_CIRCULAR;
+}
+

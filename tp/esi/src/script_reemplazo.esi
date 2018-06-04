@@ -1,0 +1,10 @@
+GET animal
+GET persona1
+GET persona2
+GET persona3
+GET alumno
+SET animal perro
+SET persona1 papa
+SET persona2 mama
+SET persona3 pid
+SET alumno juan
