@@ -153,14 +153,6 @@ bool aplico_algoritmo(char clave[40]){
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
 	pthread_mutex_unlock(&EXECUTE);
 
-	/*if(muerto_flag() && (esiEjecutando != NULL)){
-		free_recurso(esiEjecutando->fd);
-		sContinuarComunicacion = false;
-		cambio_ejecutando_a_finalizado(esiEjecutando->id);
-		printf("El ESI con id = %d fue eliminado por consola", esiEjecutando->id);
-		return sContinuarComunicacion;
-	}*/
-
 	if(esiEjecutando != NULL){
 		esiEjecutando ->cantSentenciasProcesadas++;
 	}
@@ -169,9 +161,31 @@ bool aplico_algoritmo(char clave[40]){
 	ActualizarIndicesEnLista();
 
 	ordeno_listas();
-
+if(bloqueado_por_consola_flag()){
+	pthread_mutex_lock(&EXECUTE);
+	t_Esi* esi= list_get(LIST_EXECUTE, 0);
+	pthread_mutex_unlock(&EXECUTE);
+	//esi->lineaALeer --; //le resto 1 ya que quiro q cuando se desbloee vuelva a tratar de ejecutar la sentencia q lo bloqueo
+	char* clave_block = malloc(sizeof(char)*40);
+	strcpy(clave_block,CLAVE_BLOQUEO_CONSOLA);
+	clave_block[strlen(clave_block)] = '\0';
+	t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
+	pthread_mutex_lock(&BLOCKED);
+	list_add(LIST_BLOCKED,esi_bloqueado);
+	pthread_mutex_unlock(&BLOCKED);
+	free(CLAVE_BLOQUEO_CONSOLA);
+	desbloquea_flag(); //limpio el flag
+	pthread_mutex_lock(&EXECUTE);
+	list_remove(LIST_EXECUTE, 0);
+	pthread_mutex_lock(&READY);
+	list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+	list_remove(LIST_READY, 0);
+	pthread_mutex_unlock(&EXECUTE);
+	pthread_mutex_unlock(&READY);
+	BlanquearIndices();
+}
 	//controlo si tiene el flag de bloqueado para mandarlo a la list_block
-	if(bloqueado_flag() ==  1){
+else if(bloqueado_flag() ==  1){
 		//Aca tengo que actualizar la estimacion inicial anterior.
 		//saco de EXECUTE a BLOQUEADO
 		// sumo una sentencia mas procesada que seria el get
@@ -281,6 +295,13 @@ bool bloqueado_flag(){
 	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
 	pthread_mutex_unlock(&EXECUTE);
 	return (un_esi->status == 1);
+}
+
+bool bloqueado_por_consola_flag(){
+	pthread_mutex_lock(&EXECUTE);
+	t_Esi * un_esi  = list_get(LIST_EXECUTE, 0);
+	pthread_mutex_unlock(&EXECUTE);
+	return (un_esi->status == 4);
 }
 
 bool muerto_flag(){

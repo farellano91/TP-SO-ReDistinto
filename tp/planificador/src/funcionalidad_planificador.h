@@ -57,6 +57,8 @@ int32_t PUERTO_CONFIG_COORDINADOR;
 
 int32_t PUERTO_CONFIG_COORDINADOR_STATUS;
 
+char* CLAVE_BLOQUEO_CONSOLA;
+
 //este flag es para el caso de que la consola me deje en pausa
 bool PLANIFICADOR_EN_PAUSA;
 
@@ -146,6 +148,8 @@ void free_nodoBLoqueado(t_nodoBloqueado* nodoBloqueado);
 void agregar_en_Lista(t_list* lista, t_Esi *esi);
 
 void agregar_en_bloqueados(t_Esi *esi, char* clave);
+
+bool bloqueado_por_consola_flag();
 
 bool muerto_flag();
 
