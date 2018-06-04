@@ -342,6 +342,23 @@ void libero_entrada(int numeroEntrada){
 	diccionario->tamanio_libre = TAMANIO_ENTRADA;
 }
 
+
+void delete_file_dump(int numeroEntrada){
+	bool _esEntrada(t_registro_tabla_entrada* entrada) { return (entrada->numero_entrada == numeroEntrada);}
+	t_registro_tabla_entrada* registro = list_find(TABLA_ENTRADA,(void*)_esEntrada);
+	int ret;
+	char * path = malloc(strlen(PUNTO_MONTAJE) +strlen(registro->clave) + strlen(".txt") + 1 );//+1 for the null-terminator
+	strcpy(path,PUNTO_MONTAJE);
+	strcat(path, registro->clave);
+	strcat(path, ".txt");
+	ret = remove(path);
+
+	if(ret == 0) {
+	  printf("Borramos el archivo del path:%s \n",path);
+	}
+	free(path);
+}
+
 //busca si existe la clave en mi tabla de entradas
 bool clave_existente(char * clave_recibida) {
 	if (!list_is_empty(TABLA_ENTRADA)) {
@@ -454,6 +471,9 @@ bool aplico_reemplazo(int cant_espacios_buscados){
 				//no hay ninguna entrada atomica para reemplazar
 				return false;
 			}else{
+
+				//borra el .txt que estaba
+				delete_file_dump(numeroEntrada);
 				libero_entrada(numeroEntrada);
 				printf("Libera la entrada atomica NUMERO: %d\n",numeroEntrada);
 			}

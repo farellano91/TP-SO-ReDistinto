@@ -137,6 +137,8 @@ void notifico_inicio_compactacion(int fd_coordinador);
 
 void compacto(int* entrada_inicial,int fd_coordinador);
 
+void delete_file_dump(int numeroEntrada);
+
 bool aplico_reemplazo(int cant_espacios_buscados);
 
 bool clave_existente(char * clave_recibida);
