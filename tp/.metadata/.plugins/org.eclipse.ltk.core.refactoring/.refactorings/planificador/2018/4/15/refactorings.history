@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;planificador.c/src/planificador.c.c&apos; to &apos;planificador.c&apos;" description="Rename resource &apos;planificador.c.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/planificador.c.c" name="planificador.c" stamp="1523740584304" updateReferences="true"/>
-</session>

@@ -1,7 +1,0 @@
-00:27:48 **** Clean-only build of configuration Debug for project servidor-desde-cero ****
-make clean 
-rm -rf  ./servidor.o  ./servidor.d  servidor-desde-cero
- 
-
-00:27:48 Build Finished (took 114ms)
-
