@@ -24,6 +24,8 @@ void get_parametros_config() {
 
     ALPHA = config_get_double_value(config,"ALPHA");
 
+    ALPHA = ALPHA / 100;
+
     ALGORITMO_PLANIFICACION = malloc(sizeof(char) * 100);
 	// HRRN , SJF, SJFD
 	strcpy(ALGORITMO_PLANIFICACION,config_get_string_value(config, "ALGORITMO_PLANIFICACION"));
@@ -32,6 +34,9 @@ void get_parametros_config() {
 
 	IP_CONFIG_COORDINADOR = malloc(sizeof(char) * 100);
 	strcpy(IP_CONFIG_COORDINADOR,config_get_string_value(config, "IP_CONFIG_COORDINADOR"));
+
+	IP_CONFIG_MIO = malloc(sizeof(char) * 100);
+	strcpy(IP_CONFIG_MIO,config_get_string_value(config, "IP_CONFIG_MIO"));
 
 	PUERTO_CONFIG_COORDINADOR = config_get_int_value(config,"PUERTO_CONFIG_COORDINADOR");
 

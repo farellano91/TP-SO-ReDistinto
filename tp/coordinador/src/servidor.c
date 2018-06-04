@@ -442,7 +442,7 @@ void levantar_servidor_coordinador() {
 
 	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
 	my_addr.sin_port = htons(PUERTO_ESCUCHA_CONEXION);    // short, Ordenación de bytes de la red
-	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
+	my_addr.sin_addr.s_addr = inet_addr(IP_CONFIG_MIO); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
 	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
 	//2° Relacionamos los datos de my_addr <=> socket
@@ -527,7 +527,7 @@ void levantar_servidor_status(){
 
 	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
 	my_addr.sin_port = htons(PUERTO_ESCUCHA_CONEXION_STATUS);    // short, Ordenación de bytes de la red
-	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
+	my_addr.sin_addr.s_addr = inet_addr(IP_CONFIG_MIO); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
 	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
 	//2° Relacionamos los datos de my_addr <=> socket

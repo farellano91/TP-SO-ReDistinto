@@ -50,6 +50,8 @@ double ESTIMACION_INICIAL;
 
 char** CLAVES_INICIALES_BLOQUEADAS;
 
+char* IP_CONFIG_MIO;
+
 //se usa para hablar con el coordinador
 char* IP_CONFIG_COORDINADOR;
 

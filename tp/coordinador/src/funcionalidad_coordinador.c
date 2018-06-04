@@ -17,7 +17,8 @@ void get_parametros_config(){
 		//MUERO
 		exit(1);
 	}
-
+	IP_CONFIG_MIO = malloc(sizeof(char) * 100);
+	strcpy(IP_CONFIG_MIO,config_get_string_value(config, "IP_CONFIG_MIO"));
 	PUERTO_ESCUCHA_CONEXION = config_get_int_value(config,"PUERTO_ESCUCHA_CONEXION");
 	PUERTO_ESCUCHA_CONEXION_STATUS = config_get_int_value(config,"PUERTO_ESCUCHA_CONEXION_STATUS");
 	ALGORITMO_DISTRIBUCION = malloc(sizeof(char) * 100);
@@ -26,7 +27,7 @@ void get_parametros_config(){
 	CANTIDAD_ENTRADAS = config_get_int_value(config,"CANTIDAD_ENTRADAS");
 	TAMANIO_ENTRADA = config_get_int_value(config,"TAMANIO_ENTRADA");
 	RETARDO = config_get_int_value(config,"RETARDO");
-
+	RETARDO = RETARDO / 100;
 	config_destroy(config);
 }
 

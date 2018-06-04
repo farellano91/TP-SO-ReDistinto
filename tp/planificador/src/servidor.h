@@ -26,7 +26,7 @@
 
 #define BACKLOG 10     // Cuántas conexiones pendientes se mantienen en cola
 
-#define MYIP "127.0.0.2"
+//#define MYIP "127.0.0.2"
 
 int fdmax;
 fd_set master;   // conjunto maestro de descriptores de fichero

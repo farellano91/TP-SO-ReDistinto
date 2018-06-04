@@ -137,7 +137,7 @@ void levantar_servidor_planificador() {
 
 	my_addr.sin_family = PF_INET;         // Ordenación de bytes de la máquina
 	my_addr.sin_port = htons(PUERTO_ESCUCHA);    // short, Ordenación de bytes de la red
-	my_addr.sin_addr.s_addr = inet_addr(MYIP); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
+	my_addr.sin_addr.s_addr = inet_addr(IP_CONFIG_MIO); //INADDR_ANY (aleatoria) o 127.0.0.1 (local)
 	memset(&(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
 	//2° Relacionamos los datos de my_addr <=> socket
@@ -153,6 +153,7 @@ void levantar_servidor_planificador() {
 	//la aceptamos
 	if (listen(sockfd, BACKLOG) == -1) {
 		free(ALGORITMO_PLANIFICACION);
+		free(IP_CONFIG_MIO);
 		free_claves_iniciales();
 		printf("Fallo el listen\n");
 		exit(1);
@@ -182,6 +183,7 @@ void levantar_servidor_planificador() {
 		if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1) { //se encarga de llenar en read_fds todos los fd cliente que cambiaron
 			perror("Error en select");
 			free(ALGORITMO_PLANIFICACION);
+			free(IP_CONFIG_MIO);
 			free_claves_iniciales();
 			exit(1);
 
