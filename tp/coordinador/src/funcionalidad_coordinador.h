@@ -182,7 +182,8 @@ enum t_respuesta_de_planificador {
 	FALLO_PLANIFICADOR = 1, //planificador desconectado
 	OK_PLANIFICADOR = 2,
 	OK_BLOQUEADO_PLANIFICADOR = 3,
-	ABORTA_ESI_CLAVE_NO_BLOQUEADA = 4
+	ABORTA_ESI_CLAVE_NO_BLOQUEADA = 4,
+	ABORTA_ESI_DESCONECTADO = 17,
 };
 
 enum t_respuesta_de_coordinador {

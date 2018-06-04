@@ -409,6 +409,9 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	case FALLO_CASO_BORDE:
 			strcat(registro, "OCURRIO UN ERROR CON LA INSTANCIA, LA CLAVE NO SE INSERTO POR FALTA DE ESPACIO FINAL, CASO BORDE");
 			break;
+	case ABORTA_ESI_DESCONECTADO:
+			strcat(registro, "Error de comunicacion, ESI desconectado");
+			break;
 	default:
 		strcat(registro, " - ");
 		break;

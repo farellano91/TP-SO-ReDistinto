@@ -20,6 +20,7 @@
 int conectar_coodinador();
 void saludo_inicial_coordinador(int sockfd);
 
+bool esta_conectado(int id_esi);
 
 /*Protocolo:
  * Caso: donde el coordinador me envia una operacion (get o store) + clave

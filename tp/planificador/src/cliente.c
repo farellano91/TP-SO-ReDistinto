@@ -167,6 +167,12 @@ void recibirInfoCoordinador() {
 			switch (id_operacion) {
 			case GET:
 				printf("Coordinador envio GET clave: %s del ESI ID: %d\n",clave,id_esi);
+
+				if(!esta_conectado(id_esi)){
+					send_mensaje(fdCoordinador,17);
+					break;
+				}
+
 				//Controlo si get es sobre un recurso tomado (osea dentro de LIST_ESI_BLOQUEADOR para un unico ESI PAG.10)
 				if(find_recurso_by_clave(clave)){
 
@@ -197,6 +203,11 @@ void recibirInfoCoordinador() {
 
 			case SET://con la clave me basta
 				printf("Coordinador envio SET con clave: %s\n",clave);
+				if(!esta_conectado(id_esi)){
+					send_mensaje(fdCoordinador,17);
+					break;
+				}
+
 				if(!clave_tomada_esi_ejecutando(clave)){
 					printf("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA\n",id_esi,clave);
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste, 4:ABORTA_ESI_CLAVE_NO_BLOQUEADA
@@ -208,6 +219,11 @@ void recibirInfoCoordinador() {
 				break;
 			case STORE:
 				printf("Coordinador envio STORE clave: %s del ESI ID: %d\n",clave,id_esi);
+
+				if(!esta_conectado(id_esi)){
+					send_mensaje(fdCoordinador,17);
+					break;
+				}
 				//verifico si el esi que pidio el store lo puede hacer -> ABORTA_ESI_CLAVE_NO_BLOQUEADA
 				if(!clave_tomada_esi_ejecutando(clave)){
 					printf("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA\n",id_esi,clave);
@@ -231,6 +247,20 @@ void recibirInfoCoordinador() {
 		}
 
 	}
+}
+
+//busca si esta en finalizado al esi
+bool esta_conectado(int id_esi){
+	bool resultado;
+	bool _esElidClave(t_Esi* esi) { return (esi->id == id_esi);}
+	if(!list_is_empty(LIST_FINISHED) &&
+			list_find(LIST_FINISHED, (void*)_esElidClave) != NULL){
+		//Ya esta tomado ese recurso
+		resultado = false;
+	}else{
+		resultado = true;
+	}
+	return resultado;
 }
 
 bool clave_tomada_esi_ejecutando(char* clave){
