@@ -70,6 +70,8 @@ typedef struct {
 	int tamanio_libre;
 } t_Instancia;
 
+bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia, int extra);
+
 //Variables del COODINADOR
 int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/
 t_Instancia* equitativeLoad(int flag_reestablecer);

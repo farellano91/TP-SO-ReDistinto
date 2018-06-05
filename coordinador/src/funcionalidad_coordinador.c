@@ -175,7 +175,7 @@ t_Instancia* busco_instancia_por_algortimo(char* clave,int flag_reestablecer){
 		printf("INFO: Algoritmo LSU\n");
 		return LeastSpaceUsed();
 	}
-	if (strstr(ALGORITMO_DISTRIBUCION, "INS") != NULL) {
+	if (strstr(ALGORITMO_DISTRIBUCION, "KE") != NULL) {
 		printf("INFO: Algoritmo KE\n");
 		return keyExplicit(clave);
 	}
@@ -677,32 +677,51 @@ t_Instancia* LeastSpaceUsed() {
 }
 
 t_Instancia* keyExplicit(char* clave) {
-	//Recibir char vienen 3 instancias entonces 25 / 3 = 9 letras por instancias
+	//a:97--z:124
+	if(!(clave[0]>= 97 && clave[0]<=124)){
+		printf("Error al tratar de elegir una instancia, la clave no empieza con una letra del [a - z]\n");
+		return NULL;
+	}
 	int i;
-	char valorinicialetras = 'a';
 	pthread_mutex_lock(&MUTEX_INSTANCIA);
-	double cantidad_letras_por_instancia_sinCeil = 25 / LIST_INSTANCIAS->elements_count;
-
-	t_Instancia* instancia = NULL;
-
-	int cantidad_instancias = LIST_INSTANCIAS->elements_count;
-
-	if (cantidad_instancias > 0) {
-		float cantidad_letras_por_instancia;
-    	cantidad_letras_por_instancia = ceil(cantidad_letras_por_instancia_sinCeil);	//9
-		for (i = 0; i < cantidad_instancias; i++) {
-
-			if (clave[0] <= valorinicialetras + cantidad_letras_por_instancia + i * cantidad_letras_por_instancia) {//122<= 97 + 9 + 2* 9 = 115
-
-				instancia = list_get(LIST_INSTANCIAS, i);
-				pthread_mutex_unlock(&MUTEX_INSTANCIA);
-				return instancia;
+	bool decimal = false;
+	int cant_instancias = LIST_INSTANCIAS->elements_count;
+	double letras_por_instancia = 27 / cant_instancias;
+	//veo si hay decimal
+	if(cant_instancias*letras_por_instancia < 27){
+		//si hay decimal entonces la ultima instnacia tendra cantidad_letras_por_instancia + 1
+		decimal = true;
+	}
+	t_Instancia * instancia;
+	if (cant_instancias > 0) {
+		for (i = 0; i < cant_instancias; i++) {
+			if(((i+1) == cant_instancias) && (decimal)){
+				if(esta_grupo(clave[0],i,letras_por_instancia,1)){
+					instancia = list_get(LIST_INSTANCIAS,i);
+					pthread_mutex_unlock(&MUTEX_INSTANCIA);
+					return instancia;
+				}
+			}else{
+				if(esta_grupo(clave[0],i,letras_por_instancia,0)){
+					instancia = list_get(LIST_INSTANCIAS,i);
+					pthread_mutex_unlock(&MUTEX_INSTANCIA);
+					return instancia;
+				}
 			}
+
 		}
 	}
 	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	printf("Error al tratar de elegir una instancia\n");
 	return NULL;
+}
+
+bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia, int extra){
+	int numeroCaracter = primeraLetra - 96;
+	if((numeroCaracter >= (numGrupo*cantLetrasPorInstancia+1)) && (numeroCaracter <= (numGrupo+1)*cantLetrasPorInstancia + extra)){
+		return true;
+	}
+	return false;
 }
 
 int aplicar_filtro_respuestas(int resultado_linea){
