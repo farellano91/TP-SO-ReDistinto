@@ -27,7 +27,7 @@ void get_parametros_config() {
     ALPHA = ALPHA / 100;
 
     ALGORITMO_PLANIFICACION = malloc(sizeof(char) * 100);
-	// HRRN , SJF, SJFD
+	// HRRN , SJF-SD, SJF-CD
 	strcpy(ALGORITMO_PLANIFICACION,config_get_string_value(config, "ALGORITMO_PLANIFICACION"));
 
 	ESTIMACION_INICIAL = config_get_double_value(config,"ESTIMACION_INICIAL");
@@ -133,7 +133,7 @@ bool aplico_algoritmo_ultimo(){
 //cuando sale de bloqueado a listo (si es con desalojo dejo la estimacion que tiene pork cuando lo desalojo reste, asi q no hace falta ahora)
 void recalculo_estimacion(t_Esi *esi){
 	esi->tiempoEnListo = 0;
-	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") || strcmp(ALGORITMO_PLANIFICACION,"SJF") == 0){
+	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") || strcmp(ALGORITMO_PLANIFICACION,"SJF-SD") == 0){
 		esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
 	}
 	esi->cantSentenciasProcesadas = 0;
@@ -227,7 +227,7 @@ else if(bloqueado_flag() ==  1){
 
 		//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
 		//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
-		if (strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) {
+		if (strcmp(ALGORITMO_PLANIFICACION, "SJF-CD") == 0) {
 			if(!list_is_empty(LIST_READY)){
 				//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
 				pthread_mutex_lock(&READY);
@@ -319,7 +319,7 @@ bool muerto_flag(){
 //Ordena la lista de ready dependiendo del algoritmo que se usa
 void ordeno_listas(){
 	pthread_mutex_lock(&READY);
-	if ((strcmp(ALGORITMO_PLANIFICACION, "SJFD") == 0) || (strcmp(ALGORITMO_PLANIFICACION,"SJF")==0)){
+	if ((strcmp(ALGORITMO_PLANIFICACION, "SJF-CD") == 0) || (strcmp(ALGORITMO_PLANIFICACION,"SJF-SD")==0)){
 		order_list(LIST_READY, (void*) ordenar_por_estimacion);
 	}
 	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){

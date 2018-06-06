@@ -1000,7 +1000,7 @@ int aplicarAlgoritmoReemplazo(){
 	if(list_is_empty(listaEntradasAtomicas)){
 		return respuesta;
 	}
-	if (strstr(ALGORITMO_REEMPLAZO, "C") != NULL) {
+	if (strstr(ALGORITMO_REEMPLAZO, "CIRC") != NULL) {
 		printf("INFO: Algoritmo Circular\n");
 		respuesta = algoritmoCircular(listaEntradasAtomicas);
 	}
