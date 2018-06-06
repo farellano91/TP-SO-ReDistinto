@@ -501,8 +501,8 @@ bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,
 
 				if(tamanio_contenido > TAMANIO_ENTRADA){
 					memcpy(STORAGE[entrada_inicial + i],valor_recibido,TAMANIO_ENTRADA-1);
-					STORAGE[entrada_inicial][TAMANIO_ENTRADA-1]='\0';
-					memcpy(valor_recibido,valor_recibido + TAMANIO_ENTRADA -1 ,tamanio_contenido);
+					STORAGE[entrada_inicial + i][TAMANIO_ENTRADA-1]='\0';
+					memcpy(valor_recibido,valor_recibido + TAMANIO_ENTRADA -1 ,tamanio_contenido - TAMANIO_ENTRADA  + 1);
 					//actualizo tabla
 					cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,TAMANIO_ENTRADA);
 					//actualizo diccionario
