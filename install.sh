@@ -30,6 +30,6 @@ echo ""
 
 cd /home/utnso/tp-2018-1c-Real-Mandril
 
-exec compile.sh
+exec ./compile.sh
 
 
