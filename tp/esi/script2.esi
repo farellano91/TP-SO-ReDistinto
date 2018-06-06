@@ -1,9 +1,0 @@
-SET jugadorA
-SET jugadorB
-SET jugadorC
-GET jugadorA
-GET jugadorC
-GET jugadorB
-STORE jugadorA
-STORE jugadorB
-STORE jugadorC

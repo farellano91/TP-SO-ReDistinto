@@ -1,9 +1,0 @@
-GET jugador
-GET persona
-GET mascota
-GET alumno
-SET jugador pepito
-SET persona juan
-SET mascota garf
-SET jugador mari
-SET alumno megaman

@@ -1,7 +1,0 @@
-23:59:20 **** Clean-only build of configuration Debug for project guia_ejercicio_2 ****
-make clean 
-rm -rf  ./src/archivo.o ./src/guia_ejercicio_2.o  ./src/archivo.d ./src/guia_ejercicio_2.d  guia_ejercicio_2
- 
-
-23:59:20 Build Finished (took 72ms)
-
