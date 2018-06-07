@@ -50,12 +50,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-<<<<<<< HEAD
-/.metadata/
-*.log
-.cproject
-.project
-=======
 /.metadata/*
 
 operativos-pre-tp/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
@@ -79,4 +73,4 @@ tp/.metadata/.plugins/org.eclipse.core.resources/.projects/coordinador/.indexes/
 tp/.metadata/version.ini
 
 /.metadata/
->>>>>>> origin/versionVieja
+
