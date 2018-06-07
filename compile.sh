@@ -9,15 +9,21 @@ make
 
 cd ..
 
+cd ..
+
 cd coordinador/src
 make clean
 make
 
 cd ..
 
+cd ..
+
 cd planificador/src
 make clean
 make
+
+cd ..
 
 cd ..
 
