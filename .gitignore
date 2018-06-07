@@ -50,7 +50,33 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+<<<<<<< HEAD
 /.metadata/
 *.log
 .cproject
 .project
+=======
+/.metadata/*
+
+operativos-pre-tp/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
+
+tp/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
+
+operativos-pre-tp/saraza/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
+
+operativos-pre-tp/cli-ser-guia-beej/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
+
+operativos-pre-tp/cli-ser-headers-select/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
+
+operativos-pre-tp/cli-ser-headers/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
+
+operativos-pre-tp/guia_ejercicios_r/\.metadata/\.plugins/org\.eclipse\.cdt\.managedbuilder\.core/
+
+tp/.metadata/.log
+
+tp/.metadata/.plugins/org.eclipse.core.resources/.projects/coordinador/.indexes/properties.index
+
+tp/.metadata/version.ini
+
+/.metadata/
+>>>>>>> origin/versionVieja

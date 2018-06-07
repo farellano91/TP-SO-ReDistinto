@@ -319,7 +319,11 @@ bool muerto_flag(){
 //Ordena la lista de ready dependiendo del algoritmo que se usa
 void ordeno_listas(){
 	pthread_mutex_lock(&READY);
+<<<<<<< HEAD:planificador/src/funcionalidad_planificador.c
 	if ((strcmp(ALGORITMO_PLANIFICACION, "SJF-CD") == 0) || (strcmp(ALGORITMO_PLANIFICACION,"SJF-SD")==0)){
+=======
+	if ((strcmp(ALGORITMO_PLANIFICACION, "SJF-CD") == 0) || (strcmp(ALGORITMO_PLANIFICACION,"SJF")==0)){
+>>>>>>> origin/versionVieja:planificador/src/funcionalidad_planificador.c
 		order_list(LIST_READY, (void*) ordenar_por_estimacion);
 	}
 	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
