@@ -23,6 +23,7 @@
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
 #include <pthread.h>
+#include <dirent.h>
 
 int PUNTERO_DIRECCION_CIRCULAR;
 
@@ -188,5 +189,7 @@ int algoritmoLeastRecentlyUsed(t_list* listaFiltradaAtomica);
 int algoritmoBiggestSpaceUsed(t_list* listaFiltradaAtomica);
 
 int aplicarAlgoritmoReemplazo();
+
+void crearPuntoDeMontaje(char* path);
 
 #endif /* FUNCIONALIDAD_INSTANCIA_H_ */

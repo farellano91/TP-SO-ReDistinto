@@ -1090,3 +1090,18 @@ int algoritmoCircular(t_list* listaFiltradaAtomica) {
 	return PUNTERO_DIRECCION_CIRCULAR;
 }
 
+void crearPuntoDeMontaje(char* path){
+	DIR* dir = opendir(path);
+	if (dir)
+	{
+		/* Directorio existe */
+
+		return;
+	}
+	else if (ENOENT == errno)
+	{
+		/* Directorio no existe */
+
+		mkdir(path, 0777);
+	}
+}

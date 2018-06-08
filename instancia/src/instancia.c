@@ -18,6 +18,8 @@ int main(int argc, char *argv[]) {
 	int sockfd = conectar_coodinador();
 	saludo_inicial_coordinador(sockfd);
 
+	crearPuntoDeMontaje(PUNTO_MONTAJE);
+
 	//REcibo datos de entrada
 	recibo_datos_entrada(sockfd);
 
