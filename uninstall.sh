@@ -27,4 +27,10 @@ echo ""
 echo "Parsi desinstalado"
 echo ""
 
+cd ..
+cd ..
+
+sudo rm -rf parsi
+sudo rm -rf so-commons-library
+
 cd /home/utnso/tp-2018-1c-Real-Mandril
