@@ -27,6 +27,11 @@
 #include <readline/history.h>
 #include "funcionalidad_planificador.h"
 
+
+int control_parametros(char* arg,int cant_parametros);
+
+void destroySplit(char** split);
+
 void levantar_consola();
 
 t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados);

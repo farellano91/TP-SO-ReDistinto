@@ -108,6 +108,9 @@ char * stripwhite (char *string){
 }
 
 int com_pausa (char *arg){
+	if(control_parametros(arg,0)){
+		return 0;
+	}
 	puts("Comando pausa!!");
 	pthread_mutex_lock(&MUTEX);
 	PLANIFICADOR_EN_PAUSA = true;
@@ -116,12 +119,29 @@ int com_pausa (char *arg){
 }
 
 int com_continuar (char *arg){
+	if(control_parametros(arg,0)){
+		return 0;
+	}
 	puts("Comando continuar!!");
 	pthread_mutex_lock(&MUTEX);
 	PLANIFICADOR_EN_PAUSA = false;
 	pthread_mutex_unlock(&MUTEX);
 	pthread_cond_signal(&CONDICION_PAUSA_PLANIFICADOR);
 	return (0);
+}
+
+int control_parametros(char* arg,int cant_parametros){
+	char** split = string_split(arg, " ");
+	int contador = 0;
+	while (split[contador] != NULL) {
+		contador++;
+	}
+	if (contador != cant_parametros) {
+		printf("Error: En la cantidad de parametros, debe ingresar: %d parametros\n",cant_parametros);
+		return (1);
+	}
+	destroySplit(split);
+	return 0;
 }
 
 void destroySplit(char** split){
@@ -135,7 +155,9 @@ void destroySplit(char** split){
 }
 
 int com_bloquear (char *arg){
-
+  if(control_parametros(arg,2)){
+	return 0;
+  }
   char** split = string_split(arg, " ");
   char* clave = string_duplicate(split[0]);
   int esi_id = atoi(split[1]);
@@ -200,6 +222,9 @@ int com_bloquear (char *arg){
 }
 
 int com_desbloquear (char *arg){
+	if(control_parametros(arg,1)){
+		return 0;
+	}
 	puts("Comando desbloquear!!");
 	char* clave = arg;
 
@@ -238,7 +263,9 @@ int com_desbloquear (char *arg){
 }
 
 int com_listar (char *arg){
-
+	if(control_parametros(arg,1)){
+		return 0;
+	}
 	void _siEsLaClaveMostrarId(t_nodoBloqueado* nodo){
 		if(string_equals_ignore_case(nodo->clave, arg)){
 			printf("ESI id = %d\n", nodo->esi->id);
@@ -265,7 +292,9 @@ int com_listar (char *arg){
 
 
 int com_kill(char *arg) {
-
+	if(control_parametros(arg,1)){
+		return 0;
+	}
 	int id_a_borrar = atoi(arg);
 
 	t_Esi* esi_a_borrar;
@@ -358,6 +387,9 @@ int com_kill(char *arg) {
 }
 
 int com_status (char *arg){
+	if(control_parametros(arg,1)){
+		return 0;
+	}
 	puts("Comando status!!");
 	char* clave = arg;
 	int32_t longitud_clave = strlen(clave) + 1;
@@ -448,7 +480,9 @@ char* recibo_valor(){
 }
 
 int com_deadlock (char *arg){
-
+	if(control_parametros(arg,0)){
+		return 0;
+	}
 	void _imprimir_id(t_nodoBloqueado* nodo){
 		printf("ESI id = %d\n", nodo->esi->id);
 	}
@@ -470,8 +504,11 @@ int com_deadlock (char *arg){
 }
 
 int com_quit (char *arg){
-  done = 1;
-  return (0);
+	if(control_parametros(arg,0)){
+		return 0;
+	}
+	done = 1;
+	return (0);
 }
 
 

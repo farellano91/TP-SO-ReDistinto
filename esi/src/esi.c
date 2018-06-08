@@ -10,6 +10,11 @@ void exit_gracefully(int return_nr) {
 
 int main(int argc, char** argv) {
 
+	if(argc < 2){
+		puts("Falta el script");
+		return EXIT_FAILURE;
+	}
+
 	get_parametros_config();
 
 	//Conecta como cliente al coordinador
