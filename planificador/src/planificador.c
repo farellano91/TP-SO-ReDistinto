@@ -5,9 +5,13 @@
 #include "servidor.h"
 
 
-int main(void) {
+int main(int argc, char *argv[]) {
 
-	get_parametros_config();
+	if(argc < 2){
+		puts("Falta el archivo de config");
+		return EXIT_FAILURE;
+	}
+	get_parametros_config(argv[1]);
 	PLANIFICADOR_EN_PAUSA = false;
 	inicializo_semaforos();
 	//PARA CONVERSAR CON EL COORDINADOR

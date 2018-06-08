@@ -3,14 +3,18 @@
 #include "funcionalidad_instancia.h"
 #include "cliente.h"
 
-int main(void) {
+int main(int argc, char *argv[]) {
 
+	if(argc < 2){
+		puts("Falta el archivo de config");
+		return EXIT_FAILURE;
+	}
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
 
 	CANT_ENTRADA = 0;
 	TAMANIO_ENTRADA = 0;
-	get_parametros_config();
+	get_parametros_config(argv[1]);
 	int sockfd = conectar_coodinador();
 	saludo_inicial_coordinador(sockfd);
 

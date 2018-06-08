@@ -12,8 +12,9 @@ void free_parametros_config(){
 	free_claves_iniciales();
 }
 
-void get_parametros_config() {
-	t_config* config = config_create("config.cfg");
+void get_parametros_config(char* path) {
+	//t_config* config = config_create("config.cfg");
+	t_config* config = config_create(path);
 	if (!config) {
 		printf("No encuentro el archivo config\n");
 		//MUERO
