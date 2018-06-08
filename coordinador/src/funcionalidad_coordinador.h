@@ -81,6 +81,7 @@ t_Instancia*  keyExplicit(char* clave);
 
 typedef struct {
 	//1: no existe clave en el sistema,
+	//2: existia la clave en una instancia, pero al pedir el valor vemos que la instancia se desconecto,
 	//3: tiene valor y esta un una instacia conociada
 	//4: la instancia es detectada con el algoritmo (como es nueva no tiene valor)
 	//5: la instancia es detectada con el algoritmo es null, osea no hay, y ademas (como es nueva no tiene valor)

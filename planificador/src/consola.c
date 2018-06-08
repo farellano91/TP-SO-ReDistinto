@@ -388,6 +388,11 @@ int com_status (char *arg){
 				printf("Instancia: No existe la clave en el sistema\n");
 
 				break;
+			case 2://2: existia la clave en una instancia, pero al pedir el valor vemos que la instancia se desconecto,
+				printf("Valor: - \n");
+				printf("Instancia: Existia pero se desconecto\n");
+
+				break;
 			case 3://3: tiene valor y esta un una instacia conociada
 				nombre_instancia = recibo_instancia();
 				valor = recibo_valor();
