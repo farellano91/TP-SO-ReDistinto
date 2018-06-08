@@ -9,14 +9,16 @@
 
 
 
-void get_parametros_config(){
+void get_parametros_config(char* path){
 
-	t_config* config = config_create("config.cfg");
+	//t_config* config = config_create("config.cfg");
+	t_config* config = config_create(path);
 	if (!config) {
 		printf("No encuentro el archivo config\n");
 		//MUERO
 		exit(1);
 	}
+
 	IP_CONFIG_MIO = malloc(sizeof(char) * 100);
 	strcpy(IP_CONFIG_MIO,config_get_string_value(config, "IP_CONFIG_MIO"));
 	PUERTO_ESCUCHA_CONEXION = config_get_int_value(config,"PUERTO_ESCUCHA_CONEXION");

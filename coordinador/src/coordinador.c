@@ -13,8 +13,12 @@
 #include "funcionalidad_coordinador.h"
 #include "servidor.h"
 
-int main(void) {
-	get_parametros_config();
+int main(int argc, char *argv[]) {
+	if(argc < 2){
+		puts("Falta el archivo de config");
+		return EXIT_FAILURE;
+	}
+	get_parametros_config(argv[1]);
 	configure_logger();
 	inicializo_semaforos();
 	//status
