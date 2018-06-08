@@ -1,0 +1,25 @@
+GET jugador
+SET jugador pepito
+GET clave21
+SET clave21 val2
+GET clave31
+SET clave31 val3
+GET persona
+SET persona juan
+GET clave22
+SET clave22 val2
+GET clave32
+SET clave32 val3
+GET mascota
+SET mascota garf
+GET clave23
+SET clave23 val2
+GET clave33
+SET clave33 val3
+SET jugador mari
+GET alumno
+SET alumno megaman
+GET clave24
+SET clave24 val2
+GET clave34
+SET clave34 val3

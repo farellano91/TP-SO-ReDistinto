@@ -634,6 +634,12 @@ void levantar_servidor_status(){
 							}
 							free(buffer);
 							printf("La clave existe, valor:%s en instancia:%s\n",valor,registro_instancia->nombre_instancia);
+						}else{//existia una instancia pero esta desconectada caso:2
+							int32_t tipo = 2;
+							if (send(fdNuevo, &tipo,sizeof(int32_t), 0) == -1) {
+								printf("No se pudo enviar el resultado de status al planificador\n");
+							}
+							printf("La clave existe y esta dentro de uns instancia pero esta esta desconectada\n");
 						}
 						free(valor);
 					}
@@ -674,7 +680,7 @@ char * envio_recibo_pedido_valor(t_registro_instancia* reg_instancia,char* clave
 	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 
 	if(instancia == NULL){
-		return "";
+		return NULL;
 	}
 
 	//limpio la respuesta
@@ -684,7 +690,7 @@ char * envio_recibo_pedido_valor(t_registro_instancia* reg_instancia,char* clave
 
 	if (send(instancia->fd, bufferEnvio,sizeof(int32_t) * 2 + long_clave, 0) == -1) {
 		free(bufferEnvio);
-		return "";
+		return NULL;
 	}
 
 	printf("Se envio tarea status a la instancia para saber el valor de la clave\n");
@@ -692,7 +698,7 @@ char * envio_recibo_pedido_valor(t_registro_instancia* reg_instancia,char* clave
 
 	pthread_mutex_lock(&MUTEX_RESPUESTA_STATUS);
 	while(strcmp(RESPUESTA_STATUS,"")==0){
-		pthread_cond_wait(&CONDICION_RESPUESTA_STATUS,&MUTEX_RESPUESTA_STATUS); //espero a la respuesta de la instancia (si es q la instancia esta) por 10 segundos
+		pthread_cond_wait(&CONDICION_RESPUESTA_STATUS,&MUTEX_RESPUESTA_STATUS);
 	}
 	pthread_mutex_unlock(&MUTEX_RESPUESTA_STATUS);
 
