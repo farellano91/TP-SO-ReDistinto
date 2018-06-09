@@ -108,16 +108,20 @@ void recibo_lineas(int fd_esi) {
 							free(clave);
 							break;
 						}
-						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta la registro sin instancia
-						if(!exist_clave_registro_instancias(clave)){
-							printf("La clave no existe en el sistema, la creamos...\n");
-							t_registro_instancia* registro_nuevo = creo_registro_instancia("",clave);
-							pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
-							list_add(LIST_REGISTRO_INSTANCIAS,registro_nuevo);
-							pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
-						}
+
 						envio_tarea_planificador(1,clave,id_esi);
 						resultado_linea = recibo_resultado_planificador();
+
+						if(resultado_linea != OK_BLOQUEADO_PLANIFICADOR){
+							//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta la registro sin instancia
+							if(!exist_clave_registro_instancias(clave)){
+								printf("La clave no existe en el sistema, la creamos...\n");
+								t_registro_instancia* registro_nuevo = creo_registro_instancia("",clave);
+								pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
+								list_add(LIST_REGISTRO_INSTANCIAS,registro_nuevo);
+								pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
+							}
+						}
 
 						//loggeo respuesta
 						loggeo_respuesta("GET",id_esi,resultado_linea);
