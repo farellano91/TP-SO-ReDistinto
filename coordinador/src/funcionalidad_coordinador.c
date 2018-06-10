@@ -680,25 +680,28 @@ t_Instancia* LeastSpaceUsed() {
 
 t_Instancia* keyExplicit(char* clave) {
 	//a:97--z:124
-	if(!(clave[0]>= 97 && clave[0]<=124)){
-		printf("Error al tratar de elegir una instancia, la clave no empieza con una letra del [a - z]\n");
+	if((!(clave[0]>= 97 && clave[0]<=123) && !(clave[0]>= 65 && clave[0]<=91)) ||
+			(clave[0] == 164) || (clave[0] == 165)){
+		printf("Error al tratar de elegir una instancia, la clave no empieza con una letra del [a-z] (sin ñ) o [A-Z] (sin Ñ)\n");
 		return NULL;
 	}
 	int i;
 	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	bool decimal = false;
+	int resto = 0;
 	int cant_instancias = LIST_INSTANCIAS->elements_count;
-	double letras_por_instancia = 27 / cant_instancias;
+	double letras_por_instancia = 26 / cant_instancias;
 	//veo si hay decimal
-	if(cant_instancias*letras_por_instancia < 27){
-		//si hay decimal entonces la ultima instnacia tendra cantidad_letras_por_instancia + 1
+	if(cant_instancias*letras_por_instancia < 26){
+		//si hay decimal entonces la ultima instnacia tendra cantidad_letras_por_instancia + resto
 		decimal = true;
+		resto = 26 - cant_instancias*letras_por_instancia;
 	}
 	t_Instancia * instancia;
 	if (cant_instancias > 0) {
 		for (i = 0; i < cant_instancias; i++) {
 			if(((i+1) == cant_instancias) && (decimal)){
-				if(esta_grupo(clave[0],i,letras_por_instancia,1)){
+				if(esta_grupo(clave[0],i,letras_por_instancia,resto)){
 					instancia = list_get(LIST_INSTANCIAS,i);
 					pthread_mutex_unlock(&MUTEX_INSTANCIA);
 					return instancia;
@@ -719,7 +722,14 @@ t_Instancia* keyExplicit(char* clave) {
 }
 
 bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia, int extra){
-	int numeroCaracter = primeraLetra - 96;
+	int numeroCaracter;
+	//dependiendo que case sea, lo convertimos en 1 en adelante
+	if((primeraLetra >= 97) && (primeraLetra<=123)){
+		numeroCaracter = primeraLetra - 96;
+	}else if((primeraLetra>= 65) && (primeraLetra<=91)){
+		numeroCaracter = primeraLetra - 64;
+	}
+
 	if((numeroCaracter >= (numGrupo*cantLetrasPorInstancia+1)) && (numeroCaracter <= (numGrupo+1)*cantLetrasPorInstancia + extra)){
 		return true;
 	}
