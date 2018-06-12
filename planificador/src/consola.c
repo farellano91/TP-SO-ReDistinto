@@ -163,6 +163,7 @@ int com_bloquear (char *arg){
   int esi_id = atoi(split[1]);
   t_Esi* esi_ready;
   t_Esi* esi_ejecucion;
+  t_nodoBloqueado* esi_bloqueado;
   pthread_mutex_lock(&EXECUTE);
   pthread_mutex_lock(&READY);
   pthread_mutex_lock(&BLOCKED);
@@ -171,14 +172,24 @@ int com_bloquear (char *arg){
 		return un_esi->id == esi_id;
 	}
 
+	bool _esElidBloqueado(t_nodoBloqueado* un_nodo) {
+		return un_nodo->esi->id == esi_id;
+	}
+
 	bool _es_la_clave(t_esiBloqueador* esi) {
 		return string_equals_ignore_case(esi->clave, clave);
 	}
 
 	  esi_ready = (t_Esi*)list_find(LIST_READY, (void*)_esElid);
 	  esi_ejecucion = (t_Esi*)list_find(LIST_EXECUTE, (void*)_esElid);
+	  esi_bloqueado = (t_nodoBloqueado*)list_find(LIST_BLOCKED, (void*)_esElidBloqueado);
 
-	  if(list_any_satisfy(LIST_ESI_BLOQUEADOR, (void*)_es_la_clave)){
+	  if(esi_bloqueado != NULL){
+		  printf("El ESI con id = %d ya fue bloqueado por la clave: %s\n", esi_bloqueado->esi->id, esi_bloqueado->clave);
+
+	  }
+
+	  else if(list_any_satisfy(LIST_ESI_BLOQUEADOR, (void*)_es_la_clave)){
 
 	  if(esi_ready != NULL){
 		 t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi_ready,clave);
@@ -210,7 +221,7 @@ int com_bloquear (char *arg){
 				un_esi->fd = 0;
 				t_esiBloqueador* esiBLoqueador = get_esi_bloqueador(un_esi, clave);
 				list_add(LIST_ESI_BLOQUEADOR,esiBLoqueador);
-				printf("La clave %s fue agregada como clave bloqueada por config, debido a que el ESI con id = %d no existe\n", clave, esi_id);
+				printf("La clave %s fue agregada como clave bloqueada por config", clave);
 
 		  }
 	  }
