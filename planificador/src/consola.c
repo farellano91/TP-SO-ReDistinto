@@ -210,7 +210,7 @@ int com_bloquear (char *arg){
 		  if(esi_ready != NULL){
 			  t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_ready, clave);
 			  list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
-			  printf("El ESI con id = %d tomó la clave %s", esi_id, clave);
+			  printf("El ESI con id = %d tomó la clave %s\n", esi_id, clave);
 		  }else if(esi_ejecucion != NULL){
 			     t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_ejecucion, clave);
 				 list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
@@ -221,7 +221,7 @@ int com_bloquear (char *arg){
 				un_esi->fd = 0;
 				t_esiBloqueador* esiBLoqueador = get_esi_bloqueador(un_esi, clave);
 				list_add(LIST_ESI_BLOQUEADOR,esiBLoqueador);
-				printf("La clave %s fue agregada como clave bloqueada por config", clave);
+				printf("La clave %s fue agregada como clave bloqueada por config\n", clave);
 
 		  }
 	  }
