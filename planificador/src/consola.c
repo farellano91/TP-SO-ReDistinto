@@ -126,7 +126,29 @@ int com_continuar (char *arg){
 	pthread_mutex_lock(&MUTEX);
 	PLANIFICADOR_EN_PAUSA = false;
 	pthread_mutex_unlock(&MUTEX);
+
 	pthread_cond_signal(&CONDICION_PAUSA_PLANIFICADOR);
+
+	//Nuevo: continua flujo si esta disponible el cpu (esto es si el flujo quedo frenado)
+	pthread_mutex_lock(&MUTEX);
+	pthread_mutex_lock(&READY);
+	pthread_mutex_lock(&EXECUTE);
+
+	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+			list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+			list_remove(LIST_READY, 0);
+			pthread_mutex_unlock(&EXECUTE);
+			continuar_comunicacion();
+			pthread_mutex_unlock(&READY);
+			pthread_mutex_unlock(&MUTEX);
+			return 0;
+
+	}
+	pthread_mutex_unlock(&EXECUTE);
+	pthread_mutex_unlock(&READY);
+	pthread_mutex_unlock(&MUTEX);
+	//---------------------------------------------
+
 	return (0);
 }
 
@@ -239,6 +261,48 @@ int com_desbloquear (char *arg){
 	puts("Comando desbloquear!!");
 	char* clave = arg;
 
+
+	//controlo si hay algun esi bloqueado por esta clave
+	bool _esElidClave(t_nodoBloqueado* esiBloqueado) { return (strcmp(esiBloqueado->clave,clave)==0);}
+	if(!list_is_empty(LIST_BLOCKED) &&
+			list_find(LIST_BLOCKED, (void*)_esElidClave) != NULL){
+		//Hay al menos 1 esi bloqueado, sacamos solo el primero
+		move_esi_from_bloqueado_to_listo(clave);
+		//continua flujo si esta disponible el cpu
+		pthread_mutex_lock(&MUTEX);
+		pthread_mutex_lock(&READY);
+		pthread_mutex_lock(&EXECUTE);
+
+		if(!PLANIFICADOR_EN_PAUSA){
+			if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
+					list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+					list_remove(LIST_READY, 0);
+					pthread_mutex_unlock(&EXECUTE);
+					continuar_comunicacion();
+					pthread_mutex_unlock(&READY);
+					pthread_mutex_unlock(&MUTEX);
+					return 0;
+
+			}
+		}
+		pthread_mutex_unlock(&EXECUTE);
+		pthread_mutex_unlock(&READY);
+		pthread_mutex_unlock(&MUTEX);
+	}else{
+		//No hay ningun esi bloqueado por esa clave, libero la clave
+		bool _esElidClaveB(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+		if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+				list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClaveB) != NULL){
+			//Solo lo saco de la lista
+			list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*)_esElidClave);
+			printf("Libero la clave:%s\n",clave);
+		}else{
+			printf("No hay clave para liberar\n");
+		}
+	}
+
+
+	/*Antes solo sacaba al primer esi bloqueado y liberaba la clave SIEMPRE
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
 	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
 			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
@@ -270,6 +334,8 @@ int com_desbloquear (char *arg){
 	pthread_mutex_unlock(&EXECUTE);
 	pthread_mutex_unlock(&READY);
 	pthread_mutex_unlock(&MUTEX);
+	*/
+
 	return (0);
 }
 
