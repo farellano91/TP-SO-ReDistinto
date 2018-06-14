@@ -78,7 +78,7 @@ bool aplico_algoritmo_primer_ingreso(){
 
 	bool sContinuarComunicacion = true;
 
-	//ordeno_listas();
+	ordeno_listas();
 
 	//Pregunto si tengo alguno en LIST_EXECUTE (si esta vacio entro ya que significa q soy el unico)
 	pthread_mutex_lock(&READY);
