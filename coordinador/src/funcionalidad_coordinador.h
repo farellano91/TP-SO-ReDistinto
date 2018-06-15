@@ -67,7 +67,7 @@ int RETARDO;
 typedef struct {
 	int fd;
 	char* nombre_instancia;
-	int tamanio_libre;
+	int espacio_libre; //cant de entradas libres q tenga
 } t_Instancia;
 
 bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia, int extra);
@@ -99,7 +99,7 @@ typedef struct {
 typedef struct {
 	char* nombre_instancia;
 	int respuesta;
-	int tamanio_libre; //solo si la operacion es OK_SET_INSTANCIA se recibe un espacio libre actualizado
+	int espacio_libre; //solo si la operacion es OK_SET_INSTANCIA se recibe un espacio libre actualizado
 } t_instancia_respuesta;
 
 int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** clave_valor);
@@ -142,7 +142,8 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea);
 
 int reciboRespuestaInstancia(int fd_instancia);
 
-int reciboTamanioLibre(int fd_instancia);
+//medido en cant de entradas libres que tenga la instancia
+int reciboEspacioLibre(int fd_instancia);
 
 void free_instancia(t_Instancia * instancia);
 

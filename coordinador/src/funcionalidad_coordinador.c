@@ -85,12 +85,12 @@ t_registro_instancia* creo_registro_instancia(char* nombre_instancia, char* clav
 	return registro_instancia;
 }
 
-t_instancia_respuesta* creo_instancia_respuesta(char* nombre_instancia,int respuesta,int tamanio_libre){
+t_instancia_respuesta* creo_instancia_respuesta(char* nombre_instancia,int respuesta,int espacio_libre){
 	t_instancia_respuesta* instancia_respuesta = malloc(sizeof(t_instancia_respuesta));
 	instancia_respuesta->nombre_instancia = malloc(sizeof(char)*200);
 	strcpy(instancia_respuesta->nombre_instancia,nombre_instancia);
 	instancia_respuesta->respuesta = respuesta;
-	instancia_respuesta->tamanio_libre = tamanio_libre;
+	instancia_respuesta->espacio_libre = espacio_libre;
 	return instancia_respuesta;
 }
 
@@ -115,15 +115,15 @@ t_Instancia* creo_instancia(int fd_instancia){
 	}
 	strcpy(instancia_nueva->nombre_instancia,nombreInstancia);
 
-	int32_t tamanio_libre = 0;
-	if ((numbytes = recv(fd_instancia, &tamanio_libre, sizeof(int32_t), 0)) == -1) {
-		printf("No se pudo recibir el tamaño libre de la instancia\n");
+	int32_t espacio_libre = 0;
+	if ((numbytes = recv(fd_instancia, &espacio_libre, sizeof(int32_t), 0)) == -1) {
+		printf("No se pudo recibir el espacio libre de la instancia\n");
 		free(nombreInstancia);
 		pthread_exit(NULL);
 	}
 
 	instancia_nueva->nombre_instancia[strlen(instancia_nueva->nombre_instancia)]='\0';
-	instancia_nueva->tamanio_libre = tamanio_libre;
+	instancia_nueva->espacio_libre = espacio_libre;
 
 	free(nombreInstancia);
 	printf("Quiere ingresar la instancia de nombre:%s\n",instancia_nueva->nombre_instancia);
@@ -165,7 +165,7 @@ void agrego_instancia_lista(t_list* list,t_Instancia* instancia_nueva){
 	pthread_mutex_lock(&MUTEX_INSTANCIA);
 	list_add(list,instancia_nueva);
 	pthread_mutex_unlock(&MUTEX_INSTANCIA);
-	printf("Se agrego la instancia de nombre:%s y de espacio libre:%d a la lista\n",instancia_nueva->nombre_instancia,instancia_nueva->tamanio_libre);
+	printf("Se agrego la instancia de nombre:%s y de cant. de entradas libres:%d a la lista\n",instancia_nueva->nombre_instancia,instancia_nueva->espacio_libre);
 
 }
 
@@ -340,8 +340,8 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 		if(resultado_instancia == OK_SET_INSTANCIA){
 			printf("Sentencia SET realizado correctamente\n");
 			//actualizo su espacio (en lista_instnacias solo si es SET OK)
-			instancia->tamanio_libre = instancia_resp->tamanio_libre;
-			printf("Actualizo el nuevo tamaño disponible de %s ahora es %d\n",instancia->nombre_instancia,instancia->tamanio_libre);
+			instancia->espacio_libre = instancia_resp->espacio_libre;
+			printf("Actualizo para la instancia %s la nueva cant. de entradas libres sera de %d\n",instancia->nombre_instancia,instancia->espacio_libre);
 			//registro la INSTANCIA para esa clave si es que no esta registrado antes
 			pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 			bool _registrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave_valor_recibido[0])== 0;}
@@ -500,17 +500,17 @@ int reciboRespuestaInstancia(int fd_instancia){
 }
 
 
-int reciboTamanioLibre(int fd_instancia){
-	int32_t tamanioLibre = 0;
+int reciboEspacioLibre(int fd_instancia){
+	int32_t espacioLibre = 0;
 	int32_t numbytes = 0;
-	if ((numbytes = recv(fd_instancia, &tamanioLibre, sizeof(int32_t), 0)) <= 0) {
+	if ((numbytes = recv(fd_instancia, &espacioLibre, sizeof(int32_t), 0)) <= 0) {
 		//aca es si se desconecto la instancia, cosa q manejara el reciboResultadoInstancia
-		tamanioLibre = 0;
+		espacioLibre = 0;
 	}else{
 		//printf("Recibimos nuevo tamaño de Instancia FD: %d\n", fd_instancia);
 
 	}
-	return tamanioLibre;
+	return espacioLibre;
 }
 
 void free_instancia(t_Instancia * instancia){
@@ -553,7 +553,7 @@ void remove_registro_instancia( char * clave){
 }
 
 //Cargo la instancia_respuesta sin repetir! (el tamaño solo lo tomo en cuenta del otro lado cuando es set)
-void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta,int tamanio_libre){
+void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta,int espacio_libre){
 
 	if(nueva_respuesta == COMPACTACION_GLOBAL){
 		printf("La instancia:%s me dijo que todos deben compactar\n",nombre_instancia);
@@ -566,9 +566,9 @@ void cargo_instancia_respuesta(char * nombre_instancia,int nueva_respuesta,int t
 		if( list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta) != NULL){
 			t_instancia_respuesta * insta_respu = list_find(LIST_INSTANCIA_RESPUESTA, (void*)_existInstanciaRespuesta);
 			insta_respu->respuesta = nueva_respuesta;
-			insta_respu->tamanio_libre = tamanio_libre;
+			insta_respu->espacio_libre = espacio_libre;
 		}else{
-			t_instancia_respuesta* instancia_respuesta = creo_instancia_respuesta(nombre_instancia,nueva_respuesta,tamanio_libre);
+			t_instancia_respuesta* instancia_respuesta = creo_instancia_respuesta(nombre_instancia,nueva_respuesta,espacio_libre);
 			list_add(LIST_INSTANCIA_RESPUESTA,instancia_respuesta);
 
 		}
@@ -661,7 +661,7 @@ t_Instancia* LeastSpaceUsed() {
 
 			instancia = list_get(LIST_INSTANCIAS, i);
 
-			if ((instancia_max->tamanio_libre) < (instancia->tamanio_libre)) {
+			if ((instancia_max->espacio_libre) < (instancia->espacio_libre)) {
 
 				instancia_max = list_get(LIST_INSTANCIAS, i);
 

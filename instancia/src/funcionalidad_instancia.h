@@ -47,7 +47,7 @@ pthread_mutex_t MUTEX_INSTANCIA;
 typedef struct {
 	int libre; //1:esta libre 0:esta ocupado
 	int cant_operaciones; //solo importa si la entrada esta OCUPADA (es 0 si fue usada recien y +1 para las demas)
-	int tamanio_libre;
+	int tamanio_libre; //tamanio de byte libres que tiene esta entrada en particular
 } t_registro_diccionario_entrada;
 
 t_dictionary * DICCIONARITY_ENTRADA;
@@ -112,7 +112,11 @@ void aumento_cant_operacion(int numero_entrada);
 
 char* get_valor_by_clave(char * clave_recibida);
 
+//retorna la cant total de entradas libres
 int obtener_espacio_libre();
+
+//retorna el tamanio en bytes libres
+int obtener_tamanio_libre();
 
 //Envio mis datos al coordinador
 void envio_datos(int sockfd);

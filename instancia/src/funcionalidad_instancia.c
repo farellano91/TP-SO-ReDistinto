@@ -673,18 +673,33 @@ void envio_datos(int fd_coordinador){
 		free_estruct_admin();
 		exit(1);
 	}
-	printf("Envie mi nombre y tamaño libre:%d correctamente\n",espacio_libre);
+	printf("Envie mi nombre y cant. de entradas libres:%d correctamente\n",espacio_libre);
 	free(bufferEnvio);
 }
 
+//obtiene la cant. de entradas libres actual
 int obtener_espacio_libre(){
 	int espacio_total_disponible = 0;
 
 	void _buscaEspacioLibre(char* _, t_registro_diccionario_entrada* registro) {
-		espacio_total_disponible = espacio_total_disponible + registro->tamanio_libre;
+		if(registro->libre){
+			espacio_total_disponible = espacio_total_disponible + 1;
+		}
+
 	}
 	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_buscaEspacioLibre);
 	return espacio_total_disponible;
+}
+
+//obtiene el tamaño en byte libres actual
+int obtener_tamanio_libre(){
+	int tamanio_total_disponible = 0;
+
+	void _buscaTamanioLibre(char* _, t_registro_diccionario_entrada* registro) {
+		tamanio_total_disponible = tamanio_total_disponible + registro->tamanio_libre;
+	}
+	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_buscaTamanioLibre);
+	return tamanio_total_disponible;
 }
 
 //con los datos de entrada que recibi, puedo inicializar mis estructuras
@@ -883,12 +898,12 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
 		registro_diccionario->libre = 0;
 		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
-		printf("Actualizo en mi diccionario la entrada:%d-ocupada-cant operaciones:%d-tamaño libre:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
+		printf("Actualizo en mi diccionario la entrada:%d-ocupada-cant operaciones:%d-tamaño libre de la entrada:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
 	}else{
 		//no existe, lo crea
 		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,0,(TAMANIO_ENTRADA - tamanio_contenido));
 		dictionary_put(DICCIONARITY_ENTRADA,key,registro_diccionario);
-		printf("Cargo en mi diccionario la entrada:%d-ocupada-cant operaciones:1-tamaño libre:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
+		printf("Cargo en mi diccionario la entrada:%d-ocupada-cant operaciones:1-tamaño libre de la entrada:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
 	}
 
 }

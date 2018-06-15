@@ -337,11 +337,11 @@ void atender_cliente(void* idSocketCliente) {
 			//3:Encolo la INSTANCIA
 			agrego_instancia_lista(LIST_INSTANCIAS,instancia_nueva);
 			while(1){
-				int32_t tamanio_libre = reciboTamanioLibre(fdCliente);
+				int32_t espacio_libre = reciboEspacioLibre(fdCliente);
 				int32_t respuesta = reciboRespuestaInstancia(fdCliente);
 				if(respuesta != OK_STATUS){
 					//guardamos solo si no existe, si esta, lo actualizo
-					cargo_instancia_respuesta(instancia_nueva->nombre_instancia,respuesta,tamanio_libre);
+					cargo_instancia_respuesta(instancia_nueva->nombre_instancia,respuesta,espacio_libre);
 
 					if(respuesta == ABORTA_ESI_CLAVE_INNACCESIBLE){
 						remove_instancia(fdCliente);//Si se desconecto limpio la list_instancia
