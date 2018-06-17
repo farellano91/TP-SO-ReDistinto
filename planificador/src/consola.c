@@ -498,7 +498,7 @@ int com_status (char *arg){
 
 				break;
 			case 2://2: existia la clave en una instancia, pero al pedir el valor vemos que la instancia se desconecto,
-				printf("Valor: - \n");
+				printf("Valor: No tenemos el valor\n");
 				printf("Instancia: Existia pero se desconecto\n");
 
 				break;
@@ -512,13 +512,13 @@ int com_status (char *arg){
 				break;
 			case 4://4: la instancia es detectada con el algoritmo (como es nueva no tiene valor)
 				nombre_instancia = recibo_instancia();
-				printf("Valor: - \n");
+				printf("Valor: No tenemos el valor aun \n");
 				printf("Instancia elegida por algoritmo: %s\n",nombre_instancia);
 				free(nombre_instancia);
 				break;
 			case 5://5: la instancia es detectada con el algoritmo es null, osea no hay, y ademas (como es nueva no tiene valor)
-				printf("Valor: -\n");
-				printf("Instancia elegida por algoritmo: - \n");
+				printf("Valor: No tenemos el valor\n");
+				printf("Instancia elegida por algoritmo: No tengo instancias para mandar este pedido \n");
 
 				break;
 			default:

@@ -10,8 +10,7 @@ void intHandler(int dummy) {
 }
 
 void get_parametros_config(char* path){
-	//t_config* config = config_create("config.cfg");
-	t_config* config = config_create(path);
+	t_config* config = config_create("config.cfg");
 	if (!config) {
 		printf("No encuentro el archivo config\n");
 		config_destroy(config);
@@ -239,6 +238,13 @@ int recibo_sentencia(int fd_coordinador){
 		int32_t espacio_libre = 0;
 		int32_t resultado = OK_STATUS;
 		char* valor = get_valor_by_clave(clave_recibida);
+
+		if(valor == NULL){
+			//significa q la clave q me piden ya no la tengo mas, la sobreescribi
+			valor = malloc(sizeof(char)* TAMANIO_ENTRADA* CANT_ENTRADA);
+			strcpy(valor,"No tenemos el valor");
+			valor[strlen(valor)] = '\0';
+		}
 		int32_t leng_valor = strlen(valor) + 1 ;
 
 		void* bufferEnvio = malloc(sizeof(int32_t)*3 +leng_valor );
@@ -258,7 +264,7 @@ int recibo_sentencia(int fd_coordinador){
 
 		free(clave_recibida);
 		free(bufferEnvio);
-
+		free(valor);
 		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 		return OK_STATUS;
 	}
@@ -457,6 +463,7 @@ void cambio_entrada(int entrada_desde,int entrada_hasta){
 	cargo_actualizo_diccionario(entrada_hasta,tabla->tamanio_valor);
 
 	libero_entrada(entrada_desde);
+	free(valor);
 }
 
 //reemplaza tantas veces como entradas_necesarias - cant_espacio_disponibles
@@ -469,10 +476,9 @@ bool aplico_reemplazo(int cant_espacios_buscados){
 			numeroEntrada = aplicarAlgoritmoReemplazo();
 			//controlar q el numeroEntrada sea != -1
 			if(numeroEntrada == -1){
-				//no hay ninguna entrada atomica para reemplazar
+				printf("No hay ninguna entrada atomica para reemplazar\n");
 				return false;
 			}else{
-
 				//borra el .txt que estaba
 				delete_file_dump(numeroEntrada);
 				libero_entrada(numeroEntrada);
@@ -625,15 +631,15 @@ char* get_valor_by_clave(char * clave_recibida){
 	bool _esClave(t_registro_tabla_entrada* entrada) { return strcmp(entrada->clave,clave_recibida)== 0;}
 	t_list* tabla_entrada =  list_filter(TABLA_ENTRADA,(void*) _esClave);
 
-	if(tabla_entrada!=NULL){
+	if(list_size(tabla_entrada) > 0){
 		void _armoValor(t_registro_tabla_entrada* entrada) {
 			strcat(valor_buscado,STORAGE[entrada->numero_entrada]);
-
 		}
 		list_iterate(tabla_entrada,(void*)_armoValor);
 		valor_buscado[strlen(valor_buscado)] = '\0';
 		return valor_buscado;
 	}
+	free(valor_buscado);
 	return NULL;
 
 }

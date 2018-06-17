@@ -4,11 +4,11 @@
 #include "cliente.h"
 
 int main(int argc, char *argv[]) {
-
 	if(argc < 2){
 		puts("Falta el archivo de config");
 		return EXIT_FAILURE;
 	}
+
 	//En caso de una interrupcion va por aca
 	signal(SIGINT, intHandler);
 
