@@ -10,6 +10,7 @@ void intHandler(int dummy) {
 }
 
 void get_parametros_config(char* path){
+	//t_config* config = config_create("config.cfg");
 	t_config* config = config_create("config.cfg");
 	if (!config) {
 		printf("No encuentro el archivo config\n");
@@ -640,6 +641,7 @@ char* get_valor_by_clave(char * clave_recibida){
 		return valor_buscado;
 	}
 	free(valor_buscado);
+	list_destroy(tabla_entrada);
 	return NULL;
 
 }
@@ -986,6 +988,7 @@ void realizar_dump(){
 
 			}
 			list_iterate(tabla_solo_claves,(void*)_aplicaSTORE);
+			list_destroy(tabla_solo_claves);
 		}else{
 			printf("No hay entradas ocupadas para hacer DUMP\n");
 		}
