@@ -661,9 +661,18 @@ void levantar_servidor_status(){
 							printf("La clave existe, valor:%s en instancia:%s\n",valor,registro_instancia->nombre_instancia);
 						}else{//existia una instancia pero esta desconectada caso:2
 							int32_t tipo = 2;
-							if (send(fdNuevo, &tipo,sizeof(int32_t), 0) == -1) {
+
+							int32_t leng = strlen(registro_instancia->nombre_instancia) +1 ;
+							void* buffer = malloc(sizeof(int32_t)*2 + leng);
+							memcpy(buffer,&tipo,sizeof(int32_t));
+							memcpy(buffer + sizeof(int32_t),&leng,sizeof(int32_t));
+							memcpy(buffer + sizeof(int32_t)*2,registro_instancia->nombre_instancia,leng);
+							if (send(fdNuevo, buffer,sizeof(int32_t)*2 + leng, 0) == -1) {
+
 								printf("No se pudo enviar el resultado de status al planificador\n");
+
 							}
+
 							printf("La clave existe y esta dentro de uns instancia pero esta esta desconectada\n");
 						}
 						free(valor);
