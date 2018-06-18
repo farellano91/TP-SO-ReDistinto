@@ -95,10 +95,12 @@ void envio_resultado_al_coordinador(int sockfd,int resultado){
 
 	if(send(sockfd,bufferEnvio, sizeof(int32_t)*2 , 0) == -1) {
 		printf("No se puede enviar el resultado al coordinador\n");
+		free(bufferEnvio);
 		free_algo_punt_nom();
 		free_estruct_admin();
 		exit(1);
 	}
+	free(bufferEnvio);
 	printf("Envie mi resultado correctamente\n");
 	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 }
@@ -348,6 +350,8 @@ void libero_entrada(int numeroEntrada){
 	diccionario->cant_operaciones = 0;
 	diccionario->libre = 1;
 	diccionario->tamanio_libre = TAMANIO_ENTRADA;
+
+	free(key);
 }
 
 
@@ -557,9 +561,11 @@ bool son_contiguos(int entradas_necesarias, int* entrada_inicial){
 			contiguo++;
 			if(contiguo==entradas_necesarias){
 				*entrada_inicial = i + 1 - entradas_necesarias;
+				free(key);
 				return true;
 			}
 		}else{
+			free(key);
 			contiguo = 0;
 		}
 	}
@@ -638,6 +644,7 @@ char* get_valor_by_clave(char * clave_recibida){
 		}
 		list_iterate(tabla_entrada,(void*)_armoValor);
 		valor_buscado[strlen(valor_buscado)] = '\0';
+		list_destroy(tabla_entrada);
 		return valor_buscado;
 	}
 	free(valor_buscado);
@@ -907,6 +914,7 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 		registro_diccionario->libre = 0;
 		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
 		printf("Actualizo en mi diccionario la entrada:%d-ocupada-cant operaciones:%d-tamaño libre de la entrada:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
+	    free(key);
 	}else{
 		//no existe, lo crea
 		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,0,(TAMANIO_ENTRADA - tamanio_contenido));
@@ -936,6 +944,7 @@ void actualizo_cant_operaciones(char* clave){
 				}
 			}
 			dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_cambioCantOperaciones);
+			free(key);
 		}
 	}
 	list_iterate(TABLA_ENTRADA,(void*)_esClave);
@@ -1119,6 +1128,7 @@ void crearPuntoDeMontaje(char* path){
 	if (dir)
 	{
 		/* Directorio existe */
+		closedir(dir);
 
 		return;
 	}

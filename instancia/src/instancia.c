@@ -31,7 +31,14 @@ int main(int argc, char *argv[]) {
 
 	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
 	pthread_t punteroHiloDump;
-	pthread_create(&punteroHiloDump, NULL, (void*) realizar_dump, NULL);
+
+	pthread_attr_t tattr;
+	pthread_attr_init(&tattr);
+	pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+
+	pthread_create(&punteroHiloDump, &tattr, (void*) realizar_dump, NULL);
+
+	pthread_attr_destroy(&tattr);
 
 	//Envio mis datos
 	envio_datos(sockfd);
