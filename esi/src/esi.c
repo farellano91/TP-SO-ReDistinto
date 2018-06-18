@@ -208,8 +208,7 @@ int main(int argc, char** argv) {
 							// conexión cerrada
 							printf("Se desconecto el coordinador\n");
 						} else {
-							perror(
-									"ERROR: al recibir respuesta del coordinador");
+							printf("ERROR: al recibir respuesta del coordinador\n");
 						}
 						close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
 						close(fd_coordinador);

@@ -25,9 +25,6 @@
 #include <commons/string.h>
 #include <math.h>
 
-pthread_mutex_t MUTEX;
-
-pthread_cond_t CONDICION_LIBERO_PLANIFICADOR;
 
 pthread_cond_t CONDICION_RECV_INSTANCIA;
 pthread_mutex_t MUTEX_RECV_INSTANCIA; //para la estructura de respuesta de instancias
@@ -42,6 +39,11 @@ pthread_mutex_t MUTEX_INDEX;
 
 pthread_cond_t CONDICION_RESPUESTA_STATUS;
 pthread_mutex_t MUTEX_RESPUESTA_STATUS; //para la respuesta de la tarea STATUS
+
+pthread_cond_t CONDICION_RESPUESTA_PLANIFICADOR;
+pthread_mutex_t MUTEX_RESPUESTA_PLANIFICADOR; //para la respuesta del planificador
+
+int32_t RESPUESTA_PLANIFICADOR; //inicializa en 0
 
 char* RESPUESTA_STATUS;
 
@@ -134,7 +136,7 @@ void inicializo_semaforos();
 
 int aplicarAlgoritmoDisctribucion(char * algoritmo,char** resultado);
 
-void envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi);
+int32_t envio_tarea_planificador(int32_t id_operacion,char* clave_recibida,int32_t id_esi);
 
 void loggeo_info(int32_t id_operacion,int32_t id_esi,char* clave_recibida,char* valor_recibida);
 

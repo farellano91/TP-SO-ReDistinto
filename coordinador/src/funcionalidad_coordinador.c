@@ -47,14 +47,21 @@ void configure_logger() {
 
 void inicializo_semaforos(){
 	pthread_mutex_init(&MUTEX_INDEX,NULL);
-	pthread_mutex_init(&MUTEX,NULL);
 	pthread_mutex_init(&MUTEX_RECV_INSTANCIA,NULL);
 	pthread_mutex_init(&MUTEX_INSTANCIA,NULL);
 	pthread_mutex_init(&MUTEX_REGISTRO_INSTANCIA,NULL);
+
+	pthread_mutex_init(&MUTEX_RESPUESTA_STATUS,NULL);
+	pthread_cond_init(&CONDICION_RESPUESTA_STATUS, NULL);
+
 	pthread_cond_init(&CONDICION_REGISTRO_INSTANCIA, NULL);
 	pthread_cond_init(&CONDICION_INSTANCIA, NULL);
-	pthread_cond_init(&CONDICION_LIBERO_PLANIFICADOR, NULL);
 	pthread_cond_init(&CONDICION_RECV_INSTANCIA, NULL);
+
+	pthread_mutex_init(&MUTEX_RESPUESTA_PLANIFICADOR,NULL);
+	pthread_cond_init(&CONDICION_RESPUESTA_PLANIFICADOR, NULL);
+
+
 }
 
 t_list* create_list(){
@@ -104,6 +111,7 @@ t_Instancia* creo_instancia(int fd_instancia){
 	//Recibo int:longitud nombre y char*: nombre
 	int32_t longitud = 0;
 	int numbytes = 0;
+
 	if ((numbytes = recv(fd_instancia, &longitud, sizeof(int32_t), 0)) == -1) {
 		printf("No se pudo recibir el tamaño del nombre de la instancia\n");
 		pthread_exit(NULL);
@@ -450,7 +458,7 @@ void loggeo_info(int32_t id_operacion, int32_t id_esi, char* clave_recibida,char
 	free(registro);
 }
 
-void envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
+int32_t envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
 			int32_t id_esi) {
 
 		int32_t len_clave = strlen(clave_recibida) + 1;
@@ -468,15 +476,25 @@ void envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
 		if (send(FD_PLANIFICADOR, bufferEnvio,
 				(sizeof(int32_t) * 3) + sizeof(char) * len_clave, 0) == -1) {
 			printf("No se pudo enviar la info al planificador\n");
-			free(clave_recibida);
-			free(bufferEnvio);
 			exit(1);
 		} else {
 			printf("Se envio la tarea con clave: %s ID de ESI:%d al PLANIFICADOR correctamente\n",clave_recibida, id_esi);
 		}
 
+		pthread_mutex_lock(&MUTEX_RESPUESTA_PLANIFICADOR);
+		int32_t resultado_linea = RESPUESTA_PLANIFICADOR;
+		pthread_mutex_unlock(&MUTEX_RESPUESTA_PLANIFICADOR);
+
+		pthread_mutex_lock(&MUTEX_RESPUESTA_PLANIFICADOR);
+		while(resultado_linea <= 0){
+			pthread_cond_wait(&CONDICION_RESPUESTA_PLANIFICADOR,&MUTEX_RESPUESTA_PLANIFICADOR);
+			resultado_linea = RESPUESTA_PLANIFICADOR;
+		}
+		pthread_mutex_unlock(&MUTEX_RESPUESTA_PLANIFICADOR);
+
 		free(bufferEnvio);
-	}
+		return (resultado_linea);
+}
 
 
 int reciboRespuestaInstancia(int fd_instancia){
