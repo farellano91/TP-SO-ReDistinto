@@ -46,6 +46,7 @@ void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi);
 
 int recibo_resultado_planificador();
 
+void destruyo_semaforos();
 
 void levantar_servidor_coordinador();
 

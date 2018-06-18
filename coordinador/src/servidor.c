@@ -109,9 +109,7 @@ void recibo_lineas(int fd_esi) {
 							break;
 						}
 
-						envio_tarea_planificador(1,clave,id_esi);
-						resultado_linea = recibo_resultado_planificador();
-
+						resultado_linea = envio_tarea_planificador(1,clave,id_esi);
 						if(resultado_linea != OK_BLOQUEADO_PLANIFICADOR){
 							//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta la registro sin instancia
 							if(!exist_clave_registro_instancias(clave)){
@@ -143,8 +141,8 @@ void recibo_lineas(int fd_esi) {
 						if(exist_clave_registro_instancias(clave_valor[0])){
 							printf("Existe la clave en el sistema\n");
 							//ENVIAR MENSAJE AL PLANIFICADOR PARA DESCARTAR ERROR CLAVE NO BLOQUEADA
-							envio_tarea_planificador(2,clave_valor[0],id_esi);
-							int32_t respuesta = recibo_resultado_planificador();//tiene un recv, solo se puede usar una vez
+							int32_t respuesta = envio_tarea_planificador(2,clave_valor[0],id_esi);
+
 							if(respuesta == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
 								resultado_linea = ABORTA_ESI_CLAVE_NO_BLOQUEADA;
 							}else{
@@ -208,8 +206,8 @@ void recibo_lineas(int fd_esi) {
 								resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,get_instancia_by_name(registro_instancia->nombre_instancia));
 								loggeo_respuesta("STORE",id_esi,resultado_instancia);
 
-								envio_tarea_planificador(3,clave,id_esi);
-								resultado_planificador = recibo_resultado_planificador();//aca vendra la respues si es por abor clave no bloquead
+								resultado_planificador = envio_tarea_planificador(3,clave,id_esi);
+
 								loggeo_respuesta("STORE",id_esi,resultado_planificador);
 
 								//Juntamos ambas respuestas para dar una sola al esi
@@ -274,7 +272,7 @@ void envio_resultado_esi(int fd_esi,int resultado_linea,int id_esi){
 }
 
 int recibo_resultado_planificador(){
-	int32_t resultado_planificador = 0;
+	int32_t resultado_planificador = -1;
 	int numbytes = 0;
 	if ((numbytes = recv(FD_PLANIFICADOR, &resultado_planificador, sizeof(int32_t), 0)) <= 0) {
 		if(numbytes < 0){
@@ -282,10 +280,6 @@ int recibo_resultado_planificador(){
 		}else{
 			printf("El planificador se desconecto!\n");
 		}
-		FD_PLANIFICADOR = -1;
-
-		resultado_planificador = FALLA_PLANIFICADOR_DESCONECTADO;
-		pthread_cond_signal(&CONDICION_LIBERO_PLANIFICADOR); //Libero ahora si al planificador
 	}else{
 		printf("Respuesta del planificador recibida\n");
 		if(resultado_planificador == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
@@ -318,8 +312,19 @@ void atender_cliente(void* idSocketCliente) {
 		break;
 	case PLANIFICADOR:
 		FD_PLANIFICADOR = fdCliente;
+		while(1){
+			int32_t respuesta = recibo_resultado_planificador();
+			if(respuesta == -1){
+				//se desconecto el planificador
+				exit(1);//muero!!
+			}else{
+				pthread_mutex_lock(&MUTEX_RESPUESTA_PLANIFICADOR);
+				RESPUESTA_PLANIFICADOR = respuesta;
+				pthread_mutex_unlock(&MUTEX_RESPUESTA_PLANIFICADOR);
+				pthread_cond_signal(&CONDICION_RESPUESTA_PLANIFICADOR);
+			}
+		}
 
-		pthread_cond_wait(&CONDICION_LIBERO_PLANIFICADOR, &MUTEX); //lo detengo aca hasta q no lo usea mas
 		break;
 	case INSTANCIA:
 		//1:Envio datos de entrada
@@ -398,15 +403,14 @@ void intHandler(int dummy) {
 		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
 		free_parametros_config();
 		log_destroy(LOGGER);
-		pthread_mutex_destroy(&MUTEX);
-		pthread_mutex_destroy(&MUTEX_RECV_INSTANCIA);
-		pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
-		pthread_cond_destroy(&CONDICION_RECV_INSTANCIA);
+		destruyo_semaforos();
 		exit(dummy);
-
 	}
 }
+
 void levantar_servidor_coordinador() {
+
+	RESPUESTA_PLANIFICADOR = 0;
 
 	FD_PLANIFICADOR = -1;
 
@@ -495,10 +499,27 @@ void levantar_servidor_coordinador() {
 	free_parametros_config();
 	log_destroy(LOGGER);
 	close(sockfd);
-	pthread_mutex_destroy(&MUTEX);
+	destruyo_semaforos();
+
+}
+
+void destruyo_semaforos(){
 	pthread_mutex_destroy(&MUTEX_RECV_INSTANCIA);
-	pthread_cond_destroy(&CONDICION_LIBERO_PLANIFICADOR);
 	pthread_cond_destroy(&CONDICION_RECV_INSTANCIA);
+
+	pthread_mutex_destroy(&MUTEX_INSTANCIA);
+	pthread_cond_destroy(&CONDICION_INSTANCIA);
+
+	pthread_mutex_destroy(&MUTEX_REGISTRO_INSTANCIA);
+	pthread_cond_destroy(&CONDICION_REGISTRO_INSTANCIA);
+
+	pthread_mutex_destroy(&MUTEX_INDEX);
+
+	pthread_mutex_destroy(&MUTEX_RESPUESTA_STATUS);
+	pthread_cond_destroy(&CONDICION_RESPUESTA_STATUS);
+
+	pthread_mutex_destroy(&MUTEX_RESPUESTA_PLANIFICADOR);
+	pthread_cond_destroy(&CONDICION_RESPUESTA_PLANIFICADOR);
 }
 
 //Que no tenga exit(1)
