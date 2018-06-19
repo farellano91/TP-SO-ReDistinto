@@ -210,6 +210,11 @@ int recibo_sentencia(int fd_coordinador){
 		printf("Recibi para hacer STORE clave: %s\n",clave_recibida);
 
 		respuesta = ejecuto_store(clave_recibida);
+
+		if(respuesta == OK_STORE_INSTANCIA){
+			actualizo_cant_operaciones(clave_recibida);
+		}
+
 		free(clave_recibida);
 	}
 	if(tipo_operacion == COMPACTACION_LOCAL){
@@ -595,7 +600,6 @@ int ejecuto_store(char* clave_recibida){
 		return FALLO_INSTANCIA_CLAVE_SOBREESCRITA;
 	}
 
-	actualizo_cant_operaciones(clave_recibida);
 	printf("El valor a guardar es:%s\n",valor_del_storage);
 
 	//guardo o actualizo el .txt
@@ -928,8 +932,8 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 void actualizo_cant_operaciones(char* clave){
 	//busco todas las entradas que corresponden a esta clave de mi TABLA DE ENTRADAS
 	void _esClave(t_registro_tabla_entrada* registro) {
+		char * key = string_itoa(registro->numero_entrada);
 		if(strcmp(registro->clave, clave) == 0){
-			char * key = string_itoa(registro->numero_entrada);
 			//buscamos si ya esta esa entrada
 			if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
 				//existe la key en el diccionario
@@ -937,17 +941,25 @@ void actualizo_cant_operaciones(char* clave){
 				registro_diccionario->cant_operaciones = 0; //porque fue usada recien
 			}
 
-			//a las otras claves OCUPADAS les tengo q sumar 1 la cant de operaciones
-			void _cambioCantOperaciones(char* key_registro, t_registro_diccionario_entrada* diccionario) {
-				if((strcmp(key_registro,key)!=0) && (diccionario->libre == 0)){
-					diccionario->cant_operaciones++;
-				}
+		}else{
+			//aunmento +1 en operaciones
+			if(dictionary_has_key(DICCIONARITY_ENTRADA,key)){
+				//existe la key en el diccionario
+				t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
+				registro_diccionario->cant_operaciones++; //porque no la use
 			}
-			dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_cambioCantOperaciones);
-			free(key);
 		}
+		free(key);
 	}
 	list_iterate(TABLA_ENTRADA,(void*)_esClave);
+
+
+	/*SOLO PARA CONTROLAR Q TODO FUNCIONE :Imprimo como quedo luego de la operacion de store/set---------------------
+	void _muestroEstadoOperaciones(char* key, t_registro_diccionario_entrada* diccionario) {
+		printf("[La entrada numero: %s esta libre: %d y lleva: %d operaciones]\n",key,diccionario->libre,diccionario->cant_operaciones);
+	}
+	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_muestroEstadoOperaciones);
+	*/
 }
 
 

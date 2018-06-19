@@ -1,12 +1,14 @@
 GET jugador1
-SET jugador1 pepe
 GET jugador2
-SET jugador2 juan
 GET jugador3
-SET jugador3 luciano
 GET jugador4
-SET jugador4 marc
 GET jugador5
-SET jugador5 luci
 GET jugador6
-SET jugador6 repe
+SET jugador1 pepito
+SET jugador2 mari
+SET jugador3 tomi
+SET jugador4 juan
+SET jugador5 rock
+STORE jugador3
+STORE jugador1
+SET jugador6 jje
