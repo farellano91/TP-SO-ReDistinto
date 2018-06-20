@@ -211,8 +211,17 @@ void levantar_servidor_planificador() {
 						int *idSocketCliente = (int *) malloc(sizeof(int32_t) * 2);
 						idSocketCliente[0] = socketCliente;
 						idSocketCliente[1] = contador_id_esi;
-						atender_esi(idSocketCliente);
 
+
+						t_respuesta_para_planificador respuesta = {.id_tipo_respuesta = 0, .id_esi = contador_id_esi, .mensaje = "" , .clave=""};
+						t_Esi* nuevo_esi = creo_esi(respuesta,idSocketCliente[0]);
+						//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
+						pthread_mutex_lock(&READY);
+						agregar_en_Lista(LIST_READY,nuevo_esi);
+						pthread_mutex_unlock(&READY);
+						printf("ESI id: %d se agrego a LISTA de READY\n",respuesta.id_esi);
+
+						atender_esi(idSocketCliente);
 					}
 				} else {
 					//RECIBO DATOS DESDE ESI QUE PUEDEN SER RESPUESTA A UNA OPERACION O MENSAJE SALUDO
@@ -238,13 +247,15 @@ void levantar_servidor_planificador() {
 
 					}else{
 						if(respuesta.id_tipo_respuesta == 1){
-							//Respuesta al primer saludo (todo nuevo)
-							t_Esi* nuevo_esi = creo_esi(respuesta,i);
-							//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
-							pthread_mutex_lock(&READY);
-							agregar_en_Lista(LIST_READY,nuevo_esi);
-							pthread_mutex_unlock(&READY);
-							printf("ESI id: %d mando saludo: %s y se agrego a LISTA de READY\n",respuesta.id_esi,respuesta.mensaje);
+//							//Respuesta al primer saludo (todo nuevo)
+//							t_Esi* nuevo_esi = creo_esi(respuesta,i);
+//							//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
+//							pthread_mutex_lock(&READY);
+//							agregar_en_Lista(LIST_READY,nuevo_esi);
+//							pthread_mutex_unlock(&READY);
+//							printf("ESI id: %d mando saludo: %s y se agrego a LISTA de READY\n",respuesta.id_esi,respuesta.mensaje);
+							printf("ESI id: %d mando saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
+
 							if(aplico_algoritmo_primer_ingreso()){
 								continuar_comunicacion();
 							}
