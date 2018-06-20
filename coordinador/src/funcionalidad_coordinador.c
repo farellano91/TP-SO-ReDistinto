@@ -372,7 +372,8 @@ int envio_tarea_instancia(int32_t id_operacion, t_Instancia * instancia,char** c
 void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	char* registro = malloc(sizeof(char) * 500);
 	strcpy(registro, "ESI ");
-	strcat(registro, string_itoa(id_esi));
+	char* idEsi = string_itoa(id_esi);
+	strcat(registro, idEsi);
 	strcat(registro, " ");
 	strcat(registro, operacion);
 	strcat(registro, "  => ");
@@ -427,13 +428,15 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 		break;
 	}
 	log_info(LOGGER, registro);
+	free(idEsi);
 	free(registro);
 }
 
 void loggeo_info(int32_t id_operacion, int32_t id_esi, char* clave_recibida,char* valor_recibida) {
 	char* registro = malloc(sizeof(char) * 500);
 	strcpy(registro, "ESI ");
-	strcat(registro, string_itoa(id_esi));
+	char* idEsi = string_itoa(id_esi);
+	strcat(registro, idEsi);
 	switch (id_operacion) {
 	case GET:
 		strcat(registro, " GET ");
@@ -455,6 +458,7 @@ void loggeo_info(int32_t id_operacion, int32_t id_esi, char* clave_recibida,char
 		break;
 	}
 	log_info(LOGGER, registro);
+	free(idEsi);
 	free(registro);
 }
 
