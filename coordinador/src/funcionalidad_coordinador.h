@@ -182,6 +182,7 @@ enum t_respuesta_de_instancia {
 	COMPACTACION_LOCAL = 20,
 	FALLO_CASO_BORDE = 15,
 	OK_STATUS = 16,
+	FALLO_ENTRADA_MAS_GRANDE = 21, //caso donde hice set y el valor ocupaba mas de lo q ocupaba antes
 };
 
 enum t_respuesta_de_planificador {

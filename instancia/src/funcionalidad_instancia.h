@@ -73,6 +73,7 @@ enum t_respuesta_al_coordinador {
 	COMPACTACION_GLOBAL = 13,
 	FALLO_CASO_BORDE = 15,
 	OK_STATUS = 16,
+	FALLO_ENTRADA_MAS_GRANDE = 21,
 };
 
 enum t_operacion {
@@ -123,8 +124,6 @@ void envio_datos(int sockfd);
 
 bool son_contiguos(int entradas_necesarias, int* entrada_inicial);
 
-int espacio_diponible();
-
 void order_tabla_by(t_list* tabla, void * funcion);
 
 bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro);
@@ -151,6 +150,10 @@ bool clave_existente(char * clave_recibida);
 void libero_entrada(int numeroEntrada);
 
 void libero_entradas_by_clave(char * clave_recibida);
+
+int get_cant_entradas_by_clave(char* clave);
+
+int get_cant_entradas_by_valor(char* valor);
 
 int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador);
 

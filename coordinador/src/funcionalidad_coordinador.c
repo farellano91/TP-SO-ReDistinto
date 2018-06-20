@@ -423,8 +423,11 @@ void loggeo_respuesta(char* operacion, int32_t id_esi,int32_t resultado_linea){
 	case ABORTA_ESI_DESCONECTADO:
 			strcat(registro, "Error de comunicacion, ESI desconectado");
 			break;
+	case FALLO_ENTRADA_MAS_GRANDE:
+			strcat(registro, "OCURRIO UN ERROR CON LA INSTANCIA, EL VALOR DE LA CLAVE OCUPA MAS ENTRADAS DE LAS QUE TENIA ANTES");
+			break;
 	default:
-		strcat(registro, " - ");
+		strcat(registro, "606 - ERROR INTERNO ");
 		break;
 	}
 	log_info(LOGGER, registro);
