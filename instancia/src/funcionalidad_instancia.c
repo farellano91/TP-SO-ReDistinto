@@ -4,6 +4,9 @@
 void intHandler(int dummy) {
 	if (dummy != 0) {
 		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		free_algo_punt_nom();
+		free_estruct_admin();
+		free_parametros_config();
 		exit(dummy);
 
 	}
@@ -735,9 +738,10 @@ void inicializo_estructuras(){
 	for(i= 0;i<CANT_ENTRADA;i++){
 		STORAGE[i] = malloc(sizeof(char) * TAMANIO_ENTRADA); //es 100, osea 99 caractes posta
 		strcpy(STORAGE[i],"");
-
+        char* key = string_itoa(i);
 		t_registro_diccionario_entrada* registro = get_new_registro_dic_entrada(1,0,TAMANIO_ENTRADA);
-		dictionary_put(DICCIONARITY_ENTRADA,string_itoa(i),registro);
+		dictionary_put(DICCIONARITY_ENTRADA,key,registro);
+		free(key);
 	}
 
 	//inicializo tabla entradas
