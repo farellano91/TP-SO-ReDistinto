@@ -476,10 +476,12 @@ int com_status (char *arg){
 
 	if( FD_COORDINADOR_STATUS == -1 ){
 		printf("No tengo el FD del coordinador status\n");
+		free(bufferEnvio);
 		return (0);
 	}
 	if (send(FD_COORDINADOR_STATUS, bufferEnvio,sizeof(int32_t) + longitud_clave, 0) == -1) {
 		printf("No se pudo enviar pedido status\n");
+		free(bufferEnvio);
 		return (0);
 	}
 	free(bufferEnvio);

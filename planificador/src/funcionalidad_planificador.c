@@ -179,6 +179,7 @@ if(bloqueado_por_consola_flag()){
 	pthread_mutex_lock(&BLOCKED);
 	list_add(LIST_BLOCKED,esi_bloqueado);
 	pthread_mutex_unlock(&BLOCKED);
+	free(clave_block);
 	free(CLAVE_BLOQUEO_CONSOLA);
 	desbloquea_flag(); //limpio el flag
 	pthread_mutex_lock(&EXECUTE);
