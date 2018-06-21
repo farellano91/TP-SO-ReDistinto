@@ -470,6 +470,11 @@ int32_t envio_tarea_planificador(int32_t id_operacion, char* clave_recibida,
 
 		int32_t len_clave = strlen(clave_recibida) + 1;
 
+		//limpio respuestas viejas
+		pthread_mutex_lock(&MUTEX_RESPUESTA_PLANIFICADOR);
+		RESPUESTA_PLANIFICADOR = 0;
+		pthread_mutex_unlock(&MUTEX_RESPUESTA_PLANIFICADOR);
+
 		//envio: ID_OPERACION,ID_ESI,LENG_CLAVE,CLAVE
 		void* bufferEnvio = malloc(
 				sizeof(int32_t) * 3 + sizeof(char) * len_clave);
