@@ -193,6 +193,7 @@ enum t_respuesta_de_planificador {
 	ABORTA_ESI_DESCONECTADO = 17,
 };
 
+//respuestas internas q sirven para q el coordinador loggee bien sus cosas
 enum t_respuesta_de_coordinador {
 	ABORTA_ESI_CLAVE_NO_IDENTIFICADA = 9,
 	FALLA_ELEGIR_INSTANCIA = 10,
@@ -202,14 +203,15 @@ enum t_respuesta_de_coordinador {
 };
 enum t_respuesta_al_esi {
 	ABORTA_ESI = 1,
-	OK_ESI = 2, //los casos de error que no deriven el aborto segun el enunciado, los filtramos por aca, pero lo registramos en el log
+	OK_ESI = 2,
 	BLOQUEADO_ESI = 3,
+	ABORTA_INNACCESIBLE = 4,
 
 };
 
 enum t_operacion {
 	GET = 1, //GET CLAVE
-	SET = 2, //SET CLAVE VALOR
+	SET = 2, //
 	STORE = 3, //STORE CLAVE
 	STATUS = 5, //Para pedir el VALOR de una clave
 };

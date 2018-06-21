@@ -102,14 +102,14 @@ void recibo_lineas(int fd_esi) {
 				switch (operacion) {
 					case GET:
 						clave = get_clave_recibida(fd_esi);
-						loggeo_info(1, id_esi, clave, "");
+						loggeo_info(GET, id_esi, clave, "");
 						if(excede_tamanio(clave)){
 							loggeo_respuesta("GET",id_esi,ABORTA_ESI_ERROR_TAMANIIO_CLAVE);
 							free(clave);
 							break;
 						}
 
-						resultado_linea = envio_tarea_planificador(1,clave,id_esi);
+						resultado_linea = envio_tarea_planificador(GET,clave,id_esi);
 						if(resultado_linea != OK_BLOQUEADO_PLANIFICADOR){
 							//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS, si no esta la registro sin instancia
 							if(!exist_clave_registro_instancias(clave)){
@@ -127,7 +127,7 @@ void recibo_lineas(int fd_esi) {
 						break;
 					case SET:
 						clave_valor = get_clave_valor(fd_esi); //noc porque si metemos get_clave_valor dentro de aplicoA.. no recibe los valores posta
-						loggeo_info(2, id_esi, clave_valor[0],clave_valor[1]);
+						loggeo_info(SET, id_esi, clave_valor[0],clave_valor[1]);
 
 						if(excede_tamanio(clave_valor[0])){
 							loggeo_respuesta("SET",id_esi,ABORTA_ESI_ERROR_TAMANIIO_CLAVE);
@@ -140,8 +140,8 @@ void recibo_lineas(int fd_esi) {
 						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
 						if(exist_clave_registro_instancias(clave_valor[0])){
 							printf("Existe la clave en el sistema\n");
-							//ENVIAR MENSAJE AL PLANIFICADOR PARA DESCARTAR ERROR CLAVE NO BLOQUEADA
-							int32_t respuesta = envio_tarea_planificador(2,clave_valor[0],id_esi);
+							//ENVIAR MENSAJE AL PLANIFICADOR PARA DESCARTAR ERROR CLAVE NO BLOQUEADA SOLO ESO, NO HACE NADA UN SET DESDE EL COOR AL PLANI
+							int32_t respuesta = envio_tarea_planificador(SET,clave_valor[0],id_esi);
 
 							if(respuesta == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
 								resultado_linea = ABORTA_ESI_CLAVE_NO_BLOQUEADA;
@@ -158,11 +158,11 @@ void recibo_lineas(int fd_esi) {
 										//error al tratar de elegir una instancia
 										resultado_linea = FALLA_ELEGIR_INSTANCIA;
 									}else{
-										resultado_linea = envio_tarea_instancia(2,instancia,clave_valor);
+										resultado_linea = envio_tarea_instancia(SET,instancia,clave_valor);
 									}
 								}else{
 									//Existe una instancia con esa clave asignada
-									resultado_linea = envio_tarea_instancia(2,get_instancia_by_name(registro_instancia->nombre_instancia),clave_valor);
+									resultado_linea = envio_tarea_instancia(SET,get_instancia_by_name(registro_instancia->nombre_instancia),clave_valor);
 								}
 							}
 						}else{
@@ -176,7 +176,7 @@ void recibo_lineas(int fd_esi) {
 						break;
 					case STORE:
 						clave = get_clave_recibida(fd_esi);
-						loggeo_info(3, id_esi, clave,"");
+						loggeo_info(STORE, id_esi, clave,"");
 
 						if(excede_tamanio(clave)){
 							loggeo_respuesta("STORE",id_esi,ABORTA_ESI_ERROR_TAMANIIO_CLAVE);
@@ -187,43 +187,56 @@ void recibo_lineas(int fd_esi) {
 						//ANALIZA EXISTENCIA DE CLAVE EN LIST_REGISTRO_INSTANCIAS
 						if(exist_clave_registro_instancias(clave)){
 							printf("Existe la clave en el sistema\n");
-							pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
-							bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
-							t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
-							pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
-							if(strcmp(registro_instancia->nombre_instancia,"")==0){
-								//No hay ninguna instancia con esta clave
-								printf("No existe ninguna instancia que tenga esta clave\n");
-								resultado_linea = FALLA_SIN_INSTANCIA_CLAVE_STORE;
+
+							//ENVIAR MENSAJE AL PLANIFICADOR PARA DESCARTAR ERROR CLAVE NO BLOQUEADA SOLO ESO, NO HACE NADA UN SET DESDE EL COOR AL PLANI
+							int32_t respuesta = envio_tarea_planificador(SET,clave,id_esi);
+							if(respuesta == ABORTA_ESI_CLAVE_NO_BLOQUEADA){
+								resultado_linea = ABORTA_ESI_CLAVE_NO_BLOQUEADA;
 								loggeo_respuesta("STORE",id_esi,resultado_linea);
-							}else{
-								//Existe una instancia con esa clave asignada
-								printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
+							}
+							//--------------------------------------------------------
+
+							else{
+								printf("Planificador informa clave si bloqueada, opero sin problema\n");
 								pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
 								bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
 								t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
 								pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
-								resultado_instancia = envio_recibo_tarea_store_instancia(3,clave,get_instancia_by_name(registro_instancia->nombre_instancia));
-								loggeo_respuesta("STORE",id_esi,resultado_instancia);
+								if(strcmp(registro_instancia->nombre_instancia,"")==0){
+									//No hay ninguna instancia con esta clave
+									printf("No existe ninguna instancia que tenga esta clave\n");
+									resultado_linea = FALLA_SIN_INSTANCIA_CLAVE_STORE;
+									loggeo_respuesta("STORE",id_esi,resultado_linea);
+								}else{
+									//Existe una instancia con esa clave asignada
+									printf("Existe una instancia en instancia-clave que tiene esa clave, la uso\n");
+									pthread_mutex_lock(&MUTEX_REGISTRO_INSTANCIA);
+									bool _existRegistrInstancia(t_registro_instancia* reg_instancia) { return strcmp(reg_instancia->clave,clave)== 0;}
+									t_registro_instancia * registro_instancia = list_find(LIST_REGISTRO_INSTANCIAS, (void*)_existRegistrInstancia);
+									pthread_mutex_unlock(&MUTEX_REGISTRO_INSTANCIA);
+									resultado_instancia = envio_recibo_tarea_store_instancia(STORE,clave,get_instancia_by_name(registro_instancia->nombre_instancia));
+									loggeo_respuesta("STORE",id_esi,resultado_instancia);
 
-								resultado_planificador = envio_tarea_planificador(3,clave,id_esi);
+									//si la instancia lo pudo hacer, recien le pido al planificador q lo haga
+									if(resultado_instancia == OK_STORE_INSTANCIA){
+										resultado_planificador = envio_tarea_planificador(STORE,clave,id_esi);
+										loggeo_respuesta("STORE",id_esi,resultado_planificador);
+									}
 
-								loggeo_respuesta("STORE",id_esi,resultado_planificador);
-
-								//Juntamos ambas respuestas para dar una sola al esi
-								if(resultado_planificador == OK_PLANIFICADOR
-										&& (resultado_instancia == OK_SET_INSTANCIA || resultado_instancia == OK_STORE_INSTANCIA)){
-									resultado_linea = OK_PLANIFICADOR;
-								}else{resultado_linea = FALLO_PLANIFICADOR;}
+									//Juntamos ambas respuestas para dar una sola al esi
+									if(resultado_planificador == OK_PLANIFICADOR
+											&& (resultado_instancia == OK_SET_INSTANCIA || resultado_instancia == OK_STORE_INSTANCIA)){
+										resultado_linea = OK_PLANIFICADOR;
+									}else if(resultado_instancia == ABORTA_ESI_CLAVE_INNACCESIBLE){
+										resultado_linea = ABORTA_ESI_CLAVE_INNACCESIBLE;
+									}else{resultado_linea = FALLO_PLANIFICADOR;}
+								}
 							}
-
 						}else{
 							printf("No existe la clave en el sistema\n");
 							resultado_linea = ABORTA_ESI_CLAVE_NO_IDENTIFICADA;
 							loggeo_respuesta("STORE",id_esi,resultado_linea);
-
 						}
-
 						free(clave);
 						break;
 

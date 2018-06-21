@@ -773,6 +773,10 @@ int aplicar_filtro_respuestas(int resultado_linea){
 	if(resultado_linea == OK_BLOQUEADO_PLANIFICADOR){
 		return BLOQUEADO_ESI;
 	}
+
+	if(resultado_linea == ABORTA_ESI_CLAVE_INNACCESIBLE){
+		return ABORTA_INNACCESIBLE; //esto lo atendemos como un caso aparte para el control de NO desbloquear al primer esi
+	}
 	//ABORTA EN LOS CASOS PLANTEADOS Y LOS QUE NOSOTROS AGREGAMOS
 	return ABORTA_ESI;
 

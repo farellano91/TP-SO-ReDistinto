@@ -202,7 +202,7 @@ void recibirInfoCoordinador() {
 				break;
 
 			case SET://con la clave me basta
-				printf("Coordinador envio SET con clave: %s\n",clave);
+				printf("Coordinador envio pedido para controlar si la clave: %s esta bloqueada por el esi id: %d\n",clave,id_esi);
 				if(!esta_conectado(id_esi)){
 					send_mensaje(fdCoordinador,17);
 					break;
@@ -220,6 +220,7 @@ void recibirInfoCoordinador() {
 			case STORE:
 				printf("Coordinador envio STORE clave: %s del ESI ID: %d\n",clave,id_esi);
 
+				//pregunto si se desconecto, pork al desconectarse ya libero todo antes
 				if(!esta_conectado(id_esi)){
 					send_mensaje(fdCoordinador,17);
 					break;

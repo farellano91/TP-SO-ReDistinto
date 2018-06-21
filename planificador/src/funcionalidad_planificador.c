@@ -442,6 +442,27 @@ void remove_esi_by_fd_finished(int32_t fd){
 
 }
 
+//libera solo el recurso mas no al esi bloqueado si hubiese
+void free_only_recurso(int32_t fd){
+
+	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
+	int32_t cant_esis_borrar = 0;
+
+	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
+		cant_esis_borrar = list_count_satisfying(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
+	}
+	int32_t contador = 0;
+	while (contador < cant_esis_borrar){
+
+		t_esiBloqueador * eb = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
+		printf("Libero clave:%s de ESI ID:%d\n", eb->clave,eb->esi->id);
+		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
+		contador++;
+	}
+
+}
+
+
 //libero tooodos los get clave que tenia tomado el esi de fd
 void free_recurso(int32_t fd){
 

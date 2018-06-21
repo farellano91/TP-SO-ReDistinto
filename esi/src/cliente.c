@@ -40,7 +40,7 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 
 	//Envio saludo
 	if(strcmp(nombre,"PLANIFICADOR") == 0){
-		t_respuesta_para_planificador respuesta_planificador = {.id_tipo_respuesta = 1, .id_esi = ID_ESI_OBTENIDO,
+		t_respuesta_para_planificador respuesta_planificador = {.id_tipo_respuesta = NUEVO_PLANIFICADOR, .id_esi = ID_ESI_OBTENIDO,
 				.mensaje = "" };
 
 		strcpy(respuesta_planificador.mensaje, "Hola, soy el ESI");

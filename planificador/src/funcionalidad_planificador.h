@@ -95,7 +95,12 @@ typedef struct {
 
 } t_Esi;
 
-
+enum t_respuesta_de_esi {
+	ABORTA = 5, //esto me mandaria a terminado
+	OK = 6,
+	ABORTA_INNACCESIBLE = 7,
+	NUEVO = 8,
+};
 
 typedef struct {
 	t_Esi* esi;
@@ -180,6 +185,8 @@ void cambio_de_lista(t_list* list_desde,t_list* list_hasta, int32_t id_esi);
 void move_esi_from_ready_to_finished(int id);
 
 void cambio_ejecutando_a_finalizado(int32_t id_esi);
+
+void free_only_recurso(int32_t fd);
 
 void free_recurso(int32_t i);
 

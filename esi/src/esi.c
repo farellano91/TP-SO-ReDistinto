@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
 					} else {
 						printf("Recibi respuesta del coordinador\n");
 						t_respuesta_para_planificador respuesta_planificador = {
-								.id_tipo_respuesta = 2, .id_esi =
+								.id_tipo_respuesta = 0, .id_esi =
 										ID_ESI_OBTENIDO, .mensaje = "", .clave =
 										"" };
 						switch (resultado_coordinador) {
@@ -224,12 +224,13 @@ int main(int argc, char** argv) {
 							strcpy(respuesta_planificador.mensaje, "ABORTO!");
 							respuesta_planificador.mensaje[strlen(
 									respuesta_planificador.mensaje)] = '\0';
-							respuesta_planificador.id_tipo_respuesta = 3; //para q el planificador me finalize;
+							respuesta_planificador.id_tipo_respuesta = ABORTA_PLANIFICADOR; //para q el planificador me finalize;
 							break;
 						case OK: //recibi respuesta q coordinador lo hizo bien
 							strcpy(respuesta_planificador.mensaje, "OK");
 							respuesta_planificador.mensaje[strlen(
 									respuesta_planificador.mensaje)] = '\0';
+							respuesta_planificador.id_tipo_respuesta = OK_PLANIFICADOR;
 							break;
 						case OK_BLOQUEADO: //recibi respuesta q coordinador trato pero esta bloqueado
 							strcpy(respuesta_planificador.mensaje,
@@ -242,6 +243,13 @@ int main(int argc, char** argv) {
 									parsed.argumentos.GET.clave);
 							respuesta_planificador.clave[strlen(
 									respuesta_planificador.clave)] = '\0';
+							respuesta_planificador.id_tipo_respuesta = OK_PLANIFICADOR;
+							break;
+						case ABORTA_INNACCESIBLE: //me van a abortar pero sin liberar ESIs bloqueados ;)
+							strcpy(respuesta_planificador.mensaje, "ABORTO SIN LIBERAR ESI BLOQUEADOS ;)!");
+							respuesta_planificador.mensaje[strlen(
+									respuesta_planificador.mensaje)] = '\0';
+							respuesta_planificador.id_tipo_respuesta = ABORTA_INNACCESIBLE_PLANIFICADOR; //para q el planificador me finalize PERO no libere Esis;
 							break;
 						}
 
@@ -262,7 +270,7 @@ int main(int argc, char** argv) {
 					printf("Recibi numero de linea: %d para leer\n",numero_linea_leer);
 					//Send resultado al planificador q ya no tengo mas lineas para leer
 					t_respuesta_para_planificador respuesta_planificador = {
-							.id_tipo_respuesta = 3, .id_esi = ID_ESI_OBTENIDO,
+							.id_tipo_respuesta = ABORTA_PLANIFICADOR, .id_esi = ID_ESI_OBTENIDO,
 							.mensaje = "" };
 					strcpy(respuesta_planificador.mensaje,
 							"TERMINE DE LEER TODO CAPO");
