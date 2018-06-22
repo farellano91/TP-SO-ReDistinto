@@ -199,6 +199,14 @@ int main(int argc, char** argv) {
 							exit(EXIT_FAILURE);
 						}
 
+					}else{
+						printf("Aborto por clave muy larga detectado por el PARSE\n");
+						close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
+						close(fd_coordinador);
+						if (line)
+							free(line);
+						fclose(fp);
+						exit(EXIT_FAILURE);
 					}
 
 					//recv resultado de la sentencia q le mande al coordinador!!!!
