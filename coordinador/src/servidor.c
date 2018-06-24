@@ -227,8 +227,6 @@ void recibo_lineas(int fd_esi) {
 									if(resultado_planificador == OK_PLANIFICADOR
 											&& (resultado_instancia == OK_SET_INSTANCIA || resultado_instancia == OK_STORE_INSTANCIA)){
 										resultado_linea = OK_PLANIFICADOR;
-									}else if(resultado_instancia == ABORTA_ESI_CLAVE_INNACCESIBLE){
-										resultado_linea = ABORTA_ESI_CLAVE_INNACCESIBLE;
 									}else{resultado_linea = FALLO_PLANIFICADOR;}
 								}
 							}

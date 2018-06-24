@@ -205,7 +205,6 @@ enum t_respuesta_al_esi {
 	ABORTA_ESI = 1,
 	OK_ESI = 2,
 	BLOQUEADO_ESI = 3,
-	ABORTA_INNACCESIBLE = 4,
 
 };
 

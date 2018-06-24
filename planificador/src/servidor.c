@@ -236,10 +236,10 @@ void levantar_servidor_planificador() {
 						} else {
 							perror("ERROR: al recibir respuesta del ESI");
 						}
+						//ACA ENTRA SI SE MURIO POR DESCONEXION (CTRL + C) O POR ERROR DE CLAVE MUY LARGA
 						close(i); // si ya no conversare mas con el cliente, lo cierro
 						FD_CLR(i, &master); // eliminar del conjunto maestro
-						free_recurso(i); //liberamos los recursos que tenia ya que murio el esi
-						//remove_esi_by_fd(i); //TODO:Lo borramos de todos lados, no lo usaremos mas!(ver si lo tenemos que dejar al menos en terminado o no)
+						//free_recurso(i); //no liberamos nada por morir por aborto/desconexion
 						remove_esi_by_fd_finished(i); //lo borramos de donde este y lo mandamos a TERMINADO
 						if(aplico_algoritmo_ultimo()){
 							continuar_comunicacion();
@@ -247,13 +247,6 @@ void levantar_servidor_planificador() {
 
 					}else{
 						if(respuesta.id_tipo_respuesta == NUEVO){
-//							//Respuesta al primer saludo (todo nuevo)
-//							t_Esi* nuevo_esi = creo_esi(respuesta,i);
-//							//Veri si es asi o lleva ** para apuntar el nodo de la lista que acabo de agregar.
-//							pthread_mutex_lock(&READY);
-//							agregar_en_Lista(LIST_READY,nuevo_esi);
-//							pthread_mutex_unlock(&READY);
-//							printf("ESI id: %d mando saludo: %s y se agrego a LISTA de READY\n",respuesta.id_esi,respuesta.mensaje);
 							printf("ESI id: %d mando saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
 
 							if(aplico_algoritmo_primer_ingreso()){
@@ -277,9 +270,20 @@ void levantar_servidor_planificador() {
 
 						}
 
-						//TODO:posiblemente si un ESI es ABORTADO pueda entrar por aca, analizar el caso
 						if(respuesta.id_tipo_respuesta == ABORTA){
-							//Respuesta de que termino de leer las lineas
+							//Respuesta de que algo salio mal y me abortan
+							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
+							close(i); // si ya no conversare mas con el cliente, lo cierro
+							FD_CLR(i, &master); // eliminar del conjunto maestro
+							cambio_ejecutando_a_finalizado(respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
+							//free_only_recurso(i); segun los issue ya no hace falta
+							if(aplico_algoritmo_ultimo()){
+								continuar_comunicacion();
+							}
+
+						}
+						if(respuesta.id_tipo_respuesta == FINALIZO_TODO_PLANIFICADOR){
+							//Respuesta de que termino de leer todas las lineas
 							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
@@ -288,19 +292,6 @@ void levantar_servidor_planificador() {
 							if(aplico_algoritmo_ultimo()){
 								continuar_comunicacion();
 							}
-
-						}
-						if(respuesta.id_tipo_respuesta == ABORTA_INNACCESIBLE){
-							//Respuesta de que termino de leer las lineas
-							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
-							close(i); // si ya no conversare mas con el cliente, lo cierro
-							FD_CLR(i, &master); // eliminar del conjunto maestro
-							cambio_ejecutando_a_finalizado(respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
-							free_only_recurso(i);
-							if(aplico_algoritmo_ultimo()){
-								continuar_comunicacion();
-							}
-
 						}
 					}
 

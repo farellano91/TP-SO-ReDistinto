@@ -253,12 +253,7 @@ int main(int argc, char** argv) {
 									respuesta_planificador.clave)] = '\0';
 							respuesta_planificador.id_tipo_respuesta = OK_PLANIFICADOR;
 							break;
-						case ABORTA_INNACCESIBLE: //me van a abortar pero sin liberar ESIs bloqueados ;)
-							strcpy(respuesta_planificador.mensaje, "ABORTO SIN LIBERAR ESI BLOQUEADOS ;)!");
-							respuesta_planificador.mensaje[strlen(
-									respuesta_planificador.mensaje)] = '\0';
-							respuesta_planificador.id_tipo_respuesta = ABORTA_INNACCESIBLE_PLANIFICADOR; //para q el planificador me finalize PERO no libere Esis;
-							break;
+
 						}
 
 						//send resultado al planificador
@@ -278,7 +273,7 @@ int main(int argc, char** argv) {
 					printf("Recibi numero de linea: %d para leer\n",numero_linea_leer);
 					//Send resultado al planificador q ya no tengo mas lineas para leer
 					t_respuesta_para_planificador respuesta_planificador = {
-							.id_tipo_respuesta = ABORTA_PLANIFICADOR, .id_esi = ID_ESI_OBTENIDO,
+							.id_tipo_respuesta = FINALIZO_TODO_PLANIFICADOR, .id_esi = ID_ESI_OBTENIDO,
 							.mensaje = "" };
 					strcpy(respuesta_planificador.mensaje,
 							"TERMINE DE LEER TODO CAPO");

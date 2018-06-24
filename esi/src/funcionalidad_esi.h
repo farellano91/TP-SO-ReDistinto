@@ -34,14 +34,13 @@ enum t_respuesta_de_coordinador {
 	ABORTA = 1, //esto me mandaria a terminado
 	OK = 2,
 	OK_BLOQUEADO = 3,
-	ABORTA_INNACCESIBLE = 4,
 
 };
 
 enum t_respuesta_para_planificador {
-	ABORTA_PLANIFICADOR = 5, //esto me mandaria a terminado
+	ABORTA_PLANIFICADOR = 5, //esto no linera todo lo tomado del esi
 	OK_PLANIFICADOR = 6,
-	ABORTA_INNACCESIBLE_PLANIFICADOR = 7,
+	FINALIZO_TODO_PLANIFICADOR = 7, //esto libera todo lo tomado del esi
 	NUEVO_PLANIFICADOR = 8,
 };
 

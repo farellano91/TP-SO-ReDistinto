@@ -98,7 +98,7 @@ typedef struct {
 enum t_respuesta_de_esi {
 	ABORTA = 5, //esto me mandaria a terminado
 	OK = 6,
-	ABORTA_INNACCESIBLE = 7,
+	FINALIZO_TODO_PLANIFICADOR = 7,
 	NUEVO = 8,
 };
 
