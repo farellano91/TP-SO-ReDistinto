@@ -13,7 +13,7 @@ void intHandler(int dummy) {
 
 void get_parametros_config(char* path){
 //	t_config* config = config_create("config.cfg");
-	t_config* config = config_create("config.cfg");
+	t_config* config = config_create(path);
 	if (!config) {
 		printf("No encuentro el archivo config\n");
 		config_destroy(config);
@@ -471,7 +471,9 @@ void compactar_ahora(){
 			}
 		}
 	}
+
 	printf("Fin de la compactacion...\n");
+	print_storage();
 }
 
 //busca la entrada superior que este vacia
@@ -496,7 +498,7 @@ void cambio_entrada(int entrada_desde,int entrada_hasta){
 	}
 	t_registro_tabla_entrada* tabla = list_find(TABLA_ENTRADA,(void*)_esEntrada);
 	char * valor = get_valor_by_clave(tabla->clave);
-	strcpy(STORAGE[tabla->numero_entrada],valor);
+	strcpy(STORAGE[entrada_hasta],valor);
 	cargo_actualizo_tabla(tabla->clave,entrada_hasta,tabla->tamanio_valor);
 	cargo_actualizo_diccionario(entrada_hasta,tabla->tamanio_valor);
 
@@ -581,13 +583,17 @@ bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,
 	order_tabla_by(TABLA_ENTRADA,(void*) by_numero_entrada);
 
 
+	print_storage();
+	return true;
+}
+
+void print_storage(){
+	int i;
 	//imprimo el storage
 	for(i = 0; i < CANT_ENTRADA;i++){
 		printf("[STORAGE[%d] = %s]\n",i,STORAGE[i]);
 	}
-	return true;
 }
-
 bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro) {
 	return ((registro_menor->numero_entrada) <= (registro->numero_entrada)); //agrego el = pork pasaba q para el mismo valor lo cambiaba de lugar cosa q estaba de mas
 }
@@ -982,14 +988,17 @@ void actualizo_cant_operaciones(char* clave){
 	list_iterate(TABLA_ENTRADA,(void*)_esClave);
 
 
-	/*SOLO PARA CONTROLAR Q TODO FUNCIONE :Imprimo como quedo luego de la operacion de store/set---------------------
+	//SOLO PARA CONTROLAR Q TODO FUNCIONE :Imprimo como quedo luego de la operacion de store/set---------------------
+	//print_diccionario();
+
+}
+
+void print_diccionario(){
 	void _muestroEstadoOperaciones(char* key, t_registro_diccionario_entrada* diccionario) {
 		printf("[La entrada numero: %s esta libre: %d y lleva: %d operaciones]\n",key,diccionario->libre,diccionario->cant_operaciones);
 	}
 	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_muestroEstadoOperaciones);
-	*/
 }
-
 
 t_dictionary* create_diccionarity(){
 	t_dictionary * diccionarity = dictionary_create();

@@ -87,6 +87,8 @@ enum t_operacion_internas {
 	COMPACTACION_LOCAL = 20,
 };
 
+void print_diccionario();
+
 void actualizo_cant_operaciones(char* clave);
 
 size_t getFilesize(const char* filename);
@@ -127,6 +129,8 @@ bool son_contiguos(int entradas_necesarias, int* entrada_inicial);
 void order_tabla_by(t_list* tabla, void * funcion);
 
 bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro);
+
+void print_storage();
 
 bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,int entradas_necesarias);
 
