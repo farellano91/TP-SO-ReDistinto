@@ -395,8 +395,9 @@ void remove_esi_by_fd(int32_t fd){
 	pthread_mutex_unlock(&BLOCKED);
 
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
-
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 
 }
 
@@ -432,12 +433,13 @@ void remove_esi_by_fd_finished(int32_t fd){
 	pthread_mutex_unlock(&BLOCKED);
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
 
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
 		t_esiBloqueador * esiBloqueador = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 		list_add(LIST_FINISHED,esiBloqueador->esi);
 		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador);
 	}
-
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 
 
 }
@@ -447,7 +449,7 @@ void free_only_recurso(int32_t fd){
 
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
 	int32_t cant_esis_borrar = 0;
-
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
 		cant_esis_borrar = list_count_satisfying(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 	}
@@ -459,7 +461,7 @@ void free_only_recurso(int32_t fd){
 		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
 		contador++;
 	}
-
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 }
 
 
@@ -468,7 +470,7 @@ void free_recurso(int32_t fd){
 
 	bool _esElfdEsiBloqueador(t_esiBloqueador* esi_bloqueador) { return esi_bloqueador->esi->fd == fd;}
 	int32_t cant_esis_borrar = 0;
-
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
 		cant_esis_borrar = list_count_satisfying(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
 	}
@@ -482,7 +484,7 @@ void free_recurso(int32_t fd){
 		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
 		contador++;
 	}
-
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 }
 
 //paso de bloqueado a listo (EL PRIMER) los esis que pedian esa clave
@@ -612,6 +614,7 @@ void inicializo_semaforos(){
 	pthread_mutex_init(&READY,NULL);
 	pthread_mutex_init(&EXECUTE,NULL);
 	pthread_mutex_init(&SOCKETS,NULL);
+	pthread_mutex_init(&ESISBLOQUEADOR,NULL);
 	pthread_cond_init(&CONDICION_PAUSA_PLANIFICADOR, NULL);
 }
 
@@ -635,7 +638,10 @@ bool quiereAlgoQueElOtroTiene(t_esiBloqueador* esiBloqueador, t_nodoBloqueado* n
 	}
 
 	t_nodoBloqueado* un_esi = list_find(LIST_BLOCKED, (void*) _es_el_esi1);;
+
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	t_esiBloqueador* otro_esi = list_find(LIST_ESI_BLOQUEADOR, (void*) _es_el_esi2);
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 
 	return string_equals_ignore_case(un_esi->clave, otro_esi->clave);
 

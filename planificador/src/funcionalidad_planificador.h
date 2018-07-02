@@ -31,6 +31,7 @@ pthread_mutex_t EXECUTE;
 pthread_mutex_t SOCKETS;
 pthread_cond_t CONDICION_PAUSA_PLANIFICADOR;
 
+pthread_mutex_t ESISBLOQUEADOR;
 
 int32_t FD_COORDINADOR_STATUS;
 

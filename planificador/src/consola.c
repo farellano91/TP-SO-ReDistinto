@@ -189,6 +189,7 @@ int com_bloquear (char *arg){
   pthread_mutex_lock(&EXECUTE);
   pthread_mutex_lock(&READY);
   pthread_mutex_lock(&BLOCKED);
+  pthread_mutex_lock(&ESISBLOQUEADOR);
 
 	bool _esElid(t_Esi* un_esi) {
 		return un_esi->id == esi_id;
@@ -247,6 +248,7 @@ int com_bloquear (char *arg){
 
 		  }
 	  }
+	  pthread_mutex_unlock(&ESISBLOQUEADOR);
 	  pthread_mutex_unlock(&BLOCKED);
 	  pthread_mutex_unlock(&READY);
 	  pthread_mutex_unlock(&EXECUTE);
@@ -289,6 +291,7 @@ int com_desbloquear (char *arg){
 		pthread_mutex_unlock(&READY);
 		pthread_mutex_unlock(&MUTEX);
 	}else{
+		pthread_mutex_lock(&ESISBLOQUEADOR);
 		//No hay ningun esi bloqueado por esa clave, libero la clave
 		bool _esElidClaveB(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
 		if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
@@ -299,6 +302,7 @@ int com_desbloquear (char *arg){
 		}else{
 			printf("No hay clave para liberar\n");
 		}
+		pthread_mutex_unlock(&ESISBLOQUEADOR);
 	}
 
 
@@ -472,13 +476,17 @@ int com_status (char *arg){
 	int32_t longitud_clave = strlen(clave) + 1;
 
 	//si es clave del sistema solo lo informo
-//	bool _esDelSistema(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
-//	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
-//			list_find(LIST_ESI_BLOQUEADOR, (void*)_esDelSistema) != NULL){
-//		printf("Valor: Es clave del sistema\n");
-//		printf("Instancia: Es clave del sistema\n");
-//		return (0);
-//	}
+	bool _esDelSistema(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+	pthread_mutex_lock(&ESISBLOQUEADOR);
+	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+			list_find(LIST_ESI_BLOQUEADOR, (void*)_esDelSistema) != NULL){
+		printf("Valor: Es clave del sistema\n");
+		printf("Instancia: Es clave del sistema\n");
+		com_listar(clave);
+		pthread_mutex_unlock(&ESISBLOQUEADOR);
+		return (0);
+	}
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 
 	void* bufferEnvio = malloc(sizeof(int32_t) + longitud_clave);
 	memcpy(bufferEnvio, &longitud_clave,sizeof(int32_t));
@@ -576,7 +584,7 @@ int com_deadlock (char *arg){
 	}
 
 	pthread_mutex_lock(&BLOCKED);
-
+	pthread_mutex_lock(&ESISBLOQUEADOR);
     t_list* lista = buscar_deadlock(LIST_ESI_BLOQUEADOR, LIST_BLOCKED);
 
     if(lista != NULL){
@@ -585,7 +593,7 @@ int com_deadlock (char *arg){
     }else{
     	puts("No se ha detectado un deadlock");
     }
-
+    pthread_mutex_unlock(&ESISBLOQUEADOR);
     pthread_mutex_unlock(&BLOCKED);
 
 	return (0);

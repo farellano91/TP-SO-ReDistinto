@@ -190,9 +190,11 @@ void recibirInfoCoordinador() {
 					//registro la clave y continua (cargo en lis_esi_bloqueador)
 					bool _esElid(t_Esi* un_esi) { return un_esi->id == id_esi;}
 					pthread_mutex_lock(&EXECUTE);
+					pthread_mutex_lock(&ESISBLOQUEADOR);
 					t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
 					t_esiBloqueador* esi_bloqueador = get_esi_bloqueador(esi_buscado,clave);
 					list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
+					pthread_mutex_unlock(&ESISBLOQUEADOR);
 					pthread_mutex_unlock(&EXECUTE);
 					printf("Registro que ahora la clave:%s lo tomo el ESI ID:%d\n",clave,id_esi);
 
@@ -265,8 +267,10 @@ bool esta_conectado(int id_esi){
 }
 
 bool clave_tomada_esi_ejecutando(char* clave){
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
 	t_esiBloqueador * esi_tomo_recurso = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave);
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 	pthread_mutex_lock(&EXECUTE);
 	t_Esi * esi_ejecutando = list_get(LIST_EXECUTE,0);
 	if(esi_tomo_recurso!=NULL && esi_ejecutando != NULL ){
@@ -292,18 +296,19 @@ bool find_recurso_by_clave(char* clave){
 
 	bool resultado = false;
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
-
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
 			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
 		//Ya esta tomado ese recurso
 		resultado = true;
 	}
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 	return resultado;
 }
 
 void libero_recurso_by_clave_id(char* clave,int id_esi){
 	bool _esElidClave(t_esiBloqueador* esi_bloqueador) { return (esi_bloqueador->esi->id == id_esi) && (strcmp(esi_bloqueador->clave,clave)==0);}
-
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
 			list_find(LIST_ESI_BLOQUEADOR, (void*)_esElidClave) != NULL){
 
@@ -313,7 +318,7 @@ void libero_recurso_by_clave_id(char* clave,int id_esi){
 	}else{
 		printf("No hay clave para liberar del ESI ID:%d\n",id_esi);
 	}
-
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 }
 
 

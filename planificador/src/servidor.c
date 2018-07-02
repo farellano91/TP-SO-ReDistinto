@@ -65,7 +65,9 @@ void cargo_claves_iniciales(){
 		list_add(LIST_ESI_BLOQUEADOR,esiBLo);
 		printf("Se cargo la clave:%s bloqueada INICIALMENTE\n", clave);
 	}
+	pthread_mutex_lock(&ESISBLOQUEADOR);
 	string_iterate_lines(CLAVES_INICIALES_BLOQUEADAS,(void*)cargo_en_list_esi_bloqueador);
+	pthread_mutex_unlock(&ESISBLOQUEADOR);
 }
 
 void crear_listas_globales(){
