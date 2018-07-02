@@ -426,7 +426,10 @@ int com_kill(char *arg) {
 	}else if((esi_bloqueado_a_borrar = list_find(LIST_BLOCKED, (void*) _es_el_id_a_borrar_bloqueado)) != NULL){
 
 		list_remove_by_condition(LIST_BLOCKED,(void*) _es_el_id_a_borrar_bloqueado);
+
+		pthread_mutex_lock(&FINISHED);
 		agregar_en_Lista(LIST_FINISHED, esi_bloqueado_a_borrar->esi);
+		pthread_mutex_unlock(&FINISHED);
 
 		pthread_mutex_unlock(&BLOCKED);
 		pthread_mutex_unlock(&READY);
@@ -476,7 +479,7 @@ int com_status (char *arg){
 	int32_t longitud_clave = strlen(clave) + 1;
 
 	//si es clave del sistema solo lo informo
-	bool _esDelSistema(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+	bool _esDelSistema(t_esiBloqueador* esi_bloqueador) { return ((strcmp(esi_bloqueador->clave,clave)==0) && (esi_bloqueador->esi->id == 0));}
 	pthread_mutex_lock(&ESISBLOQUEADOR);
 	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
 			list_find(LIST_ESI_BLOQUEADOR, (void*)_esDelSistema) != NULL){

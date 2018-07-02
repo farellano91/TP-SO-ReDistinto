@@ -387,7 +387,10 @@ void remove_esi_by_fd(int32_t fd){
 	pthread_mutex_lock(&EXECUTE);
 	list_remove_and_destroy_by_condition(LIST_EXECUTE,(void*) _esElfd, free);
 	pthread_mutex_unlock(&EXECUTE);
+
+	pthread_mutex_lock(&FINISHED);
 	list_remove_and_destroy_by_condition(LIST_FINISHED,(void*) _esElfd, free);
+	pthread_mutex_unlock(&FINISHED);
 
 	bool _esElfdBlocked(t_nodoBloqueado* nodo_bloqueado) { return nodo_bloqueado->esi->fd == fd;}
 	pthread_mutex_lock(&BLOCKED);
@@ -411,13 +414,19 @@ void remove_esi_by_fd_finished(int32_t fd){
 		//le resto uno ya que al ingresar a listo se le sumo uno y
 		//ahora estaba ejecutando pero no hizo nada, termino de una pork no tenia nada mas para ejecutar, entonces le restamos eso asi
 		//queda bien guardado en la lisa de finalizado
+		pthread_mutex_lock(&FINISHED);
 		list_add(LIST_FINISHED,esi_terminado);
+		pthread_mutex_unlock(&FINISHED);
+
 		list_remove_by_condition(LIST_READY,(void*) _esElfd);
 	}
 	pthread_mutex_unlock(&READY);
 	pthread_mutex_lock(&EXECUTE);
 	if(list_find(LIST_EXECUTE, (void*)_esElfd) != NULL){
+		pthread_mutex_lock(&FINISHED);
 		list_add(LIST_FINISHED,list_find(LIST_EXECUTE, (void*)_esElfd));
+		pthread_mutex_unlock(&FINISHED);
+
 		list_remove_by_condition(LIST_EXECUTE,(void*) _esElfd);
 	}
 	pthread_mutex_unlock(&EXECUTE);
@@ -427,7 +436,9 @@ void remove_esi_by_fd_finished(int32_t fd){
 	pthread_mutex_lock(&BLOCKED);
 	if(list_find(LIST_BLOCKED, (void*)_esElfdBlocked) != NULL){
 		t_nodoBloqueado * nodoBuscado = list_find(LIST_BLOCKED, (void*)_esElfdBlocked);
+		pthread_mutex_lock(&FINISHED);
 		list_add(LIST_FINISHED,nodoBuscado->esi);
+		pthread_mutex_unlock(&FINISHED);
 		list_remove_by_condition(LIST_BLOCKED,(void*) _esElfdBlocked);
 	}
 	pthread_mutex_unlock(&BLOCKED);
@@ -436,7 +447,9 @@ void remove_esi_by_fd_finished(int32_t fd){
 	pthread_mutex_lock(&ESISBLOQUEADOR);
 	if(list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador) != NULL){
 		t_esiBloqueador * esiBloqueador = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
+		pthread_mutex_lock(&FINISHED);
 		list_add(LIST_FINISHED,esiBloqueador->esi);
+		pthread_mutex_unlock(&FINISHED);
 		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador);
 	}
 	pthread_mutex_unlock(&ESISBLOQUEADOR);
@@ -605,7 +618,9 @@ void cambio_ejecutando_a_finalizado(int32_t id_esi){
 	t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
 	list_remove_by_condition(LIST_EXECUTE,(void*) _esElid);
 	pthread_mutex_unlock(&EXECUTE);
+	pthread_mutex_lock(&FINISHED);
 	agregar_en_Lista(LIST_FINISHED,esi_buscado);
+	pthread_mutex_unlock(&FINISHED);
 }
 
 void inicializo_semaforos(){
@@ -615,6 +630,7 @@ void inicializo_semaforos(){
 	pthread_mutex_init(&EXECUTE,NULL);
 	pthread_mutex_init(&SOCKETS,NULL);
 	pthread_mutex_init(&ESISBLOQUEADOR,NULL);
+	pthread_mutex_init(&FINISHED,NULL);
 	pthread_cond_init(&CONDICION_PAUSA_PLANIFICADOR, NULL);
 }
 
@@ -624,7 +640,9 @@ void move_esi_from_ready_to_finished(int id){
 	t_Esi* esi_buscado = list_find(LIST_READY,(void*) _esElid);
 	list_remove_by_condition(LIST_READY,(void*) _esElid);
 	pthread_mutex_unlock(&READY);
+	pthread_mutex_lock(&FINISHED);
 	agregar_en_Lista(LIST_FINISHED,esi_buscado);
+	pthread_mutex_unlock(&FINISHED);
 }
 
 bool quiereAlgoQueElOtroTiene(t_esiBloqueador* esiBloqueador, t_nodoBloqueado* nodo){

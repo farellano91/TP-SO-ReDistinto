@@ -33,6 +33,8 @@ pthread_cond_t CONDICION_PAUSA_PLANIFICADOR;
 
 pthread_mutex_t ESISBLOQUEADOR;
 
+pthread_mutex_t FINISHED;
+
 int32_t FD_COORDINADOR_STATUS;
 
 void desbloquea_flag();

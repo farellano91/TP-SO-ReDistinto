@@ -293,10 +293,10 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador){
 	if(clave_existente(clave_recibida)){
 
 		//controlo que no aya crecido
-		if(get_cant_entradas_by_clave(clave_recibida) < entradas_necesarias){
-			printf("La clave existe, pero el nuevo valor ocupa más entradas que la original!\n");
-			return FALLO_ENTRADA_MAS_GRANDE;
-		}
+//		if(get_cant_entradas_by_clave(clave_recibida) < entradas_necesarias){
+//			printf("La clave existe, pero el nuevo valor ocupa más entradas que la original!\n");
+//			return FALLO_ENTRADA_MAS_GRANDE;
+//		}
 
 		printf("La clave existe, entonces paso a limpiar sus entradas para poder sobreescribirla\n");
 		libero_entradas_by_clave(clave_recibida);

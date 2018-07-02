@@ -256,6 +256,7 @@ void recibirInfoCoordinador() {
 bool esta_conectado(int id_esi){
 	bool resultado;
 	bool _esElidClave(t_Esi* esi) { return (esi->id == id_esi);}
+	pthread_mutex_lock(&FINISHED);
 	if(!list_is_empty(LIST_FINISHED) &&
 			list_find(LIST_FINISHED, (void*)_esElidClave) != NULL){
 		//Ya esta tomado ese recurso
@@ -263,6 +264,7 @@ bool esta_conectado(int id_esi){
 	}else{
 		resultado = true;
 	}
+	pthread_mutex_unlock(&FINISHED);
 	return resultado;
 }
 
