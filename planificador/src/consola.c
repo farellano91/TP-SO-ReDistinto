@@ -470,6 +470,16 @@ int com_status (char *arg){
 	puts("Comando status!!");
 	char* clave = arg;
 	int32_t longitud_clave = strlen(clave) + 1;
+
+	//si es clave del sistema solo lo informo
+//	bool _esDelSistema(t_esiBloqueador* esi_bloqueador) { return (strcmp(esi_bloqueador->clave,clave)==0);}
+//	if(!list_is_empty(LIST_ESI_BLOQUEADOR) &&
+//			list_find(LIST_ESI_BLOQUEADOR, (void*)_esDelSistema) != NULL){
+//		printf("Valor: Es clave del sistema\n");
+//		printf("Instancia: Es clave del sistema\n");
+//		return (0);
+//	}
+
 	void* bufferEnvio = malloc(sizeof(int32_t) + longitud_clave);
 	memcpy(bufferEnvio, &longitud_clave,sizeof(int32_t));
 	memcpy(bufferEnvio + sizeof(int32_t),clave,longitud_clave);
@@ -495,8 +505,8 @@ int com_status (char *arg){
 		char* valor;
 		switch (respuesta) {
 			case 1://1: no existe clave en el sistema,
-				printf("Valor: No existe la clave en el sistema\n");
-				printf("Instancia: No existe la clave en el sistema\n");
+				printf("Valor: No existe la clave en el sistema del coordinador\n");
+				printf("Instancia: No existe la clave en el sistema del coordinador\n");
 				break;
 			case 2://2: existia la clave en una instancia, pero al pedir el valor vemos que la instancia se desconecto,
 				printf("Valor: No tenemos el valor dado que la instancia se desconecto\n");
