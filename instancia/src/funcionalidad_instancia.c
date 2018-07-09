@@ -12,7 +12,7 @@ void intHandler(int dummy) {
 }
 
 void get_parametros_config(char* path){
-//	t_config* config = config_create("config.cfg");
+//	t_config* config = config_create("config_prueba_algo_reem_comp_inst1.cfg");
 	t_config* config = config_create(path);
 	if (!config) {
 		printf("No encuentro el archivo config\n");
@@ -757,7 +757,7 @@ int obtener_tamanio_libre(){
 //con los datos de entrada que recibi, puedo inicializar mis estructuras
 void inicializo_estructuras(){
 
-	PUNTERO_DIRECCION_CIRCULAR = -1;
+	PUNTERO_DIRECCION_CIRCULAR = 0;
 
 	//inicializo diccionario de entrada
 	DICCIONARITY_ENTRADA = create_diccionarity();
@@ -1140,6 +1140,7 @@ t_list* filtrar_atomico(){
 		}
 	}
 	list_iterate(TABLA_ENTRADA,(void*) _buscoAtomico);
+
 	return lista_filtrada;
 }
 
@@ -1163,13 +1164,26 @@ int algoritmoBiggestSpaceUsed(t_list* listaFiltradaAtomica) {
 
 
 int algoritmoCircular(t_list* listaFiltradaAtomica) {
+	int respuesta = -1;
+	int puntero = -1;
+
 	if (PUNTERO_DIRECCION_CIRCULAR < list_size(listaFiltradaAtomica)) {
-		return PUNTERO_DIRECCION_CIRCULAR++;
+
+		puntero = PUNTERO_DIRECCION_CIRCULAR;
+		t_registro_tabla_entrada* reg = list_get(listaFiltradaAtomica,puntero);
+		respuesta = reg->numero_entrada;
+
+		PUNTERO_DIRECCION_CIRCULAR = PUNTERO_DIRECCION_CIRCULAR + 1;
+		return respuesta;
 	} else {
-		PUNTERO_DIRECCION_CIRCULAR = -1;
-		return 0;//retorna el primero
+
+		PUNTERO_DIRECCION_CIRCULAR = 0;
+		puntero = PUNTERO_DIRECCION_CIRCULAR;
+
+		t_registro_tabla_entrada* reg = list_get(listaFiltradaAtomica,puntero);
+		respuesta = reg->numero_entrada;
+		return respuesta;//retorna el primero
 	}
-	return PUNTERO_DIRECCION_CIRCULAR;
 }
 
 void crearPuntoDeMontaje(char* path){

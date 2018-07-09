@@ -1,0 +1,10 @@
+GET urano
+SET urano p0
+GET avion1
+SET avion p1
+GET limo
+SET limo p2
+GET avion2
+SET avion2 p2
+GET bien
+SET bien mucho
