@@ -497,13 +497,14 @@ void cambio_entrada(int entrada_desde,int entrada_hasta){
 		return (registro_tabla->numero_entrada == entrada_desde);
 	}
 	t_registro_tabla_entrada* tabla = list_find(TABLA_ENTRADA,(void*)_esEntrada);
-	char * valor = get_valor_by_clave(tabla->clave);
-	strcpy(STORAGE[entrada_hasta],valor);
+
+	//copio el alor desde al valor hasta
+	strcpy(STORAGE[entrada_hasta],STORAGE[entrada_desde]);
+
 	cargo_actualizo_tabla(tabla->clave,entrada_hasta,tabla->tamanio_valor);
 	cargo_actualizo_diccionario(entrada_hasta,tabla->tamanio_valor);
 
 	libero_entrada(entrada_desde);
-	free(valor);
 }
 
 //reemplaza tantas veces como entradas_necesarias - cant_espacio_disponibles
@@ -557,8 +558,6 @@ bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,
 					cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,TAMANIO_ENTRADA);
 					//actualizo diccionario
 					cargo_actualizo_diccionario(entrada_inicial+i,TAMANIO_ENTRADA);
-					//borrar
-					printf("VALOR AHORA ES %s\n",valor_recibido);
 				}else{
 					memcpy(STORAGE[entrada_inicial + i],valor_recibido,tamanio_contenido);
 					STORAGE[entrada_inicial + i][tamanio_contenido-1]='\0';
@@ -566,7 +565,6 @@ bool guardo_valor(int entrada_inicial,char* clave_recibida,char* valor_recibido,
 					cargo_actualizo_tabla(clave_recibida,entrada_inicial+i,tamanio_contenido);
 					//actualizo diccionario
 					cargo_actualizo_diccionario(entrada_inicial+i,tamanio_contenido);
-					printf("VALOR AHORA ES %s\n",valor_recibido);
 				}
 
 			}
@@ -666,7 +664,7 @@ void create_or_update_file(char *path_archivo, char * valor_del_storage){
 	close(fd);
 }
 
-
+//retorna todo el valor completo a partir de la clave
 char* get_valor_by_clave(char * clave_recibida){
 
 	char* valor_buscado = malloc(sizeof(char)* TAMANIO_ENTRADA* CANT_ENTRADA);
