@@ -1,0 +1,8 @@
+1.- TEST PRUEBA COMUN
+*Para realizar el ultimo desbloqueo se tiene que pausar el sistema y ejecutar el comando dos veces, una vez para liberar al esi2 y otra para liberar la clave
+
+
+2 .-TEST ALGORIT REEM COMPAC
+*Nosotros contamos el \0 con un caracter, asi q en tamaño de entradas vamos a usar 11 en vez de 10
+
+*Nosostros cuando pedimos set de clave en instancia caida, avisamos al sistema para abortar al esi, no volvemos a elegir una nueva instancia, ademas sino como abortaria un esi por clave innacesible? siempre se podria pedir a otra instancia y directamente este aborto no existira
