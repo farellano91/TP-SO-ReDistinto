@@ -276,6 +276,12 @@ void BlanquearIndices(){
 	pthread_mutex_lock(&EXECUTE);
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
 	if(esiEjecutando != NULL){
+
+		if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
+			double rr = get_prioridad_HRRN(esiEjecutando);
+			printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",esiEjecutando->id,esiEjecutando->tiempoEnListo,esiEjecutando->estimacion,rr);
+		}
+
 		esiEjecutando->tiempoEnListo = 0;
 		//esiEjecutando->cantSentenciasProcesadas = 0;
 	}
@@ -331,6 +337,7 @@ void ordeno_listas(){
 	}
 	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 		order_list(LIST_READY, (void*) ordenar_por_prioridad);
+
 	}
 	pthread_mutex_unlock(&READY);
 }
@@ -352,7 +359,6 @@ void continuar_comunicacion(){
 			primer_esi->lineaALeer --;
 			printf("Error al tratar de enviar el permiso a ESI\n");
 		}else{
-
 			printf("Envie permiso de ejecucion linea: %d al ESI de ID: %d ESTIMACION: %f\n",primer_esi->lineaALeer, primer_esi->id, primer_esi->estimacion);
 		}
 	}

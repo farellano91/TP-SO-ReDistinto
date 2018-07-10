@@ -131,6 +131,7 @@ typedef struct Respuesta_para_planificador{
 	char clave[40];
 } __attribute__((packed)) t_respuesta_para_planificador;
 
+double get_prioridad_HRRN(t_Esi* esi);
 
 t_list* LIST_READY;
 
