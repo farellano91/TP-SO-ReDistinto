@@ -5,7 +5,12 @@
 2 .-TEST ALGORIT REEM COMPAC
 *Nosotros contamos el \0 con un caracter, asi q en tamaño de entradas vamos a usar 11 en vez de 10
 
-*Nosostros cuando pedimos set de clave en instancia caida, avisamos al sistema para abortar al esi, no volvemos a elegir una nueva instancia, ademas sino como abortaria un esi por clave innacesible? siempre se podria pedir a otra instancia y directamente este aborto no existira
+*Nosostros cuando pedimos set de clave en instancia caida, avisamos al sistema para abortar al esi, no volvemos a elegir una nueva instancia, 
+ademas sino como abortaria un esi por clave innacesible? siempre se podria pedir a otra instancia y directamente este aborto no existira
 
 3 .-TEST DISTRIBUCION
-Revisando el documento de test, nos encontramos con algo que si bien no es el foco de la prueba, lo comento solo para que se tenga en cuenta o me corrijan en su defecto si estoy equivocado, esto es en Prueba Algoritmos de Distribución, cuando se ejecuta el ESI_MultiClave y luego el ESI_MultiReemplazo, ambos en su contenido tienen la clave nintendo:consola:gamecube, en ESI_MultiClave esta como **SET nintendo:consola:gamecube Mario** y en ESI_MultiReemplazo esta como **SET nintendo:consola:gamecube FinalFantasyTactics**, es decir, en la primera ocupa una entrada y en la segunda ocupa dos, caso que según el enunciado no debería poder darse.
+*Tema con claves de valores mas grandes de los que tenia antes
+
+5.- TEST PLANIFICADOR
+* HRRN: la estimacion de fargo es 5 no 7
+* ESI_Weds muere por no tener la clave bloqueada 
