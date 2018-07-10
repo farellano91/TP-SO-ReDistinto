@@ -131,13 +131,17 @@ bool aplico_algoritmo_ultimo(){
 
 }
 
-//cuando sale de bloqueado a listo (si es con desalojo dejo la estimacion que tiene pork cuando lo desalojo reste, asi q no hace falta ahora)
+//cuando sale de bloqueado a listo (sea con o sin desalojo, se recalcula igual)
 void recalculo_estimacion(t_Esi *esi){
 	esi->tiempoEnListo = 0;
-	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") || strcmp(ALGORITMO_PLANIFICACION,"SJF-SD") == 0){
-		esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
-	}
+//	if (strcmp(ALGORITMO_PLANIFICACION, "HRRN") || strcmp(ALGORITMO_PLANIFICACION,"SJF-SD") == 0){
+//		esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
+//		esi->cantSentenciasProcesadas = 0;
+//	}
+
+	esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
 	esi->cantSentenciasProcesadas = 0;
+
 	printf("Esi %d tiene ahora una estimancion de %f\n",esi->id,esi->estimacion);
 }
 
@@ -161,107 +165,108 @@ bool aplico_algoritmo(char clave[40]){
 
 	if(esiEjecutando != NULL){
 		esiEjecutando ->cantSentenciasProcesadas++;
+		printf("ESI %d tiene ahora %d sentencias hechas\n",esiEjecutando->id ,esiEjecutando ->cantSentenciasProcesadas);
 	}
 
 	//a todos los esis de ready les aumento 1 el tiempo de espera
 	ActualizarIndicesEnLista();
 
 	ordeno_listas();
-if(bloqueado_por_consola_flag()){
-	pthread_mutex_lock(&EXECUTE);
-	t_Esi* esi= list_get(LIST_EXECUTE, 0);
-	pthread_mutex_unlock(&EXECUTE);
-	//esi->lineaALeer --; //le resto 1 ya que quiro q cuando se desbloee vuelva a tratar de ejecutar la sentencia q lo bloqueo
-	char* clave_block = malloc(sizeof(char)*40);
-	strcpy(clave_block,CLAVE_BLOQUEO_CONSOLA);
-	clave_block[strlen(clave_block)] = '\0';
-	t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
-	pthread_mutex_lock(&BLOCKED);
-	list_add(LIST_BLOCKED,esi_bloqueado);
-	pthread_mutex_unlock(&BLOCKED);
-	free(clave_block);
-	free(CLAVE_BLOQUEO_CONSOLA);
-	desbloquea_flag(); //limpio el flag
-	pthread_mutex_lock(&EXECUTE);
-	list_remove(LIST_EXECUTE, 0);
-	pthread_mutex_lock(&READY);
-	list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
-	list_remove(LIST_READY, 0);
-	pthread_mutex_unlock(&EXECUTE);
-	pthread_mutex_unlock(&READY);
-	BlanquearIndices();
-}
-	//controlo si tiene el flag de bloqueado para mandarlo a la list_block
-else if(bloqueado_flag() ==  1){
-		//Aca tengo que actualizar la estimacion inicial anterior.
-		//saco de EXECUTE a BLOQUEADO
-		// sumo una sentencia mas procesada que seria el get
+	if(bloqueado_por_consola_flag()){
 		pthread_mutex_lock(&EXECUTE);
 		t_Esi* esi= list_get(LIST_EXECUTE, 0);
 		pthread_mutex_unlock(&EXECUTE);
-		esi->lineaALeer --; //le resto 1 ya que quiro q cuando se desbloee vuelva a tratar de ejecutar la sentencia q lo bloqueo
+		//esi->lineaALeer --; //le resto 1 ya que quiro q cuando se desbloee vuelva a tratar de ejecutar la sentencia q lo bloqueo
 		char* clave_block = malloc(sizeof(char)*40);
-		strcpy(clave_block,clave);
+		strcpy(clave_block,CLAVE_BLOQUEO_CONSOLA);
 		clave_block[strlen(clave_block)] = '\0';
 		t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
 		pthread_mutex_lock(&BLOCKED);
 		list_add(LIST_BLOCKED,esi_bloqueado);
 		pthread_mutex_unlock(&BLOCKED);
-
-		printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s\n",esi->id,clave_block);
 		free(clave_block);
-
-
-		//Caso donde ESI se bloqueo al hacer lo que le pedi
+		free(CLAVE_BLOQUEO_CONSOLA);
 		desbloquea_flag(); //limpio el flag
-		//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)
 		pthread_mutex_lock(&EXECUTE);
 		list_remove(LIST_EXECUTE, 0);
-		//toma el primero de listo -> exec y lo saca de listo
 		pthread_mutex_lock(&READY);
 		list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
 		list_remove(LIST_READY, 0);
 		pthread_mutex_unlock(&EXECUTE);
 		pthread_mutex_unlock(&READY);
-		//Blanqueo el Esi que pasa a ejecutando
 		BlanquearIndices();
-	}else{
-
-		//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
-		//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
-		if (strcmp(ALGORITMO_PLANIFICACION, "SJF-CD") == 0) {
-			if(!list_is_empty(LIST_READY)){
-				//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
-				pthread_mutex_lock(&READY);
-				t_Esi* esiReady = list_get(LIST_READY, 0);
-				pthread_mutex_unlock(&READY);
-
-				if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
-	//				IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
-					return sContinuarComunicacion;
-				}
-				//exc -> listo
-				esiEjecutando->estimacion = esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas;//actualizo la estimacion dado que me desalojaron
-				pthread_mutex_lock(&EXECUTE);
-				pthread_mutex_lock(&READY);
-				list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
-				list_remove(LIST_EXECUTE, 0);
-				//el primero de listo va a exec
-				list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
-				list_remove(LIST_READY, 0);
-				pthread_mutex_unlock(&EXECUTE);
-				pthread_mutex_unlock(&READY);
-				//Blanqueo el Esi que pasa a ejecutando
-				BlanquearIndices();
-			}
-
-		}else{
-			//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
-			//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
-			//no hace falta ordenar las lista ya q estas se ordenaran cuando se bloquee el ESI o cuando TERMINE)
-//			IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
-		}
 	}
+		//controlo si tiene el flag de bloqueado para mandarlo a la list_block
+	else if(bloqueado_flag() ==  1){
+			//Aca tengo que actualizar la estimacion inicial anterior.
+			//saco de EXECUTE a BLOQUEADO
+			// sumo una sentencia mas procesada que seria el get
+			pthread_mutex_lock(&EXECUTE);
+			t_Esi* esi= list_get(LIST_EXECUTE, 0);
+			pthread_mutex_unlock(&EXECUTE);
+			esi->lineaALeer --; //le resto 1 ya que quiro q cuando se desbloee vuelva a tratar de ejecutar la sentencia q lo bloqueo
+			char* clave_block = malloc(sizeof(char)*40);
+			strcpy(clave_block,clave);
+			clave_block[strlen(clave_block)] = '\0';
+			t_nodoBloqueado* esi_bloqueado = get_nodo_bloqueado(esi,clave_block);
+			pthread_mutex_lock(&BLOCKED);
+			list_add(LIST_BLOCKED,esi_bloqueado);
+			pthread_mutex_unlock(&BLOCKED);
+
+			printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s\n",esi->id,clave_block);
+			free(clave_block);
+
+
+			//Caso donde ESI se bloqueo al hacer lo que le pedi
+			desbloquea_flag(); //limpio el flag
+			//Solo lo saco de EXEC (cuando supe que era bloqueado porque el coordinador me informo puse flag = 1 y copie de exec ->  bloqueado)
+			pthread_mutex_lock(&EXECUTE);
+			list_remove(LIST_EXECUTE, 0);
+			//toma el primero de listo -> exec y lo saca de listo
+			pthread_mutex_lock(&READY);
+			list_add(LIST_EXECUTE, list_get(LIST_READY, 0));
+			list_remove(LIST_READY, 0);
+			pthread_mutex_unlock(&EXECUTE);
+			pthread_mutex_unlock(&READY);
+			//Blanqueo el Esi que pasa a ejecutando
+			BlanquearIndices();
+		}else{
+
+			//caso donde ESI hizo lo que le pidieron OK, no esta bloqueado pero el algoritmo es con desalojo
+			//si entra aca significa que hizo la operacion, osea podemos contar++ ;)
+			if (strcmp(ALGORITMO_PLANIFICACION, "SJF-CD") == 0) {
+				if(!list_is_empty(LIST_READY)){
+					//Revisar , si la estimacion del primero es mayor al que actualmente tengo, no tengo que desalojar
+					pthread_mutex_lock(&READY);
+					t_Esi* esiReady = list_get(LIST_READY, 0);
+					pthread_mutex_unlock(&READY);
+
+					if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
+						return sContinuarComunicacion;
+					}
+					//exc -> listo
+
+					//esiEjecutando->estimacion = esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas;//la estimacion sigue siendo la misma
+					pthread_mutex_lock(&EXECUTE);
+					pthread_mutex_lock(&READY);
+					list_add(LIST_READY, list_get(LIST_EXECUTE, 0));
+					list_remove(LIST_EXECUTE, 0);
+					//el primero de listo va a exec
+					list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
+					list_remove(LIST_READY, 0);
+					pthread_mutex_unlock(&EXECUTE);
+					pthread_mutex_unlock(&READY);
+					//Blanqueo el Esi que pasa a ejecutando
+					BlanquearIndices();
+				}
+
+			}else{
+				//ACA estoy si el ESI hizo lo que le pedi OK sin bloquearse y tampoco hay desalojo
+				//(si no esta bloqueado y no es con desalojo no hago nada, solo continuo la comunicacion con el,
+				//no hace falta ordenar las lista ya q estas se ordenaran cuando se bloquee el ESI o cuando TERMINE)
+	//			IncrementarLinealeer(list_get(LIST_EXECUTE, 0));
+			}
+		}
 	return sContinuarComunicacion;
 
 }
@@ -272,7 +277,7 @@ void BlanquearIndices(){
 	t_Esi* esiEjecutando = list_get(LIST_EXECUTE, 0);
 	if(esiEjecutando != NULL){
 		esiEjecutando->tiempoEnListo = 0;
-		esiEjecutando->cantSentenciasProcesadas = 0;
+		//esiEjecutando->cantSentenciasProcesadas = 0;
 	}
 	pthread_mutex_unlock(&EXECUTE);
 }
