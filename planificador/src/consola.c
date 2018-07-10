@@ -590,7 +590,7 @@ int com_deadlock (char *arg){
 	pthread_mutex_lock(&ESISBLOQUEADOR);
     t_list* lista = buscar_deadlock(LIST_ESI_BLOQUEADOR, LIST_BLOCKED);
 
-    if(lista != NULL){
+    if(lista != NULL && list_size(lista) > 0){
        puts("Deadlock detectado. Los ESIs implicados son:");
        list_iterate(lista, (void*)_imprimir_id);
     }else{
@@ -836,7 +836,7 @@ t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados){
     	int** matriz_recursos_asignados  = inicializar_matriz(list_size(bloqueados), list_size(bloqueadores));
 
     	bool asignados = generar_matriz_asignados(claves_aux, esis_aux,matriz_recursos_asignados);
-
+/*
     	puts("Matriz de Peticiones");
     	puts("");
 
@@ -846,7 +846,7 @@ t_list* buscar_deadlock(t_list* bloqueadores,t_list* bloqueados){
         puts("");
 
         mostrar_matriz(matriz_recursos_asignados, list_size(bloqueados), list_size(bloqueadores));
-
+*/
     	if((asignados) && (peticiones))
     	{
 
