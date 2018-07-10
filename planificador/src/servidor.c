@@ -277,6 +277,7 @@ void levantar_servidor_planificador() {
 							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
+							ActualizarIndicesEnLista();
 							cambio_ejecutando_a_finalizado(respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
 							//free_only_recurso(i); segun los issue ya no hace falta
 							if(aplico_algoritmo_ultimo()){
@@ -289,6 +290,7 @@ void levantar_servidor_planificador() {
 							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
+							ActualizarIndicesEnLista();
 							cambio_ejecutando_a_finalizado(respuesta.id_esi); //esta lo saca de ready y lo encola el terminado
 							free_recurso(i);
 							if(aplico_algoritmo_ultimo()){

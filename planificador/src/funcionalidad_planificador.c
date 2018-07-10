@@ -86,6 +86,12 @@ bool aplico_algoritmo_primer_ingreso(){
 	if (list_is_empty(LIST_EXECUTE) && !list_is_empty(LIST_READY)) {
 		list_add(LIST_EXECUTE,list_get(LIST_READY, 0));
 		list_remove(LIST_READY, 0);
+		t_Esi* unEsi = list_get(LIST_EXECUTE, 0);
+		if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
+			double rr = get_prioridad_HRRN(unEsi);
+			printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+		}
+
 	} else {
 		sContinuarComunicacion = false;
 	}
@@ -116,6 +122,10 @@ bool aplico_algoritmo_ultimo(){
 		t_Esi* unEsiListo = list_get(LIST_READY, 0);
 		list_add(LIST_EXECUTE, unEsiListo);
 		list_remove(LIST_READY, 0);
+		if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
+			double rr = get_prioridad_HRRN(unEsiListo);
+			printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",unEsiListo->id,unEsiListo->tiempoEnListo,unEsiListo->estimacion,rr);
+		}
 	}
 	pthread_mutex_unlock(&EXECUTE);
 	pthread_mutex_unlock(&READY);
@@ -241,11 +251,12 @@ bool aplico_algoritmo(char clave[40]){
 					t_Esi* esiReady = list_get(LIST_READY, 0);
 					pthread_mutex_unlock(&READY);
 
-					if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
+					if( esiEjecutando->estimacion <= esiReady->estimacion){
+					//if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
 						return sContinuarComunicacion;
 					}
 					//exc -> listo
-
+					printf("DESALOJAMOS al ESI %d por el ESI %d\n",esiEjecutando->id,esiReady->id);
 					//esiEjecutando->estimacion = esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas;//la estimacion sigue siendo la misma
 					pthread_mutex_lock(&EXECUTE);
 					pthread_mutex_lock(&READY);
@@ -288,13 +299,16 @@ void BlanquearIndices(){
 	pthread_mutex_unlock(&EXECUTE);
 }
 void ActualizarIndices(t_Esi *esi){
-  esi->tiempoEnListo ++;
-
+	esi->tiempoEnListo = esi->tiempoEnListo + 1;
+	printf("ESI %d tiene ahora %d tiempo en listo\n",esi->id,esi->tiempoEnListo);
 }
+
 void ActualizarIndicesEnLista(){
 	// recorro la lista de ready y aplico funcion actualizar Indices
 	pthread_mutex_lock(&READY);
-	list_iterate(LIST_READY,(void*)ActualizarIndices );
+	if(!list_is_empty(LIST_READY)){
+		list_iterate(LIST_READY,(void*)ActualizarIndices );
+	}
 	pthread_mutex_unlock(&READY);
 }
 //void IncrementarLinealeer(t_Esi *esi){
@@ -332,6 +346,14 @@ bool muerto_flag(){
 //Ordena la lista de ready dependiendo del algoritmo que se usa
 void ordeno_listas(){
 	pthread_mutex_lock(&READY);
+
+	//estado antes de ordenar
+//	void mostrarA(t_Esi* reg){
+//		printf("[ANTES DE ORDENAR ESI %d ESTIMACION %f]\n",reg->id,reg->estimacion);
+//	}
+//	list_iterate(LIST_READY,(void*)mostrarA );
+//
+
 	if ((strcmp(ALGORITMO_PLANIFICACION, "SJF-CD") == 0) || (strcmp(ALGORITMO_PLANIFICACION,"SJF-SD")==0)){
 		order_list(LIST_READY, (void*) ordenar_por_estimacion);
 	}
@@ -339,6 +361,13 @@ void ordeno_listas(){
 		order_list(LIST_READY, (void*) ordenar_por_prioridad);
 
 	}
+
+	//estado despues de ordenar
+//	void mostrarD(t_Esi* reg){
+//		printf("[DESPUES DE ORDENAR ESI %d ESTIMACION %f]\n",reg->id,reg->estimacion);
+//	}
+//	list_iterate(LIST_READY,(void*)mostrarD );
+
 	pthread_mutex_unlock(&READY);
 }
 
