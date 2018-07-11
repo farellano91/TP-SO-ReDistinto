@@ -13,6 +13,10 @@
 #include <arpa/inet.h>
 #include <commons/config.h>
 #include <parsi/parser.h>
+#include <commons/log.h>
+#include <signal.h>
+
+t_log* LOGGER;
 
 char* IP_CONFIG_COORDINADOR;
 
@@ -24,6 +28,14 @@ int PUERTO_CONFIG_PLANIFICADOR;
 
 //Cargo los parametros desde el archivo config y los libero conforme deje de usarlos
 void get_parametros_config();
+
+void intHandler(int dummy);
+
+void configure_logger();
+
+void logger_mensaje(char* mensaje);
+
+void logger_mensaje_error(char* mensaje);
 
 //libera todos los parametros que tenga
 void free_parametros_config();

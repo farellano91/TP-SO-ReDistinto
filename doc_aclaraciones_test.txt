@@ -1,5 +1,6 @@
 1.- TEST PRUEBA COMUN
-*Para realizar el ultimo desbloqueo se tiene que pausar el sistema y ejecutar el comando dos veces, una vez para liberar al esi2 y otra para liberar la clave, ademas solo se debe desbloquear luego de que ESI_tiramisu se bloquea, sino va a seguir de largo y finalizaran diferentes
+*Para realizar el ultimo desbloqueo se tiene que pausar el sistema y ejecutar el comando dos veces, una vez para liberar al esi2 y otra para liberar la clave,
+ ademas solo se debe desbloquear luego de que ESI_tiramisu se bloquea, sino va a seguir de largo y finalizaran diferentes
 
 
 2 .-TEST ALGORIT REEM COMPAC
@@ -12,5 +13,5 @@ ademas sino como abortaria un esi por clave innacesible? siempre se podria pedir
 *Tema con claves de valores mas grandes de los que tenia antes
 
 5.- TEST PLANIFICADOR
-* HRRN: la estimacion de fargo es 5 no 7
-* ESI_Weds muere por no tener la clave bloqueada 
+* HRRN: ESI_Fargo para que tenga W=12 tuvo q estar en ready cuando ESI_Spoiler recien empezaba, asi que se tiene q pausar todo ,
+ meter los 3, y recien empezar, sino ESI_Fargo se va a perder de algunas sentencias (pork usamos select)

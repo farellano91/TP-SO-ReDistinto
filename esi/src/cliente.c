@@ -33,8 +33,10 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 
 	}
 	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
+
 	if(ID_ESI_OBTENIDO != 0){
 		printf("ID recibido: %d\n", ID_ESI_OBTENIDO);
+
 	}
 	free(mensajeSaludoRecibido);
 
@@ -65,6 +67,7 @@ void saludo_inicial_servidor(int sockfd, char* nombre) {
 				longitud_mensaje);
 		if (send(sockfd, bufferEnvio,sizeof(int32_t) + sizeof(char) * longitud_mensaje, 0) == -1) {
 			printf("No se pudo enviar saludo\n");
+
 			exit(1);
 		}
 		printf("Saludo enviado correctamente\n");
@@ -99,6 +102,7 @@ int conectar_servidor(int puerto , char* ip, char* nombre) {
 	if (connect(sockfd, (struct sockaddr *) &their_addr,
 			sizeof(struct sockaddr)) == -1) {
 		printf("No me pude conectar al %s\n", nombre);
+
 		free_parametros_config();
 		exit(1);
 	}

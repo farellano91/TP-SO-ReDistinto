@@ -14,6 +14,8 @@ int main(int argc, char** argv) {
 		puts("Falta el script");
 		return EXIT_FAILURE;
 	}
+	//En caso de una interrupcion va por aca
+	signal(SIGINT, intHandler);
 
 	get_parametros_config();
 
@@ -29,6 +31,8 @@ int main(int argc, char** argv) {
 
 	free_parametros_config();
 
+	configure_logger();
+
 	//2.- lee el archivo linea por linea
 	FILE * fp;
 	char * line = NULL;
@@ -42,20 +46,17 @@ int main(int argc, char** argv) {
 
 	int32_t longitud_valor = 0;
 	int32_t longitud_clave = 0;
-	printf("Espero numero_linea_leer para empezar...\n");
+	char* aux = string_from_format("Espero numero_linea_leer para empezar...");
+	logger_mensaje(aux);
+	free(aux);
+
 
 	//Loop para recibir los numeros de las lineas que tengo que ejecutar
 	while (1) {
 		//recv de numero_linea_leer(numero de linea a leer) por parte del planificador (sabemos que los numero_linea_leers son solo int32_t)
 		if ((numbytes = recv(fd_planificador, &numero_linea_leer, sizeof(int32_t), 0))
 				<= 0) {
-//
-//			if (numbytes == 0) {
-//				// conexión cerrada
-//				printf("Se desconecto el planificador\n");
-//			} else {
-//				perror("ERROR: al recibir respuesta del planificador");
-//			}
+
 			close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
 			close(fd_coordinador);
 
@@ -83,11 +84,15 @@ int main(int argc, char** argv) {
 						break;
 				}
 				if (read != -1) { //Encontre la linea que me piden
-					printf("Recibi numero de linea: %d para leer\n",numero_linea_leer);
+					char* aux = string_from_format("Recibi numero de linea: %d para leer",numero_linea_leer);
+					logger_mensaje(aux);
+					free(aux);
+
 					//Envio ESI + DATOS DE LA SENTENCIA QUE LEO al coordinador
 					t_esi_operacion parsed = parse(line);
 					int32_t operacion = 0; //1:GET 2:SET 3:STORE
 					if (parsed.valido) {
+						char* aux;
 						switch (parsed.keyword) {
 						case GET:
 
@@ -113,8 +118,10 @@ int main(int argc, char** argv) {
 								perror("send");
 								exit(1);
 							}
-							printf("Envie correctamente: GET clave: <%s>\n",
-									parsed.argumentos.GET.clave);
+							aux = string_from_format("Envie correctamente: GET clave: <%s>",parsed.argumentos.GET.clave);
+							logger_mensaje(aux);
+							free(aux);
+
 							free(bufferEnvio_get);
 							break;
 						case SET:
@@ -155,10 +162,12 @@ int main(int argc, char** argv) {
 								perror("send");
 								exit(1);
 							}
-							printf(
-									"Envie correctamente: SET clave: <%s> valor: <%s>\n",
+							aux = string_from_format("Envie correctamente: SET clave: <%s> valor: <%s>",
 									parsed.argumentos.SET.clave,
 									parsed.argumentos.SET.valor);
+							logger_mensaje(aux);
+							free(aux);
+
 							free(bufferEnvio_set);
 							break;
 						case STORE:
@@ -187,20 +196,30 @@ int main(int argc, char** argv) {
 								perror("recv");
 								exit(1);
 							}
-							printf("Envie correctamente: STORE clave: <%s>\n",
+							aux = string_from_format("Envie correctamente: STORE clave: <%s>",
 									parsed.argumentos.STORE.clave);
+							logger_mensaje(aux);
+							free(aux);
+
 							free(bufferEnvio_store);
 
 							break;
 						default:
-							fprintf(stderr, "No pude interpretar <%s>\n", line);
+							//fprintf(stderr, "No pude interpretar <%s>\n", line);
+							aux = string_from_format("No pude interpretar <%s>", line);
+							logger_mensaje_error(aux);
+							free(aux);
+
 							close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
 							close(fd_coordinador);
 							exit(EXIT_FAILURE);
 						}
 
 					}else{
-						printf("Aborto por clave muy larga detectado por el PARSE\n");
+						char* aux = string_from_format("Aborto por clave muy larga detectado por el PARSE");
+						logger_mensaje_error(aux);
+						free(aux);
+
 						close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
 						close(fd_coordinador);
 						if (line)
@@ -214,15 +233,22 @@ int main(int argc, char** argv) {
 							sizeof(int32_t), 0)) <= 0) {
 						if (numbytes == 0) {
 							// conexión cerrada
-							printf("Se desconecto el coordinador\n");
+							char* aux = string_from_format("Se desconecto el coordinador");
+							logger_mensaje_error(aux);
+							free(aux);
+
 						} else {
-							printf("ERROR: al recibir respuesta del coordinador\n");
+							char* aux = string_from_format("ERROR: al recibir respuesta del coordinador");
+							logger_mensaje_error(aux);
+							free(aux);
 						}
 						close(fd_planificador); // si ya no conversare mas con el cliente, lo cierro
 						close(fd_coordinador);
 						exit(1); //muero
 					} else {
-						printf("Recibi respuesta del coordinador\n");
+						char* aux = string_from_format("Recibi respuesta del coordinador");
+						logger_mensaje(aux);
+						free(aux);
 						t_respuesta_para_planificador respuesta_planificador = {
 								.id_tipo_respuesta = 0, .id_esi =
 										ID_ESI_OBTENIDO, .mensaje = "", .clave =
@@ -260,17 +286,21 @@ int main(int argc, char** argv) {
 						if (send(fd_planificador, &respuesta_planificador,
 								sizeof(t_respuesta_para_planificador), 0)
 								== -1) {
-							printf(
-									"No se pudo enviar respuesta al planificador\n");
+							char* aux = string_from_format("No se pudo enviar respuesta al planificador");
+							logger_mensaje_error(aux);
+							free(aux);
 							exit(1);
 						}
-						printf(
-								"Respuesta enviado al planificador correctamente\n");
+						aux = string_from_format("Respuesta enviado al planificador correctamente");
+						logger_mensaje(aux);
+						free(aux);
 
 					}
 					destruir_operacion(parsed);
 				} else { //No tengo nada mas para leer(es decir, la linea que me piden excede la cantida de lineas que tiene mi script)
-					printf("Recibi numero de linea: %d para leer\n",numero_linea_leer);
+					char* aux = string_from_format("Recibi numero de linea: %d para leer",numero_linea_leer);
+					logger_mensaje(aux);
+					free(aux);
 					//Send resultado al planificador q ya no tengo mas lineas para leer
 					t_respuesta_para_planificador respuesta_planificador = {
 							.id_tipo_respuesta = FINALIZO_TODO_PLANIFICADOR, .id_esi = ID_ESI_OBTENIDO,
@@ -282,17 +312,26 @@ int main(int argc, char** argv) {
 
 					if (send(fd_planificador, &respuesta_planificador,
 							sizeof(t_respuesta_para_planificador), 0) == -1) {
-						printf("No se pudo enviar respuesta al planificador\n");
+						char* aux = string_from_format("No se pudo enviar respuesta al planificador");
+						logger_mensaje_error(aux);
+						free(aux);
+
 						exit(1);
 					}
-					printf("TERMINE DE LEER TODO!!\n");
+					aux = string_from_format("TERMINE DE LEER TODO!!");
+					logger_mensaje(aux);
+					free(aux);
+
 					break; //Salgo de loop ya que no recibire ninguna peticion mas del planificador
 				}
 
 				fclose(fp);
 			}else{
 				//planificador me pidio que lear la linea 0
-				printf("Error al recibir la linea para leer, planificador pidio linea 0\n");
+				char* aux = string_from_format("Error al recibir la linea para leer, planificador pidio linea 0");
+				logger_mensaje_error(aux);
+				free(aux);
+
 				close(fd_planificador);
 				close(fd_coordinador);
 				fclose(fp);

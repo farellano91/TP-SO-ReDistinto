@@ -27,9 +27,6 @@ FILE* txt_open_file(char* path, char* condicion);
 //Cierra el archivo
 void txt_close_file(FILE* file);
 
-//Lee todos los datos
-void txt_read_all(FILE* file);
-
 //Lee una linea especifica
 void txt_read_especific_line(FILE* file, int line);
 

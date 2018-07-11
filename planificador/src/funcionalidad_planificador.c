@@ -13,7 +13,7 @@ void intHandler(int dummy) {
 }
 
 void configure_logger() {
-	LOGGER = log_create("log de operaciones.log","tp-redistinto",0,LOG_LEVEL_INFO);
+	LOGGER = log_create("log-PLANIFICADOR.log","tp-redistinto",0,LOG_LEVEL_INFO);
 	log_info(LOGGER, "Empezamos.....");
 }
 
@@ -617,11 +617,10 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		pthread_mutex_lock(&READY);
 		list_add(LIST_READY,esi);
 		pthread_mutex_unlock(&READY);
-		recalculo_estimacion(esi);
 		char* aux = string_from_format("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s", esi->id,nodoBloqueado->clave);
 		logger_mensaje(aux);
 		free(aux);
-
+		recalculo_estimacion(esi);
 		free(nodoBloqueado);
 	}else{
 		char* aux = string_from_format("No hay ningun ESI para desbloquear por la clave: %s",clave);

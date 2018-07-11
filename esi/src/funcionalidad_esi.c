@@ -23,3 +23,34 @@ void get_parametros_config() {
 
 	config_destroy(config);
 }
+
+void intHandler(int dummy) {
+	if (dummy != 0) {
+		char* msg = string_from_format("Finalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		logger_mensaje_error(msg);
+		free(msg);
+		exit(dummy);
+
+	}
+}
+
+void configure_logger() {
+
+	char* aux = string_from_format("log-ESI%d.log",ID_ESI_OBTENIDO);
+
+	LOGGER = log_create(aux, "tp-redistinto", 1, LOG_LEVEL_INFO);
+
+	free(aux);
+
+	log_info(LOGGER, "Empezamos.....");
+}
+
+void logger_mensaje(char* mensaje) {
+	log_info(LOGGER, mensaje);
+
+}
+
+void logger_mensaje_error(char* mensaje) {
+	log_error(LOGGER, mensaje);
+
+}
