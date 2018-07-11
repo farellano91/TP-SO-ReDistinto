@@ -1,5 +1,21 @@
 #include "funcionalidad_planificador.h"
 
+void configure_logger() {
+	LOGGER = log_create("log de operaciones.log","tp-redistinto",0,LOG_LEVEL_INFO);
+	log_info(LOGGER, "Empezamos.....");
+}
+
+void logger_mensaje(char* mensaje) {
+	pthread_mutex_lock(&MUTEX_LOGGER);
+	log_info(LOGGER,mensaje);
+	pthread_mutex_unlock(&MUTEX_LOGGER);
+}
+
+void logger_mensaje_error(char* mensaje) {
+	pthread_mutex_lock(&MUTEX_LOGGER);
+	log_error(LOGGER,mensaje);
+	pthread_mutex_unlock(&MUTEX_LOGGER);
+}
 
 void free_claves_iniciales(){
 	string_iterate_lines(CLAVES_INICIALES_BLOQUEADAS,(void*)free);
@@ -89,7 +105,9 @@ bool aplico_algoritmo_primer_ingreso(){
 		t_Esi* unEsi = list_get(LIST_EXECUTE, 0);
 		if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 			double rr = get_prioridad_HRRN(unEsi);
-			printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+			char* aux = string_from_format("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+			logger_mensaje(aux);
+			free(aux);
 		}
 
 	} else {
@@ -124,7 +142,9 @@ bool aplico_algoritmo_ultimo(){
 		list_remove(LIST_READY, 0);
 		if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 			double rr = get_prioridad_HRRN(unEsiListo);
-			printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",unEsiListo->id,unEsiListo->tiempoEnListo,unEsiListo->estimacion,rr);
+			char* aux = string_from_format("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f",unEsiListo->id,unEsiListo->tiempoEnListo,unEsiListo->estimacion,rr);
+			logger_mensaje(aux);
+			free(aux);
 		}
 	}
 	pthread_mutex_unlock(&EXECUTE);
@@ -152,7 +172,9 @@ void recalculo_estimacion(t_Esi *esi){
 	esi->estimacion = esi->estimacion*(1-ALPHA) + esi->cantSentenciasProcesadas*ALPHA;
 	esi->cantSentenciasProcesadas = 0;
 
-	printf("Esi %d tiene ahora una estimancion de %f\n",esi->id,esi->estimacion);
+	char* aux = string_from_format("Esi %d tiene ahora una estimancion de %f",esi->id,esi->estimacion);
+	logger_mensaje(aux);
+	free(aux);
 }
 
 
@@ -175,7 +197,9 @@ bool aplico_algoritmo(char clave[40]){
 
 	if(esiEjecutando != NULL){
 		esiEjecutando ->cantSentenciasProcesadas++;
-		printf("ESI %d tiene ahora %d sentencias hechas\n",esiEjecutando->id ,esiEjecutando ->cantSentenciasProcesadas);
+		char* aux = string_from_format("ESI %d tiene ahora %d sentencias hechas",esiEjecutando->id ,esiEjecutando ->cantSentenciasProcesadas);
+		logger_mensaje(aux);
+		free(aux);
 	}
 
 	//a todos los esis de ready les aumento 1 el tiempo de espera
@@ -223,7 +247,10 @@ bool aplico_algoritmo(char clave[40]){
 			list_add(LIST_BLOCKED,esi_bloqueado);
 			pthread_mutex_unlock(&BLOCKED);
 
-			printf("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s\n",esi->id,clave_block);
+			char* aux = string_from_format("Muevo de EJECUCION a BLOQUEADO al ESI ID:%d por la clave:%s",esi->id,clave_block);
+			logger_mensaje(aux);
+			free(aux);
+
 			free(clave_block);
 
 
@@ -256,7 +283,10 @@ bool aplico_algoritmo(char clave[40]){
 						return sContinuarComunicacion;
 					}
 					//exc -> listo
-					printf("DESALOJAMOS al ESI %d por el ESI %d\n",esiEjecutando->id,esiReady->id);
+					char* aux = string_from_format("DESALOJAMOS al ESI %d por el ESI %d",esiEjecutando->id,esiReady->id);
+					logger_mensaje(aux);
+					free(aux);
+
 					//esiEjecutando->estimacion = esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas;//la estimacion sigue siendo la misma
 					pthread_mutex_lock(&EXECUTE);
 					pthread_mutex_lock(&READY);
@@ -290,7 +320,9 @@ void BlanquearIndices(){
 
 		if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 			double rr = get_prioridad_HRRN(esiEjecutando);
-			printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",esiEjecutando->id,esiEjecutando->tiempoEnListo,esiEjecutando->estimacion,rr);
+			char* aux = string_from_format("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f",esiEjecutando->id,esiEjecutando->tiempoEnListo,esiEjecutando->estimacion,rr);
+			logger_mensaje(aux);
+			free(aux);
 		}
 
 		esiEjecutando->tiempoEnListo = 0;
@@ -300,7 +332,9 @@ void BlanquearIndices(){
 }
 void ActualizarIndices(t_Esi *esi){
 	esi->tiempoEnListo = esi->tiempoEnListo + 1;
-	printf("ESI %d tiene ahora %d tiempo en listo\n",esi->id,esi->tiempoEnListo);
+	char* aux = string_from_format("ESI %d tiene ahora %d tiempo en listo",esi->id,esi->tiempoEnListo);
+	logger_mensaje(aux);
+	free(aux);
 }
 
 void ActualizarIndicesEnLista(){
@@ -386,9 +420,15 @@ void continuar_comunicacion(){
 		primer_esi->lineaALeer ++;
 		if (send(primer_esi->fd, &(primer_esi->lineaALeer), sizeof(int32_t), 0) == -1) {
 			primer_esi->lineaALeer --;
-			printf("Error al tratar de enviar el permiso a ESI\n");
+
+			char* aux = string_from_format("Error al tratar de enviar el permiso a ESI");
+			logger_mensaje_error(aux);
+			free(aux);
 		}else{
-			printf("Envie permiso de ejecucion linea: %d al ESI de ID: %d ESTIMACION: %f\n",primer_esi->lineaALeer, primer_esi->id, primer_esi->estimacion);
+			char* aux = string_from_format("Envie permiso de ejecucion linea: %d al ESI de ID: %d ESTIMACION: %f",primer_esi->lineaALeer, primer_esi->id, primer_esi->estimacion);
+			logger_mensaje(aux);
+			free(aux);
+
 		}
 	}
 	pthread_mutex_unlock(&EXECUTE);
@@ -510,7 +550,10 @@ void free_only_recurso(int32_t fd){
 	while (contador < cant_esis_borrar){
 
 		t_esiBloqueador * eb = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
-		printf("Libero clave:%s de ESI ID:%d\n", eb->clave,eb->esi->id);
+		char* aux = string_from_format("Libero clave:%s de ESI ID:%d", eb->clave,eb->esi->id);
+		logger_mensaje(aux);
+		free(aux);
+
 		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
 		contador++;
 	}
@@ -531,7 +574,10 @@ void free_recurso(int32_t fd){
 	while (contador < cant_esis_borrar){
 
 		t_esiBloqueador * eb = list_find(LIST_ESI_BLOQUEADOR, (void*)_esElfdEsiBloqueador);
-		printf("Libero clave:%s de ESI ID:%d\n", eb->clave,eb->esi->id);
+		char* aux = string_from_format("Libero clave:%s de ESI ID:%d", eb->clave,eb->esi->id);
+		logger_mensaje(aux);
+		free(aux);
+
 		//paso de bloqueado a listo (EL PRIMER) ESIs que esperaban esa clave
 		move_esi_from_bloqueado_to_listo(eb->clave);
 		list_remove_and_destroy_by_condition(LIST_ESI_BLOQUEADOR,(void*) _esElfdEsiBloqueador,(void*) free_esiBloqueador);
@@ -560,10 +606,15 @@ void move_esi_from_bloqueado_to_listo(char* clave){
 		list_add(LIST_READY,esi);
 		pthread_mutex_unlock(&READY);
 		recalculo_estimacion(esi);
-		printf("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s\n", esi->id,nodoBloqueado->clave);
+		char* aux = string_from_format("Desbloqueo al ESI ID:%d ya que esperaba la clave: %s", esi->id,nodoBloqueado->clave);
+		logger_mensaje(aux);
+		free(aux);
+
 		free(nodoBloqueado);
 	}else{
-		printf("No hay ningun ESI para desbloquear por la clave: %s\n",clave);
+		char* aux = string_from_format("No hay ningun ESI para desbloquear por la clave: %s",clave);
+		logger_mensaje(aux);
+		free(aux);
 	}
 	ordeno_listas();
 	pthread_mutex_unlock(&BLOCKED);
@@ -672,6 +723,8 @@ void inicializo_semaforos(){
 	pthread_mutex_init(&ESISBLOQUEADOR,NULL);
 	pthread_mutex_init(&FINISHED,NULL);
 	pthread_cond_init(&CONDICION_PAUSA_PLANIFICADOR, NULL);
+	pthread_mutex_init(&MUTEX_LOGGER,NULL);
+
 }
 
 void move_esi_from_ready_to_finished(int id){

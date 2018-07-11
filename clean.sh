@@ -12,6 +12,12 @@ rm -rf log\ de\ operaciones.log
 cd ..
 cd ..
 
+echo Borramos el log del planificador
+cd planificador/src
+rm -rf log\ de\ operaciones.log 
+cd ..
+cd ..
+
 echo ""
 echo ...::: Proceso de limpieza de carpetas terminado correctamente :::...
 echo ""

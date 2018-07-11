@@ -140,7 +140,9 @@ int com_continuar (char *arg){
 			t_Esi* unEsi = list_get(LIST_EXECUTE, 0);
 			if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 				double rr = get_prioridad_HRRN(unEsi);
-				printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+				char* aux = string_from_format("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+				logger_mensaje(aux);
+				free(aux);
 			}
 
 			list_remove(LIST_READY, 0);
@@ -290,7 +292,9 @@ int com_desbloquear (char *arg){
 					t_Esi* unEsi = list_get(LIST_EXECUTE, 0);
 					if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 						double rr = get_prioridad_HRRN(unEsi);
-						printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+						char* aux = string_from_format("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+						logger_mensaje(aux);
+						free(aux);
 					}
 					pthread_mutex_unlock(&EXECUTE);
 					continuar_comunicacion();
@@ -461,7 +465,9 @@ int com_kill(char *arg) {
 				t_Esi* unEsi = list_get(LIST_EXECUTE, 0);
 				if(strcmp(ALGORITMO_PLANIFICACION, "HRRN") == 0){
 					double rr = get_prioridad_HRRN(unEsi);
-					printf("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f\n",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+					char* aux = string_from_format("El PROX. ESI %d a ejecutar tiene tiempo: %d, estimacion: %f RR = %f",unEsi->id,unEsi->tiempoEnListo,unEsi->estimacion,rr);
+					logger_mensaje(aux);
+					free(aux);
 				}
 
 				pthread_mutex_unlock(&EXECUTE);

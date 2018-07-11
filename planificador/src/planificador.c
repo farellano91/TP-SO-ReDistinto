@@ -11,9 +11,13 @@ int main(int argc, char *argv[]) {
 		puts("Falta el archivo de config");
 		return EXIT_FAILURE;
 	}
+
+
+
 	get_parametros_config(argv[1]);
 	PLANIFICADOR_EN_PAUSA = false;
 	inicializo_semaforos();
+	configure_logger();
 	//PARA CONVERSAR CON EL COORDINADOR
 	pthread_t punteroHiloInfoCoordinador;
 	pthread_create(&punteroHiloInfoCoordinador, NULL,(void*) recibirInfoCoordinador, NULL);

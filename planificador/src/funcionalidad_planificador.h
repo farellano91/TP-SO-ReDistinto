@@ -23,6 +23,10 @@
 #include <commons/config.h>
 #include <commons/string.h>
 #include <pthread.h>
+#include <commons/log.h>
+
+t_log * LOGGER;
+pthread_mutex_t MUTEX_LOGGER;
 
 pthread_mutex_t MUTEX;
 pthread_mutex_t BLOCKED;
@@ -36,6 +40,13 @@ pthread_mutex_t ESISBLOQUEADOR;
 pthread_mutex_t FINISHED;
 
 int32_t FD_COORDINADOR_STATUS;
+
+
+void configure_logger();
+
+void logger_mensaje(char* mensaje);
+
+void logger_mensaje_error(char* mensaje);
 
 void desbloquea_flag();
 

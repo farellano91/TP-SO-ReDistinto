@@ -29,10 +29,14 @@ void enviar_saludo(int fdCliente, int id_esi) {
 	memcpy(bufferEnvio + sizeof(int32_t) + longitud_mensaje,&id_para_esi,sizeof(int32_t));
 
 	if (send(fdCliente, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_mensaje, 0) == -1) {
-		printf("No se pudo enviar saludo\n");
+		char* aux = string_from_format("No se pudo enviar saludo");
+		logger_mensaje_error(aux);
+		free(aux);
 		exit(1);
 	}
-	printf("Saludo enviado correctamente\n");
+	char* aux = string_from_format("Saludo enviado correctamente");
+	logger_mensaje(aux);
+	free(aux);
 
 	free(bufferEnvio);
 	free(mensajeSaludoEnviado);
@@ -50,6 +54,7 @@ void atender_esi(void* idSocketCliente) {
 void intHandler(int dummy) {
 	if (dummy != 0) {
 		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		log_destroy(LOGGER);
 		exit(dummy);
 
 	}
@@ -63,7 +68,10 @@ void cargo_claves_iniciales(){
 		un_esi->fd = 0;
 		t_esiBloqueador* esiBLo = get_esi_bloqueador(un_esi,clave);
 		list_add(LIST_ESI_BLOQUEADOR,esiBLo);
-		printf("Se cargo la clave:%s bloqueada INICIALMENTE\n", clave);
+
+		char* aux = string_from_format("Se cargo la clave:%s bloqueada INICIALMENTE", clave);
+		logger_mensaje(aux);
+		free(aux);
 	}
 	pthread_mutex_lock(&ESISBLOQUEADOR);
 	string_iterate_lines(CLAVES_INICIALES_BLOQUEADAS,(void*)cargo_en_list_esi_bloqueador);
@@ -122,13 +130,18 @@ void levantar_servidor_planificador() {
 	//1° CREAMOS EL SOCKET
 	//sockfd: numero o descriptor que identifica al socket que creo
 	if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-		printf("Error al abrir el socket de escucha\n");
+		char* aux = string_from_format("Error al abrir el socket de escucha");
+		logger_mensaje_error(aux);
+		free(aux);
+
 		free(ALGORITMO_PLANIFICACION);
 		free_claves_iniciales();
 		//MUERE EL HILO
 		exit(1);
 	}
-	printf("Se creo el socket correctamente\n");
+	char* aux = string_from_format("Se creo el socket correctamente");
+	logger_mensaje(aux);
+	free(aux);
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
 		perror("address already in use");
@@ -145,7 +158,10 @@ void levantar_servidor_planificador() {
 	//2° Relacionamos los datos de my_addr <=> socket
 	if (bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr))
 			== -1) {
-		printf("Fallo el bind\n");
+		char* aux = string_from_format("Fallo el bind");
+		logger_mensaje_error(aux);
+		free(aux);
+
 		free(ALGORITMO_PLANIFICACION);
 		free_claves_iniciales();
 		exit(1);
@@ -157,10 +173,16 @@ void levantar_servidor_planificador() {
 		free(ALGORITMO_PLANIFICACION);
 		free(IP_CONFIG_MIO);
 		free_claves_iniciales();
-		printf("Fallo el listen\n");
+
+		char* aux = string_from_format("Fallo el listen");
+		logger_mensaje_error(aux);
+		free(aux);
+
 		exit(1);
 	}
-	printf("Servidor planificador escuchando!!!\n");
+	char* aux2 = string_from_format("Servidor planificador escuchando!!!");
+	logger_mensaje(aux2);
+	free(aux2);
 
 	//-------
 	sa.sa_handler = sigchld_handler; // Eliminar procesos muertos
@@ -206,8 +228,9 @@ void levantar_servidor_planificador() {
 						if (socketCliente > fdmax) { // actualizar el máximo deacuerdo al fd del cliente
 							fdmax = socketCliente;
 						}
-						printf("Se conecto el ESI de ID: %i\n",
-								contador_id_esi);
+						char* aux = string_from_format("Se conecto el ESI de ID: %i",contador_id_esi);
+						logger_mensaje(aux);
+						free(aux);
 
 						//Envio mensaje de saludo al ESI (usando su fd y su ID)
 						int *idSocketCliente = (int *) malloc(sizeof(int32_t) * 2);
@@ -221,7 +244,10 @@ void levantar_servidor_planificador() {
 						pthread_mutex_lock(&READY);
 						agregar_en_Lista(LIST_READY,nuevo_esi);
 						pthread_mutex_unlock(&READY);
-						printf("ESI id: %d se agrego a LISTA de READY\n",respuesta.id_esi);
+
+						char* aux3 = string_from_format("ESI id: %d se agrego a LISTA de READY",respuesta.id_esi);
+						logger_mensaje(aux3);
+						free(aux3);
 
 						atender_esi(idSocketCliente);
 					}
@@ -234,7 +260,9 @@ void levantar_servidor_planificador() {
 					if ((numbytes = recv(i, &respuesta, sizeof(respuesta), 0)) <= 0) {
 						if (numbytes == 0) {
 						// conexión cerrada
-							printf("Error de Comunicación: Se fue ESI de fd: %d\n", i);
+							char* aux = string_from_format("Error de Comunicación: Se fue ESI de fd: %d", i);
+							logger_mensaje_error(aux);
+							free(aux);
 						} else {
 							perror("ERROR: al recibir respuesta del ESI");
 						}
@@ -249,7 +277,9 @@ void levantar_servidor_planificador() {
 
 					}else{
 						if(respuesta.id_tipo_respuesta == NUEVO){
-							printf("ESI id: %d mando saludo: %s\n",respuesta.id_esi,respuesta.mensaje);
+							char* aux = string_from_format("ESI id: %d mando saludo: %s",respuesta.id_esi,respuesta.mensaje);
+							logger_mensaje(aux);
+							free(aux);
 
 							if(aplico_algoritmo_primer_ingreso()){
 								continuar_comunicacion();
@@ -257,7 +287,10 @@ void levantar_servidor_planificador() {
 						}
 						if(respuesta.id_tipo_respuesta == OK){
 							//Respuesta de una operacion que le pedi
-							printf("ESI id: %d envio respuesta: %s\n",respuesta.id_esi,respuesta.mensaje);
+							char* aux = string_from_format("ESI id: %d envio respuesta: %s",respuesta.id_esi,respuesta.mensaje);
+							logger_mensaje(aux);
+							free(aux);
+
 							if(muerto_flag()){
 								close(i); // si ya no conversare mas con el cliente, lo cierro
 								FD_CLR(i, &master); // eliminar del conjunto maestro
@@ -274,7 +307,10 @@ void levantar_servidor_planificador() {
 
 						if(respuesta.id_tipo_respuesta == ABORTA){
 							//Respuesta de que algo salio mal y me abortan
-							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
+							char* aux = string_from_format("ESI id: %d envio respuesta: %s, nos despedimos de el!",respuesta.id_esi,respuesta.mensaje);
+							logger_mensaje(aux);
+							free(aux);
+
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
 							ActualizarIndicesEnLista();
@@ -287,7 +323,10 @@ void levantar_servidor_planificador() {
 						}
 						if(respuesta.id_tipo_respuesta == FINALIZO_TODO_PLANIFICADOR){
 							//Respuesta de que termino de leer todas las lineas
-							printf("ESI id: %d envio respuesta: %s, nos despedimos de el!\n",respuesta.id_esi,respuesta.mensaje);
+							char* aux = string_from_format("ESI id: %d envio respuesta: %s, nos despedimos de el!",respuesta.id_esi,respuesta.mensaje);
+							logger_mensaje(aux);
+							free(aux);
+
 							close(i); // si ya no conversare mas con el cliente, lo cierro
 							FD_CLR(i, &master); // eliminar del conjunto maestro
 							ActualizarIndicesEnLista();

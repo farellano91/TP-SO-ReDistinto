@@ -7,20 +7,28 @@ void saludo_inicial_coordinador(int sockfd) {
 	int numbytes = 0;
 	int32_t longitud = 0;
 	if ((numbytes = recv(sockfd, &longitud, sizeof(int32_t), 0)) == -1) {
-		printf("No se pudo recibir la longitud del saludo\n");
+
+		char* aux = string_from_format("No se pudo recibir la longitud del saludo");
+		logger_mensaje_error(aux);
+		free(aux);
+
 		//MUERO
 		exit(1);
 	}
 	char* mensajeSaludoRecibido = malloc(sizeof(char) * longitud);
 	if ((numbytes = recv(sockfd, mensajeSaludoRecibido, longitud, 0)) == -1) {
-		printf("No se pudo recibir saludo\n");
+
+		char* aux = string_from_format("No se pudo recibir saludo");
+		logger_mensaje_error(aux);
+		free(aux);
+
 		//MUERO
 		exit(1);
 	}
 
-	printf("Saludo recibido: %s\n", mensajeSaludoRecibido);
-
-
+	char* aux = string_from_format("Saludo recibido: %s", mensajeSaludoRecibido);
+	logger_mensaje(aux);
+	free(aux);
 
 	//Envio saludo
 	char * mensajeSaludoEnviado = malloc(sizeof(char) * 100);
@@ -34,15 +42,20 @@ void saludo_inicial_coordinador(int sockfd) {
 	memcpy(bufferEnvio + sizeof(int32_t),mensajeSaludoEnviado,longitud_mensaje);
 
 	if (send(sockfd, bufferEnvio,sizeof(int32_t)+ sizeof(char)*longitud_mensaje, 0) == -1) {
-		perror("recv");
-		printf("No se pudo enviar saludo\n");
+
+		char* aux = string_from_format("No se pudo enviar saludo");
+		logger_mensaje_error(aux);
+		free(aux);
+
 		exit(1);
 	}
-	printf("Saludo enviado correctamente\n");
+	char* aux1 = string_from_format("Saludo enviado correctamente");
+	logger_mensaje(aux1);
+	free(aux1);
+
 
 	free(bufferEnvio);
 	free(mensajeSaludoEnviado);
-
 	free(mensajeSaludoRecibido);
 
 }
@@ -98,8 +111,6 @@ int conectar_coordinar_status(){
 		perror("No se pudo conectar al coordinador status");
 		exit(1);
 	}
-
-	//printf("Me conecte al coordinador status \n");
 
 	//conectado al coordinador status
 	FD_COORDINADOR_STATUS = sockfd;
@@ -163,10 +174,13 @@ void recibirInfoCoordinador() {
 				}
 
 			}
-
+			char* aux;
 			switch (id_operacion) {
 			case GET:
-				printf("Coordinador envio GET clave: %s del ESI ID: %d\n",clave,id_esi);
+
+				aux = string_from_format("Coordinador envio GET clave: %s del ESI ID: %d",clave,id_esi);
+				logger_mensaje(aux);
+				free(aux);
 
 				if(!esta_conectado(id_esi)){
 					send_mensaje(fdCoordinador,17);
@@ -182,7 +196,10 @@ void recibirInfoCoordinador() {
 					t_Esi* esi_buscado = list_find(LIST_EXECUTE,(void*) _esElid);
 					esi_buscado->status=1;
 					pthread_mutex_unlock(&EXECUTE);
-					printf("Marco como bloqueado al ESI ID:%d\n",id_esi);
+
+					char* aux = string_from_format("Marco como bloqueado al ESI ID:%d",id_esi);
+					logger_mensaje(aux);
+					free(aux);
 
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
 					send_mensaje(fdCoordinador,3);
@@ -196,7 +213,10 @@ void recibirInfoCoordinador() {
 					list_add(LIST_ESI_BLOQUEADOR,esi_bloqueador);
 					pthread_mutex_unlock(&ESISBLOQUEADOR);
 					pthread_mutex_unlock(&EXECUTE);
-					printf("Registro que ahora la clave:%s lo tomo el ESI ID:%d\n",clave,id_esi);
+
+					char* aux = string_from_format("Registro que ahora la clave:%s lo tomo el ESI ID:%d",clave,id_esi);
+					logger_mensaje(aux);
+					free(aux);
 
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste
 					send_mensaje(fdCoordinador,2);
@@ -204,14 +224,21 @@ void recibirInfoCoordinador() {
 				break;
 
 			case SET://con la clave me basta
-				printf("Coordinador envio pedido para controlar si la clave: %s esta bloqueada por el esi id: %d\n",clave,id_esi);
+
+				aux = string_from_format("Coordinador envio pedido para controlar si la clave: %s esta bloqueada por el esi id: %d",clave,id_esi);
+				logger_mensaje(aux);
+				free(aux);
+
 				if(!esta_conectado(id_esi)){
 					send_mensaje(fdCoordinador,17);
 					break;
 				}
 
 				if(!clave_tomada_esi_ejecutando(clave)){
-					printf("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA\n",id_esi,clave);
+					char* aux = string_from_format("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA",id_esi,clave);
+					logger_mensaje(aux);
+					free(aux);
+
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste, 4:ABORTA_ESI_CLAVE_NO_BLOQUEADA
 					send_mensaje(fdCoordinador,4);
 				}else{
@@ -220,7 +247,9 @@ void recibirInfoCoordinador() {
 
 				break;
 			case STORE:
-				printf("Coordinador envio STORE clave: %s del ESI ID: %d\n",clave,id_esi);
+				aux = string_from_format("Coordinador envio STORE clave: %s del ESI ID: %d",clave,id_esi);
+				logger_mensaje(aux);
+				free(aux);
 
 				//pregunto si se desconecto, pork al desconectarse ya libero todo antes
 				if(!esta_conectado(id_esi)){
@@ -229,7 +258,10 @@ void recibirInfoCoordinador() {
 				}
 				//verifico si el esi que pidio el store lo puede hacer -> ABORTA_ESI_CLAVE_NO_BLOQUEADA
 				if(!clave_tomada_esi_ejecutando(clave)){
-					printf("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA\n",id_esi,clave);
+					char* aux = string_from_format("ESI ID: %d no tiene tomada la clave %s -> ERROR CLAVE NO BLOQUEADA",id_esi,clave);
+					logger_mensaje_error(aux);
+					free(aux);
+
 					//envio mensaje de ejecutado 1:falle , 2:ok , 3: ok pero te bloqueaste, 4:ABORTA_ESI_CLAVE_NO_BLOQUEADA
 					send_mensaje(fdCoordinador,4);
 				}else{
@@ -284,11 +316,16 @@ bool clave_tomada_esi_ejecutando(char* clave){
 }
 void send_mensaje(int fdCoordinador,int tipo_respuesta){
 	if (send(fdCoordinador, &tipo_respuesta,sizeof(int32_t), 0) == -1) {
-		perror("recv");
-		printf("No se pudo enviar el resultado del GET o STORE\n");
+
+		char* aux = string_from_format("No se pudo enviar el resultado del GET o STORE");
+		logger_mensaje_error(aux);
+		free(aux);
+
 		exit(1);
 	}
-	printf("Envié respuesta de la ejecucion de la operacion al coordinador\n");
+	char* aux = string_from_format("Envié respuesta de la ejecucion de la operacion al coordinador");
+	logger_mensaje(aux);
+	free(aux);
 
 }
 
@@ -316,9 +353,13 @@ void libero_recurso_by_clave_id(char* clave,int id_esi){
 
 		//Solo lo saco de la lista
 		list_remove_by_condition(LIST_ESI_BLOQUEADOR,(void*)_esElidClave);
-		printf("Libero la clave:%s que tenia tomado el ESI ID:%d\n",clave,id_esi);
+		char* aux = string_from_format("Libero la clave:%s que tenia tomado el ESI ID:%d",clave,id_esi);
+		logger_mensaje(aux);
+		free(aux);
 	}else{
-		printf("No hay clave para liberar del ESI ID:%d\n",id_esi);
+		char* aux = string_from_format("No hay clave para liberar del ESI ID:%d",id_esi);
+		logger_mensaje(aux);
+		free(aux);
 	}
 	pthread_mutex_unlock(&ESISBLOQUEADOR);
 }
