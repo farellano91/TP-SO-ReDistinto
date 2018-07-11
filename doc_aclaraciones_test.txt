@@ -1,5 +1,5 @@
 1.- TEST PRUEBA COMUN
-*Para realizar el ultimo desbloqueo se tiene que pausar el sistema y ejecutar el comando dos veces, una vez para liberar al esi2 y otra para liberar la clave
+*Para realizar el ultimo desbloqueo se tiene que pausar el sistema y ejecutar el comando dos veces, una vez para liberar al esi2 y otra para liberar la clave, ademas solo se debe desbloquear luego de que ESI_tiramisu se bloquea, sino va a seguir de largo y finalizaran diferentes
 
 
 2 .-TEST ALGORIT REEM COMPAC
