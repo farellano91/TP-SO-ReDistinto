@@ -22,8 +22,11 @@
 #include <commons/string.h>
 #include <commons/collections/list.h>
 #include <commons/collections/dictionary.h>
+#include <commons/log.h>
 #include <pthread.h>
 #include <dirent.h>
+
+t_log* logger;
 
 int PUNTERO_DIRECCION_CIRCULAR;
 

@@ -3,7 +3,9 @@
 
 void intHandler(int dummy) {
 	if (dummy != 0) {
-		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		char* msg = string_from_format("Finalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		log_error(logger, msg);
+		free(msg);
 		free_estruct_admin();
 		free_parametros_config();
 		exit(dummy);
@@ -41,6 +43,11 @@ void get_parametros_config(char* path){
 	strcpy(NOMBRE_INSTANCIA,config_get_string_value(config, "NOMBRE_INSTANCIA"));
 	NOMBRE_INSTANCIA[strlen(NOMBRE_INSTANCIA)] = '\0';
 
+	char* aux = string_from_format("log-%s.log", NOMBRE_INSTANCIA);
+
+	logger = log_create(aux, NOMBRE_INSTANCIA, 1, LOG_LEVEL_INFO);
+
+	free(aux);
 
 	config_destroy(config);
 }
@@ -51,6 +58,7 @@ void free_parametros_config(){
 	free(ALGORITMO_REEMPLAZO);
 	free(PUNTO_MONTAJE);
 	free(NOMBRE_INSTANCIA);
+	log_destroy(logger);
 }
 
 void free_algo_punt_nom(){
@@ -96,14 +104,14 @@ void envio_resultado_al_coordinador(int sockfd,int resultado){
 	memcpy(bufferEnvio + sizeof(int32_t),&resultado ,sizeof(int32_t) );
 
 	if(send(sockfd,bufferEnvio, sizeof(int32_t)*2 , 0) == -1) {
-		printf("No se puede enviar el resultado al coordinador\n");
+		log_error(logger, "No se puede enviar el resultado al coordinador");
 		free(bufferEnvio);
 		free_algo_punt_nom();
 		free_estruct_admin();
 		exit(1);
 	}
 	free(bufferEnvio);
-	printf("Envie mi resultado correctamente\n");
+	log_info(logger, "Envie mi resultado correctamente");
 	pthread_mutex_unlock(&MUTEX_INSTANCIA);
 }
 
@@ -113,9 +121,9 @@ void recibo_mensaje_aceptacion(int fd_coordinador){
 	int32_t resultado_aceptacion = 0;
 	if ((numbytes = recv(fd_coordinador, &resultado_aceptacion, sizeof(int32_t), 0)) <= 0) {
 		if(numbytes == 0){
-			printf("Se desconecto el coordinador\n");
+			log_error(logger, "Se desconecto el coordinador");
 		}else{
-			printf("No se pudo recibir el resultado de la acpetacion\n");
+			log_error(logger, "No se pudo recibir el resultado de la aceptacion");
 		}
 		free_algo_punt_nom();
 		free_estruct_admin();
@@ -123,11 +131,11 @@ void recibo_mensaje_aceptacion(int fd_coordinador){
 	}
 	if(resultado_aceptacion == 1){
 		//me rechazaron por nombre repetido
-		printf("Me rechazaron por nombre repetido\n");
+		log_error(logger, "Me rechazaron por nombre repetido");
 		free_algo_punt_nom();
 		exit(1);
 	}
-	printf("Me aceptaron y encolaron en la lista de instancias :)\n");
+	log_info(logger, "Me aceptaron y encolaron en la lista de instancias");
 
 }
 //recibe la linea, la procesa ... y retorna un valor
@@ -139,7 +147,7 @@ int recibo_sentencia(int fd_coordinador){
 	int respuesta = 0;
 
 	if ((numbytes = recv(fd_coordinador, &tipo_operacion, sizeof(int32_t), 0)) <= 0) {
-			printf("Coordinador desconectado\n");
+			log_error(logger, "Coordinador desconectado");
 			free_algo_punt_nom();
 			free_estruct_admin();
 			close(fd_coordinador);
@@ -150,7 +158,7 @@ int recibo_sentencia(int fd_coordinador){
 	if(tipo_operacion == SET){ //SET CLAVE VALOR
 
 		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
-			printf("No se pudo recibir le tamaño de la clave\n");
+			log_error(logger, "No se pudo recibir le tamaño de la clave");
 			free_algo_punt_nom();
 			close(fd_coordinador);
 			exit(1);
@@ -158,7 +166,7 @@ int recibo_sentencia(int fd_coordinador){
 
 		char* clave_recibida = malloc(sizeof(char)*long_clave);
 		if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
-			printf("No se pudo recibir la clave\n");
+			log_error(logger, "No se pudo recibir la clave");
 			free(clave_recibida);
 			free_algo_punt_nom();
 			close(fd_coordinador);
@@ -166,7 +174,7 @@ int recibo_sentencia(int fd_coordinador){
 		}
 
 		if ((numbytes = recv(fd_coordinador, &long_valor, sizeof(int32_t), 0)) <= 0) {
-			printf("No se pudo recibir le tamaño del valor\n");
+			log_error(logger, "No se pudo recibir el tamaño del valor");
 			free_algo_punt_nom();
 			free(clave_recibida);
 			close(fd_coordinador);
@@ -176,9 +184,9 @@ int recibo_sentencia(int fd_coordinador){
 		char* valor_recibido = malloc(sizeof(char)*long_valor);
 		if ((numbytes = recv(fd_coordinador, valor_recibido, long_valor, 0)) <= 0) {
 			if(numbytes == 0){
-				printf("Se desconecto el coordinador\n");
+				log_error(logger, "Se desconecto el coordinador");
 			}else{
-				printf("No se pudo recibir el valor del la operacion\n");
+				log_error(logger, "No se pudo recibir el valor de la operacion");
 			}
 			free(valor_recibido);
 			free(clave_recibida);
@@ -187,7 +195,9 @@ int recibo_sentencia(int fd_coordinador){
 			exit(1);
 		}
 
-		printf("Recibi para hacer SET clave: %s valor: %s\n",clave_recibida,valor_recibido);
+		char* aux = string_from_format("Recibi para hacer SET clave: %s valor: %s",clave_recibida,valor_recibido);
+		log_info(logger, aux);
+		free(aux);
 		respuesta = ejecuto_set(clave_recibida,valor_recibido,fd_coordinador);
 		free(valor_recibido);
 		free(clave_recibida);
@@ -195,7 +205,7 @@ int recibo_sentencia(int fd_coordinador){
 	}
 	if(tipo_operacion == STORE){ //STORE CLAVE
 		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
-			printf("No se pudo recibir le tamaño de la clave\n");
+			log_error(logger, "No se pudo recibir el tamaño de la clave");
 			free_algo_punt_nom();
 			close(fd_coordinador);
 			exit(1);
@@ -203,13 +213,15 @@ int recibo_sentencia(int fd_coordinador){
 
 		char* clave_recibida = malloc(sizeof(char)*long_clave);
 		if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
-			printf("No se pudo recibir la clave\n");
+			log_error(logger, "No se pudo recibir la clave");
 			free(clave_recibida);
 			free_algo_punt_nom();
 			close(fd_coordinador);
 			exit(1);
 		}
-		printf("Recibi para hacer STORE clave: %s\n",clave_recibida);
+		char* aux = string_from_format("Recibi para hacer STORE clave: %s",clave_recibida);
+		log_info(logger, aux);
+		free(aux);
 
 		respuesta = ejecuto_store(clave_recibida);
 
@@ -227,7 +239,7 @@ int recibo_sentencia(int fd_coordinador){
 	if(tipo_operacion == STATUS){
 		 //STATUS CLAVE
 		if ((numbytes = recv(fd_coordinador, &long_clave, sizeof(int32_t), 0)) <= 0) {
-			printf("No se pudo recibir le tamaño de la clave\n");
+			log_error(logger, "No se pudo recibir le tamaño de la clave");
 			free_algo_punt_nom();
 			close(fd_coordinador);
 			exit(1);
@@ -235,14 +247,15 @@ int recibo_sentencia(int fd_coordinador){
 
 		char* clave_recibida = malloc(sizeof(char)*long_clave);
 		if ((numbytes = recv(fd_coordinador, clave_recibida, long_clave, 0)) <= 0) {
-			printf("No se pudo recibir la clave\n");
+			log_error(logger, "No se pudo recibir la clave");
 			free(clave_recibida);
 			free_algo_punt_nom();
 			close(fd_coordinador);
 			exit(1);
 		}
-		printf("Recibi para hacer STATUS clave: %s\n",clave_recibida);
-
+		char* aux = string_from_format("Recibi para hacer STATUS clave: %s",clave_recibida);
+		log_info(logger, aux);
+        free(aux);
 
 		//envio respuesta
 		int32_t espacio_libre = 0;
@@ -264,12 +277,14 @@ int recibo_sentencia(int fd_coordinador){
 		memcpy(bufferEnvio + sizeof(int32_t)*3,valor,leng_valor);
 
 		if(send(fd_coordinador,bufferEnvio,sizeof(int32_t)*3 +leng_valor , 0) == -1) {
-			printf("No se puede enviar el resultado del status al coordinador\n");
+			log_error(logger, "No se puede enviar el resultado del status al coordinador");
 			free_algo_punt_nom();
 			free_estruct_admin();
 			exit(1);
 		}else{
-			printf("El valor de la clave %s es %s\n",clave_recibida,valor);
+			char* aux = string_from_format("El valor de la clave %s es %s",clave_recibida,valor);
+			log_info(logger, aux);
+			free(aux);
 		}
 
 		free(clave_recibida);
@@ -287,18 +302,20 @@ int ejecuto_set(char* clave_recibida,char* valor_recibido,int fd_coordinador){
 	bool control_final = false; //esto me sirve para saber si al final pude o no insertar lo pedido
 
 	int entradas_necesarias = get_cant_entradas_by_valor(valor_recibido);
-	printf("El valor de la clave recibida ocuparia %d entradas\n",entradas_necesarias);
+	char* aux = string_from_format("El valor de la clave recibida ocuparia %d entradas",entradas_necesarias);
+	log_info(logger, aux);
+	free(aux);
 
 	//si la clave es una clave existente libero las entradas viejas
 	if(clave_existente(clave_recibida)){
 
 		//controlo que no aya crecido
 		if(get_cant_entradas_by_clave(clave_recibida) < entradas_necesarias){
-			printf("La clave existe, pero el nuevo valor ocupa más entradas que la original!\n");
+			log_error(logger, "La clave existe, pero el nuevo valor ocupa más entradas que la original");
 			return FALLO_ENTRADA_MAS_GRANDE;
 		}
 
-		printf("La clave existe, entonces paso a limpiar sus entradas para poder sobreescribirla\n");
+		log_info(logger, "La clave existe, entonces paso a limpiar sus entradas para poder sobreescribirla");
 		libero_entradas_by_clave(clave_recibida);
 	}
 
@@ -399,7 +416,9 @@ void delete_file_dump(int numeroEntrada){
 	ret = remove(path);
 
 	if(ret == 0) {
-	  printf("Borramos el archivo del path:%s \n",path);
+	  char* aux = string_from_format("Borramos el archivo del path:%s \n",path);
+	  log_info(logger, aux);
+	  free(aux);
 	}
 	free(path);
 }
@@ -448,16 +467,16 @@ void notifico_inicio_compactacion(int fd_coordinador){
 	memcpy(bufferEnvio + sizeof(int32_t),&compacto ,sizeof(int32_t) );
 
 	if(send(fd_coordinador,bufferEnvio, sizeof(int32_t)*2 , 0) == -1) {
-		printf("No se puede enviar el pedido de que todos compactan al coordinador\n");
+		log_error(logger, "No se puede enviar el pedido de compactacion global al coordinador");
 		free_algo_punt_nom();
 		free_estruct_admin();
 		exit(1);
 	}
-	printf("Envio solicitud de compactacion global al coordinador\n");
+	log_info(logger, "Envio de solicitud de compactacion global al coordinador exitoso");
 }
 
 void compactar_ahora(){
-	printf("Empezamos a compactar...\n");
+	log_info(logger, "Inicio compactacion...");
 	int i;
 	for(i = 0 ; i <CANT_ENTRADA;i++){
 		char* key = string_itoa(i);
@@ -465,14 +484,16 @@ void compactar_ahora(){
 		if(diccionario->libre == 0){
 			int entrada_superior_vacia = get_entrada_superior_vacia(i);
 			if(entrada_superior_vacia >=  0){
-				printf("Se mueve la entrada n°:%d al n°:%d\n",i,entrada_superior_vacia);
+				char* aux = string_from_format("Se mueve la entrada n°:%d al n°:%d\n",i,entrada_superior_vacia);
+				log_info(logger, aux);
+				free(aux);
 				//me muevo a esa entrada
 				cambio_entrada(i,entrada_superior_vacia);
 			}
 		}
 	}
 
-	printf("Fin de la compactacion...\n");
+	log_info(logger, "Fin compactacion...");
 	print_storage();
 }
 
@@ -511,19 +532,21 @@ void cambio_entrada(int entrada_desde,int entrada_hasta){
 bool aplico_reemplazo(int cant_espacios_buscados){
 	int i;
 	int numeroEntrada = -1;
-	printf("Tengo que reemplazar por falta de espacio\n");
+	log_info(logger, "Tengo que reemplazar por falta de espacio");
 	if(cant_espacios_buscados > 0){
 		for(i = 0 ; i < cant_espacios_buscados; i++){
 			numeroEntrada = aplicarAlgoritmoReemplazo();
 			//controlar q el numeroEntrada sea != -1
 			if(numeroEntrada == -1){
-				printf("No hay ninguna entrada atomica para reemplazar\n");
+				log_info(logger, "No hay ninguna entrada atomica para reemplazar");
 				return false;
 			}else{
 				//borra el .txt que estaba
 				delete_file_dump(numeroEntrada);
 				libero_entrada(numeroEntrada);
-				printf("Libera la entrada atomica NUMERO: %d\n",numeroEntrada);
+				char* aux = string_from_format("Libero la entrada atomica NUMERO: %d\n",numeroEntrada);
+				log_info(logger, aux);
+				free(aux);
 			}
 		}
 	}
@@ -627,11 +650,13 @@ int ejecuto_store(char* clave_recibida){
 	//si la clave-valor ya no existe en la instancia dado que se pizo: FALLO_INSTANCIA_CLAVE_SOBREESCRITA
 	char* valor_del_storage = get_valor_by_clave(clave_recibida);
 	if(valor_del_storage == NULL){
-		printf("ERROR: no existe la clave-valor dado que alguna de su entradas se reemplazo\n");
+		log_error(logger, "No existe la clave-valor dado que alguna de sus entradas se reemplazo");
 		return FALLO_INSTANCIA_CLAVE_SOBREESCRITA;
 	}
 
-	printf("El valor a guardar es:%s\n",valor_del_storage);
+	char* aux = string_from_format("El valor a guardar es:%s",valor_del_storage);
+	log_info(logger, aux);
+	free(aux);
 
 	//guardo o actualizo el .txt
 	char* path_archivo = malloc(strlen(clave_recibida) + 4 + strlen(PUNTO_MONTAJE) + 1);
@@ -691,16 +716,18 @@ char* get_valor_by_clave(char * clave_recibida){
 void recibo_datos_entrada(int fd_coordinador){
 	int numbytes = 0;
 	if ((numbytes = recv(fd_coordinador, &TAMANIO_ENTRADA, sizeof(int32_t), 0)) == -1) {
-		printf("No se pudo recibir el tamaño de la entrada\n");
+		log_error(logger, "No se pudo recibir el tamaño de la entrada");
 		free_algo_punt_nom();
 		exit(1);
 	}
 	if ((numbytes = recv(fd_coordinador, &CANT_ENTRADA, sizeof(int32_t), 0)) == -1) {
-		printf("No se pudo recibir la cantidad de entradas\n");
+		log_error(logger, "No se pudo recibir la cantidad de entradas");
 		free_algo_punt_nom();
 		exit(1);
 	}
-	printf("Recibi tamaño de entrada: %d y cantidad de entrada: %d correctamente\n",TAMANIO_ENTRADA,CANT_ENTRADA);
+	char* aux = string_from_format("Recibi tamaño de entrada: %d y cantidad de entradas: %d correctamente",TAMANIO_ENTRADA,CANT_ENTRADA);
+	log_info(logger, aux);
+	free(aux);
 
 }
 
@@ -717,13 +744,15 @@ void envio_datos(int fd_coordinador){
 
 
 	if (send(fd_coordinador, bufferEnvio,sizeof(int32_t)*2 + sizeof(char)*longitud_mensaje, 0) == -1) {
-		printf("No pude enviar mis datos al coordinador\n");
+		log_error(logger, "No pude enviar mis datos al coordinador");
 		free(bufferEnvio);
 		free_algo_punt_nom();
 		free_estruct_admin();
 		exit(1);
 	}
-	printf("Envie mi nombre y cant. de entradas libres:%d correctamente\n",espacio_libre);
+	char* aux = string_from_format("Envie mi nombre y cant. de entradas libres:%d correctamente",espacio_libre);
+	log_info(logger, aux);
+	free(aux);
 	free(bufferEnvio);
 }
 
@@ -786,7 +815,7 @@ size_t getFilesize(const char* filename) {
 
 //leer los archivos .txt creador a partir del dump para asi poder cargar mis estructuras administrativas
 void reestablecer_datos(){
-	printf("Leo mis archivos previamente guardados si es que tengo..\n");
+	log_info(logger, "Leo mis archivos previamente guardados si es que tengo");
 	FILE *fp;
 	char* nombre_archivo = malloc(sizeof(char)* 100);
 	char* nombre_archivo_sin_salto = malloc(sizeof(char)* 100);
@@ -800,7 +829,7 @@ void reestablecer_datos(){
 	/* Abro la carpeta. */
 	fp = popen(ls_with_path, "r");
 	if (fp == NULL) {
-		printf("Error al tratar de abrir la carpeta\n" );
+		log_error(logger, "Error al tratar de abrir la carpeta" );
 		free_algo_punt_nom();
 		free_estruct_admin();
 		free(ls_with_path);
@@ -812,12 +841,14 @@ void reestablecer_datos(){
 		//Nota: fgets le agrega un \n al nombre de la linea q lee
 		memcpy(nombre_archivo_sin_salto,nombre_archivo,strlen(nombre_archivo)-1);
 		nombre_archivo_sin_salto[strlen(nombre_archivo)-1]='\0';
-		printf("Tenemos para reestablecer el archivo :%s\n", nombre_archivo_sin_salto);
+		char* aux = string_from_format("Tenemos para reestablecer el archivo :%s", nombre_archivo_sin_salto);
+		log_info(logger, aux);
+		free(aux);
 		contador_archivos ++;
 		reestablesco_archivo(nombre_archivo_sin_salto);
 	}
 	if(contador_archivos == 0){
-		printf("No hay nada para reestablecer\n");
+		log_info(logger, "No hay nada para reestablecer");
 	}
 	free(nombre_archivo_sin_salto);
 	free(nombre_archivo);
@@ -835,7 +866,7 @@ void reestablesco_archivo(char* nombre_archivo){
 	int fd = open(path_archivo, O_RDONLY, 0);
 	void* mmappedData = mmap(NULL, tamanio_contenido, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0);
 	if ( mmappedData == MAP_FAILED ){
-		printf("Error al tratar de usar mmap!\n");
+		log_error(logger, "Error al tratar de usar mmap");
 		free(path_archivo);
 		free_algo_punt_nom();
 		free_estruct_admin();
@@ -855,7 +886,7 @@ void reestablesco_archivo(char* nombre_archivo){
 
 
 	if (munmap(mmappedData, tamanio_contenido) == -1){
-		printf("Error al tratar de liberar memoria de un mmap!\n");
+		log_error(logger, "Error al tratar de liberar memoria de un mmap");
 		close(fd);
 		free(path_archivo);
 		free_algo_punt_nom();
@@ -890,7 +921,9 @@ void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 				if(tamanio_contenido <= TAMANIO_ENTRADA){
 					//entra en uno solo
 					strcpy(STORAGE[i],valor);
-					printf("Cargo en la entrada numero: %d el valor: %s\n",i,valor);
+					char* aux = string_from_format("Cargo en la entrada numero: %d el valor: %s",i,valor);
+					log_info(logger, aux);
+					free(aux);
 
 					//actualizo tabla
 					cargo_actualizo_tabla(clave,i,tamanio_contenido);
@@ -902,7 +935,9 @@ void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 					//no entra en uno solo, entoces los divido
 					memcpy(STORAGE[i],valor,TAMANIO_ENTRADA-1);
 					STORAGE[i][TAMANIO_ENTRADA-1]='\0';
-					printf("Cargo en la entrada numero: %d el valor: %s\n",i,STORAGE[i]);
+					char* aux = string_from_format("Cargo en la entrada numero: %d el valor: %s",i,STORAGE[i]);
+					log_info(logger, aux);
+					free(aux);
 
 					memcpy(valor,valor + TAMANIO_ENTRADA -1 ,tamanio_contenido);
 					//tamanio_contenido = tamanio_contenido - TAMANIO_ENTRADA + 1;
@@ -917,7 +952,9 @@ void cargar_estructuras(char* clave,char* valor,int tamanio_contenido){
 			}
 		}
 	}else{
-		printf("El archivo .txt: %s necesita más entradas de las que tengo en total, imposible reestablecerlo\n",clave);
+		char* aux = string_from_format("El archivo .txt: %s necesita más entradas de las que tengo en total, imposible reestablecerlo",clave);
+		log_error(logger, aux);
+		free(aux);
 	}
 
 
@@ -932,12 +969,16 @@ void cargo_actualizo_tabla(char* clave,int numero_entrada,int tamanio_contenido)
 		//si ya esta guardado, entonces lo actualizo
 		strcpy(registro_buscado->clave,clave);
 		registro_buscado->tamanio_valor = tamanio_contenido;
-		printf("Actualizo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada,clave,tamanio_contenido);
+		char* aux = string_from_format("Actualizo en mi tabla la entrada:%d clave:%s tamaño del valor:%d",numero_entrada,clave,tamanio_contenido);
+		log_info(logger, aux);
+		free(aux);
 	}else{
 		//si no esta guardado, lo guardo por primera vez
 		t_registro_tabla_entrada * nuevo_registro = get_new_registro_tabla_entrada(numero_entrada,clave,tamanio_contenido);
 		list_add(TABLA_ENTRADA,nuevo_registro);
-		printf("Cargo en mi tabla la entrada:%d clave:%s tamaño del valor:%d\n",numero_entrada,clave,tamanio_contenido);
+		char* aux = string_from_format("Cargo en mi tabla la entrada:%d clave:%s tamaño del valor:%d",numero_entrada,clave,tamanio_contenido);
+		log_info(logger, aux);
+		free(aux);
 	}
 }
 
@@ -949,13 +990,17 @@ void cargo_actualizo_diccionario(int numero_entrada,int tamanio_contenido){
 		t_registro_diccionario_entrada * registro_diccionario = dictionary_get(DICCIONARITY_ENTRADA,key);
 		registro_diccionario->libre = 0;
 		registro_diccionario->tamanio_libre = TAMANIO_ENTRADA - tamanio_contenido;
-		printf("Actualizo en mi diccionario la entrada:%d-ocupada-cant operaciones:%d-tamaño libre de la entrada:%d\n",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
+		char* aux = string_from_format("Actualizo en mi diccionario la entrada:%d-ocupada-cant operaciones:%d-tamaño libre de la entrada:%d",numero_entrada,registro_diccionario->cant_operaciones,registro_diccionario->tamanio_libre);
+		log_info(logger, aux);
+		free(aux);
 	    free(key);
 	}else{
 		//no existe, lo crea
 		t_registro_diccionario_entrada * registro_diccionario = get_new_registro_dic_entrada(0,0,(TAMANIO_ENTRADA - tamanio_contenido));
 		dictionary_put(DICCIONARITY_ENTRADA,key,registro_diccionario);
-		printf("Cargo en mi diccionario la entrada:%d-ocupada-cant operaciones:1-tamaño libre de la entrada:%d\n",numero_entrada,registro_diccionario->tamanio_libre);
+		char* aux = string_from_format("Cargo en mi diccionario la entrada:%d-ocupada-cant operaciones:1-tamaño libre de la entrada:%d",numero_entrada,registro_diccionario->tamanio_libre);
+		log_info(logger, aux);
+		free(aux);
 	}
 
 }
@@ -1031,23 +1076,28 @@ void realizar_dump(){
 	while(1){
 		sleep(INTERVALO_DUMP);
 		pthread_mutex_lock(&MUTEX_INSTANCIA);
+		log_info(logger, "Comienzo dump....");
 		//controlo si hay algo en la tabla de entrada
 		if(!list_is_empty(TABLA_ENTRADA)){
 			t_list* tabla_solo_claves = get_only_clave();
-			printf("Empieza dump....\n");
 			void _aplicaSTORE(t_registro_tabla_entrada* una_entrada) {
 				int resultado = ejecuto_store(una_entrada->clave);
 				if(resultado == FALLO_INSTANCIA_CLAVE_SOBREESCRITA){
-					printf("Fallo al hacer DUMP de la clave: %s\n",una_entrada->clave);
+					char* aux = string_from_format("Fallo al hacer DUMP de la clave: %s",una_entrada->clave);
+					log_error(logger, aux);
+					free(aux);
 				}
-				printf("Dump de la clave: %s correctamente hecho\n",una_entrada->clave);
+				char* aux = string_from_format("Dump de la clave: %s correctamente hecho",una_entrada->clave);
+				log_info(logger, aux);
+				free(aux);
 
 			}
 			list_iterate(tabla_solo_claves,(void*)_aplicaSTORE);
 			list_destroy(tabla_solo_claves);
 		}else{
-			printf("No hay entradas ocupadas para hacer DUMP\n");
+			log_info(logger, "No hay entradas ocupadas para hacer DUMP");
 		}
+		log_info(logger, "Finalizo dump....");
 		pthread_mutex_unlock(&MUTEX_INSTANCIA);
 	}
 }
@@ -1082,15 +1132,15 @@ int aplicarAlgoritmoReemplazo(){
 		return respuesta;
 	}
 	if (strstr(ALGORITMO_REEMPLAZO, "CIRC") != NULL) {
-		printf("INFO: Algoritmo Circular\n");
+		log_info(logger, "Algoritmo usado: Algoritmo Circular");
 		respuesta = algoritmoCircular(listaEntradasAtomicas);
 	}
 	if (strstr(ALGORITMO_REEMPLAZO, "LRU") != NULL) {
-		printf("INFO: Algoritmo LRU\n");
+		log_info(logger, "Algoritmo usado: Algoritmo LRU");
 		respuesta = algoritmoLeastRecentlyUsed(listaEntradasAtomicas);
 	}
 	if (strstr(ALGORITMO_REEMPLAZO, "BSU") != NULL) {
-		printf("INFO: Algoritmo BSU\n");
+		log_info(logger, "Algoritmo usado: Algoritmo BSU");
 		respuesta = algoritmoBiggestSpaceUsed(listaEntradasAtomicas);
 	}
 
