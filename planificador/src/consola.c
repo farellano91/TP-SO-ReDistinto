@@ -626,6 +626,8 @@ int com_deadlock (char *arg){
     pthread_mutex_unlock(&ESISBLOQUEADOR);
     pthread_mutex_unlock(&BLOCKED);
 
+    list_destroy(lista);
+
 	return (0);
 }
 
