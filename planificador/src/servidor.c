@@ -51,15 +51,6 @@ void atender_esi(void* idSocketCliente) {
 
 }
 
-void intHandler(int dummy) {
-	if (dummy != 0) {
-		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
-		log_destroy(LOGGER);
-		exit(dummy);
-
-	}
-}
-
 void cargo_claves_iniciales(){
 	void cargo_en_list_esi_bloqueador(char* clave){
 		t_Esi * un_esi = malloc(sizeof(t_Esi));
@@ -112,9 +103,6 @@ void levantar_servidor_planificador() {
 
 	//cargo las claves bloqueadas iniciales
 	cargo_claves_iniciales();
-
-	//En caso de una interrupcion va por aca
-	signal(SIGINT, intHandler);
 
 	int contador_id_esi = 0;
 	int sockfd; // Escuchar sobre: sock_fd, nuevas conexiones sobre: idSocketCliente

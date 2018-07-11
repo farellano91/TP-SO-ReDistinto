@@ -1,5 +1,17 @@
 #include "funcionalidad_planificador.h"
 
+void intHandler(int dummy) {
+	if (dummy != 0) {
+		printf("\nFinalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		char* msg = string_from_format("Finalizó con una interrupcion :'(, codigo: %d!!\n", dummy);
+		logger_mensaje_error(msg);
+		free(msg);
+		log_destroy(LOGGER);
+		exit(dummy);
+
+	}
+}
+
 void configure_logger() {
 	LOGGER = log_create("log de operaciones.log","tp-redistinto",0,LOG_LEVEL_INFO);
 	log_info(LOGGER, "Empezamos.....");

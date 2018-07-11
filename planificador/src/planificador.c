@@ -12,7 +12,8 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-
+	//En caso de una interrupcion va por aca
+	signal(SIGINT, intHandler);
 
 	get_parametros_config(argv[1]);
 	PLANIFICADOR_EN_PAUSA = false;

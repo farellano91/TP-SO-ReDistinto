@@ -41,6 +41,7 @@ pthread_mutex_t FINISHED;
 
 int32_t FD_COORDINADOR_STATUS;
 
+void intHandler(int dummy);
 
 void configure_logger();
 
