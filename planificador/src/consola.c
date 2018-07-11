@@ -278,6 +278,7 @@ int com_desbloquear (char *arg){
 	if(!list_is_empty(LIST_BLOCKED) &&
 			list_find(LIST_BLOCKED, (void*)_esElidClave) != NULL){
 		//Hay al menos 1 esi bloqueado, sacamos solo el primero
+		printf("Hay al menos un esi para desbloquear\n");
 		move_esi_from_bloqueado_to_listo(clave);
 		//continua flujo si esta disponible el cpu
 		pthread_mutex_lock(&MUTEX);
