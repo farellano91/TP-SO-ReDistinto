@@ -290,12 +290,20 @@ bool aplico_algoritmo(char clave[40]){
 					t_Esi* esiReady = list_get(LIST_READY, 0);
 					pthread_mutex_unlock(&READY);
 
-					if( esiEjecutando->estimacion <= esiReady->estimacion){
-					//if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
+					char* aux = string_from_format("Comparamos ESI %d remanente: %f con ESI %d estimacion: %f",
+							esiEjecutando->id,(esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas),esiReady->id,esiReady->estimacion);
+					logger_mensaje(aux);
+					free(aux);
+
+					//if( esiEjecutando->estimacion <= esiReady->estimacion){
+					if( (esiEjecutando->estimacion - esiEjecutando->cantSentenciasProcesadas) < esiReady->estimacion){
+						char* aux = string_from_format("No desalojo al ESI %d",esiEjecutando->id);
+						logger_mensaje(aux);
+						free(aux);
 						return sContinuarComunicacion;
 					}
 					//exc -> listo
-					char* aux = string_from_format("DESALOJAMOS al ESI %d por el ESI %d",esiEjecutando->id,esiReady->id);
+					aux = string_from_format("DESALOJAMOS al ESI %d por el ESI %d",esiEjecutando->id,esiReady->id);
 					logger_mensaje(aux);
 					free(aux);
 
