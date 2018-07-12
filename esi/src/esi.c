@@ -259,6 +259,11 @@ int main(int argc, char** argv) {
 							respuesta_planificador.mensaje[strlen(
 									respuesta_planificador.mensaje)] = '\0';
 							respuesta_planificador.id_tipo_respuesta = ABORTA_PLANIFICADOR; //para q el planificador me finalize;
+
+							aux = string_from_format("ABORTO!");
+							logger_mensaje_error(aux);
+							free(aux);
+
 							break;
 						case OK: //recibi respuesta q coordinador lo hizo bien
 							strcpy(respuesta_planificador.mensaje, "OK");

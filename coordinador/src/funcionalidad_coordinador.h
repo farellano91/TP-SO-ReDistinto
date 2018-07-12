@@ -72,7 +72,9 @@ typedef struct {
 	int espacio_libre; //cant de entradas libres q tenga
 } t_Instancia;
 
-bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia, int extra);
+bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia);
+
+bool esta_grupo_ultimo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia,int cantLetrasUltimaInstancia);
 
 //Variables del COODINADOR
 int INDEX; /* esta variable no se debe tocar en otro lado q no sea el algoritomo de distribucion  (podriamos por un mutex)*/

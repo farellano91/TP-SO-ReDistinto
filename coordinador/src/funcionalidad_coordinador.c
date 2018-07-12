@@ -717,27 +717,33 @@ t_Instancia* keyExplicit(char* clave) {
 	}
 	int i;
 	pthread_mutex_lock(&MUTEX_INSTANCIA);
-	bool decimal = false;
-	int resto = 0;
+
 	int cant_instancias = LIST_INSTANCIAS->elements_count;
-	double letras_por_instancia = 26 / cant_instancias;
-	//veo si hay decimal
-	if(cant_instancias*letras_por_instancia < 26){
-		//si hay decimal entonces la ultima instnacia tendra cantidad_letras_por_instancia + resto
-		decimal = true;
-		resto = 26 - cant_instancias*letras_por_instancia;
-	}
-	t_Instancia * instancia;
+
 	if (cant_instancias > 0) {
+
+		int letras_por_instancia = 26 / cant_instancias;
+		int resto = 26 % cant_instancias;
+		int letras_ultima_instancia = letras_por_instancia;
+
+		//veo si hay decimal
+		if(resto>0){
+			letras_por_instancia = letras_por_instancia + 1;
+			letras_ultima_instancia = 26 - (letras_por_instancia*(cant_instancias - 1));
+		}
+
+		t_Instancia * instancia;
 		for (i = 0; i < cant_instancias; i++) {
-			if(((i+1) == cant_instancias) && (decimal)){
-				if(esta_grupo(clave[0],i,letras_por_instancia,resto)){
+			//ultima
+			if(((i+1) == cant_instancias)){
+				if(esta_grupo_ultimo(clave[0],i,letras_por_instancia,letras_ultima_instancia)){
 					instancia = list_get(LIST_INSTANCIAS,i);
 					pthread_mutex_unlock(&MUTEX_INSTANCIA);
 					return instancia;
 				}
+			//otras
 			}else{
-				if(esta_grupo(clave[0],i,letras_por_instancia,0)){
+				if(esta_grupo(clave[0],i,letras_por_instancia)){
 					instancia = list_get(LIST_INSTANCIAS,i);
 					pthread_mutex_unlock(&MUTEX_INSTANCIA);
 					return instancia;
@@ -751,7 +757,7 @@ t_Instancia* keyExplicit(char* clave) {
 	return NULL;
 }
 
-bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia, int extra){
+bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia){
 	int numeroCaracter;
 	//dependiendo que case sea, lo convertimos en 1 en adelante
 	if((primeraLetra >= 97) && (primeraLetra<=123)){
@@ -760,7 +766,22 @@ bool esta_grupo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia, int 
 		numeroCaracter = primeraLetra - 64;
 	}
 
-	if((numeroCaracter >= (numGrupo*cantLetrasPorInstancia+1)) && (numeroCaracter <= (numGrupo+1)*cantLetrasPorInstancia + extra)){
+	if((numeroCaracter >= (numGrupo*cantLetrasPorInstancia+1)) && (numeroCaracter <= (numGrupo+1)*cantLetrasPorInstancia)){
+		return true;
+	}
+	return false;
+}
+
+bool esta_grupo_ultimo(char primeraLetra, int numGrupo,int cantLetrasPorInstancia,int cantLetrasUltimaInstancia){
+	int numeroCaracter;
+	//dependiendo que case sea, lo convertimos en 1 en adelante
+	if((primeraLetra >= 97) && (primeraLetra<=123)){
+		numeroCaracter = primeraLetra - 96;
+	}else if((primeraLetra>= 65) && (primeraLetra<=91)){
+		numeroCaracter = primeraLetra - 64;
+	}
+
+	if((numeroCaracter >= (numGrupo*cantLetrasPorInstancia+1)) && (numeroCaracter <= (numGrupo*cantLetrasPorInstancia+cantLetrasUltimaInstancia))){
 		return true;
 	}
 	return false;
