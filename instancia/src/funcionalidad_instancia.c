@@ -416,7 +416,7 @@ void delete_file_dump(int numeroEntrada){
 	ret = remove(path);
 
 	if(ret == 0) {
-	  char* aux = string_from_format("Borramos el archivo del path:%s \n",path);
+	  char* aux = string_from_format("Borramos el archivo del path:%s ",path);
 	  log_info(logger, aux);
 	  free(aux);
 	}
@@ -484,7 +484,7 @@ void compactar_ahora(){
 		if(diccionario->libre == 0){
 			int entrada_superior_vacia = get_entrada_superior_vacia(i);
 			if(entrada_superior_vacia >=  0){
-				char* aux = string_from_format("Se mueve la entrada n°:%d al n°:%d\n",i,entrada_superior_vacia);
+				char* aux = string_from_format("Se mueve la entrada n°:%d al n°:%d",i,entrada_superior_vacia);
 				log_info(logger, aux);
 				free(aux);
 				//me muevo a esa entrada
@@ -544,7 +544,7 @@ bool aplico_reemplazo(int cant_espacios_buscados){
 				//borra el .txt que estaba
 				delete_file_dump(numeroEntrada);
 				libero_entrada(numeroEntrada);
-				char* aux = string_from_format("Libero la entrada atomica NUMERO: %d\n",numeroEntrada);
+				char* aux = string_from_format("Libero la entrada atomica NUMERO: %d",numeroEntrada);
 				log_info(logger, aux);
 				free(aux);
 			}
@@ -612,7 +612,10 @@ void print_storage(){
 	int i;
 	//imprimo el storage
 	for(i = 0; i < CANT_ENTRADA;i++){
-		printf("[STORAGE[%d] = %s]\n",i,STORAGE[i]);
+		//printf("[STORAGE[%d] = %s]\n",i,STORAGE[i]);
+		char* aux = string_from_format("[STORAGE[%d] = %s]",i,STORAGE[i]);
+		log_info(logger, aux);
+		free(aux);
 	}
 }
 bool by_numero_entrada(t_registro_tabla_entrada * registro_menor, t_registro_tabla_entrada * registro) {
@@ -1038,7 +1041,10 @@ void actualizo_cant_operaciones(char* clave){
 
 void print_diccionario(){
 	void _muestroEstadoOperaciones(char* key, t_registro_diccionario_entrada* diccionario) {
-		printf("[La entrada numero: %s esta libre: %d y lleva: %d operaciones]\n",key,diccionario->libre,diccionario->cant_operaciones);
+		//printf("[La entrada numero: %s esta libre: %d y lleva: %d operaciones]\n",key,diccionario->libre,diccionario->cant_operaciones);
+		char* aux = string_from_format("[La entrada numero: %s esta libre: %d y lleva: %d operaciones]",key,diccionario->libre,diccionario->cant_operaciones);
+		log_info(logger, aux);
+		free(aux);
 	}
 	dictionary_iterator(DICCIONARITY_ENTRADA,(void*)_muestroEstadoOperaciones);
 }
@@ -1131,6 +1137,7 @@ int aplicarAlgoritmoReemplazo(){
 	if(list_is_empty(listaEntradasAtomicas)){
 		return respuesta;
 	}
+
 	if (strstr(ALGORITMO_REEMPLAZO, "CIRC") != NULL) {
 		log_info(logger, "Algoritmo usado: Algoritmo Circular");
 		respuesta = algoritmoCircular(listaEntradasAtomicas);
@@ -1174,20 +1181,21 @@ t_list* filtrar_atomico(){
 			return (strcmp(reg->clave,registro->clave) == 0);
 		}
 
-		if(list_size(lista_filtrada) > 0){
-			if(list_any_satisfy(lista_filtrada,(void*)_estaCargado)){
-				//remuevo
-				list_remove_by_condition(lista_filtrada,(void*)_estaCargado);
-			}else{
-				//agrego
-				list_add(lista_filtrada,registro);
-			}
-		}else{
-			//agrego
+		//me fijo cuantas veces aparece esta clave en la tabla, si es atomico solo aparece una vez
+		if(list_count_satisfying(TABLA_ENTRADA,(void*)_estaCargado) == 1){
 			list_add(lista_filtrada,registro);
 		}
 	}
 	list_iterate(TABLA_ENTRADA,(void*) _buscoAtomico);
+
+
+	//print lista filtrada
+//	void _printLista(t_registro_tabla_entrada* registro) {
+//		char* aux = string_from_format("LISTA ATOMICOS : ENTRADA %d CLAVE %s",registro->numero_entrada,registro->clave);
+//		log_info(logger, aux);
+//		free(aux);
+//	}
+//	list_iterate(lista_filtrada,(void*) _printLista);
 
 	return lista_filtrada;
 }
