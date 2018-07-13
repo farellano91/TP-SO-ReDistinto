@@ -58,7 +58,7 @@ void free_parametros_config(){
 	free(ALGORITMO_REEMPLAZO);
 	free(PUNTO_MONTAJE);
 	free(NOMBRE_INSTANCIA);
-	log_destroy(logger);
+	//log_destroy(logger); luego de correr el test de reemplazo, cuando mato a la instancia da seg.fault. con esto
 }
 
 void free_algo_punt_nom(){
