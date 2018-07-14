@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
 									respuesta_planificador.mensaje)] = '\0';
 							respuesta_planificador.id_tipo_respuesta = ABORTA_PLANIFICADOR; //para q el planificador me finalize;
 
-							aux = string_from_format("ABORTO!");
+							aux = string_from_format("COORDINADOR ME DIJO QUE ABORTO!");
 							logger_mensaje_error(aux);
 							free(aux);
 
@@ -283,6 +283,11 @@ int main(int argc, char** argv) {
 							respuesta_planificador.clave[strlen(
 									respuesta_planificador.clave)] = '\0';
 							respuesta_planificador.id_tipo_respuesta = OK_PLANIFICADOR;
+
+							aux = string_from_format("COORDINADOR ME DIJO BLOQUEADO!");
+							logger_mensaje_error(aux);
+							free(aux);
+
 							break;
 
 						}
