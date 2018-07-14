@@ -29,7 +29,7 @@ void get_parametros_config(char* path){
 	CANTIDAD_ENTRADAS = config_get_int_value(config,"CANTIDAD_ENTRADAS");
 	TAMANIO_ENTRADA = config_get_int_value(config,"TAMANIO_ENTRADA");
 	RETARDO = config_get_int_value(config,"RETARDO");
-	RETARDO = RETARDO / 100;
+	//RETARDO = RETARDO / 1000;
 	config_destroy(config);
 }
 

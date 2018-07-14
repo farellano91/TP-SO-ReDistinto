@@ -73,7 +73,7 @@ void recibo_lineas(int fd_esi) {
 	int32_t resultado_linea = 0;
 	int32_t resultado_linea_final = 0;
 	while (1) {
-		sleep(RETARDO);
+		usleep(RETARDO);
 		int32_t id_esi = 0;
 		if ((numbytes = recv(fd_esi, &id_esi, sizeof(int32_t), 0))
 				<= 0) {
