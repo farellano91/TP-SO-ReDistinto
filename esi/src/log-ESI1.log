@@ -1,0 +1,84 @@
+[INFO] 10:40:47:59 tp-redistinto/(4964:4964): Empezamos.....
+[INFO] 10:40:47:59 tp-redistinto/(4964:4964): Espero numero_linea_leer para empezar...
+[INFO] 10:40:47:59 tp-redistinto/(4964:4964): Recibi numero de linea: 1 para leer
+[INFO] 10:40:47:59 tp-redistinto/(4964:4964): Envie correctamente: GET clave: <e3:sony:juegos>
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Recibi numero de linea: 2 para leer
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Envie correctamente: GET clave: <e3:microsoft:juegos>
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Recibi numero de linea: 3 para leer
+[INFO] 10:40:47:60 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:sony:juegos> valor: <TLOU2>
+[INFO] 10:40:47:62 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:62 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:62 tp-redistinto/(4964:4964): Recibi numero de linea: 4 para leer
+[INFO] 10:40:47:62 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:sony:juegos> valor: <Spiderman>
+[INFO] 10:40:47:64 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:64 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:64 tp-redistinto/(4964:4964): Recibi numero de linea: 5 para leer
+[INFO] 10:40:47:64 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:sony:juegos> valor: <GhostOfTsushima>
+[INFO] 10:40:47:65 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:65 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:66 tp-redistinto/(4964:4964): Recibi numero de linea: 6 para leer
+[INFO] 10:40:47:66 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:sony:juegos> valor: <DeathStranding>
+[INFO] 10:40:47:67 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:67 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:67 tp-redistinto/(4964:4964): Recibi numero de linea: 7 para leer
+[INFO] 10:40:47:67 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:sony:juegos> valor: <ResidenEvil2Remake>
+[INFO] 10:40:47:69 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:69 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:69 tp-redistinto/(4964:4964): Recibi numero de linea: 8 para leer
+[INFO] 10:40:47:69 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:sony:juegos> valor: <Destiny2DLCForsaken>
+[INFO] 10:40:47:71 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:71 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:71 tp-redistinto/(4964:4964): Recibi numero de linea: 9 para leer
+[INFO] 10:40:47:71 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <DLCCuphead>
+[INFO] 10:40:47:75 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:75 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:75 tp-redistinto/(4964:4964): Recibi numero de linea: 10 para leer
+[INFO] 10:40:47:75 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <ForzaHorizon4>
+[INFO] 10:40:47:76 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:76 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:76 tp-redistinto/(4964:4964): Recibi numero de linea: 11 para leer
+[INFO] 10:40:47:76 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <Gears5>
+[INFO] 10:40:47:78 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:78 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:78 tp-redistinto/(4964:4964): Recibi numero de linea: 12 para leer
+[INFO] 10:40:47:78 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <MetroExodus>
+[INFO] 10:40:47:80 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:80 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:81 tp-redistinto/(4964:4964): Recibi numero de linea: 13 para leer
+[INFO] 10:40:47:81 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <Fallout76>
+[INFO] 10:40:47:82 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:82 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:82 tp-redistinto/(4964:4964): Recibi numero de linea: 14 para leer
+[INFO] 10:40:47:82 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <TheDivision2>
+[INFO] 10:40:47:84 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:84 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:84 tp-redistinto/(4964:4964): Recibi numero de linea: 15 para leer
+[INFO] 10:40:47:84 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <DyingLight2>
+[INFO] 10:40:47:86 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:86 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:87 tp-redistinto/(4964:4964): Recibi numero de linea: 16 para leer
+[INFO] 10:40:47:87 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <Crackdown3>
+[INFO] 10:40:47:89 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:89 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:90 tp-redistinto/(4964:4964): Recibi numero de linea: 17 para leer
+[INFO] 10:40:47:90 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <HaloInfinite>
+[INFO] 10:40:47:94 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:95 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:95 tp-redistinto/(4964:4964): Recibi numero de linea: 18 para leer
+[INFO] 10:40:47:95 tp-redistinto/(4964:4964): Envie correctamente: SET clave: <e3:microsoft:juegos> valor: <KingdomHearts3>
+[INFO] 10:40:47:96 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:96 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:97 tp-redistinto/(4964:4964): Recibi numero de linea: 19 para leer
+[INFO] 10:40:47:97 tp-redistinto/(4964:4964): Envie correctamente: STORE clave: <e3:microsoft:juegos>
+[INFO] 10:40:47:98 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:98 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:98 tp-redistinto/(4964:4964): Recibi numero de linea: 20 para leer
+[INFO] 10:40:47:98 tp-redistinto/(4964:4964): Envie correctamente: STORE clave: <e3:sony:juegos>
+[INFO] 10:40:47:99 tp-redistinto/(4964:4964): Recibi respuesta del coordinador
+[INFO] 10:40:47:99 tp-redistinto/(4964:4964): Respuesta enviado al planificador correctamente
+[INFO] 10:40:47:99 tp-redistinto/(4964:4964): Recibi numero de linea: 21 para leer
+[INFO] 10:40:47:99 tp-redistinto/(4964:4964): TERMINE DE LEER TODO!!
