@@ -1,5 +1,0 @@
-GET jugador1
-GET jugador2
-GET jugador3
-SET jugador1 unNombreMuyLargo
-SET jugador2 ocupoDos
