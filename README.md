@@ -1,4 +1,4 @@
-# Trabajo Práctico de la materia Sistemas Operativos - UTN FRBA
+# Trabajo Práctico de Sistemas Operativos - UTN FRBA
 
 ------------------------------------------
 
